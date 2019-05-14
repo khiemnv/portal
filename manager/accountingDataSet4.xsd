@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="accountingDataSet4" targetNamespace="http://tempuri.org/accountingDataSet4.xsd" xmlns:mstns="http://tempuri.org/accountingDataSet4.xsd" xmlns="http://tempuri.org/accountingDataSet4.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections>
+          <Connection AppSettingsObjectName="Settings" AppSettingsPropertyName="accountingConnectionString" ConnectionStringObject="" IsAppSettingsProperty="true" Modifier="Assembly" Name="accountingConnectionString (Settings)" ParameterPrefix="@" PropertyReference="ApplicationSettings.test_binding.Properties.Settings.GlobalReference.Default.accountingConnectionString" Provider="System.Data.SqlClient" />
+        </Connections>
+        <Tables>
+          <TableAdapter BaseClass="System.ComponentModel.Component" DataAccessorModifier="AutoLayout, AnsiClass, Class, Public" DataAccessorName="v_day_sumTableAdapter" GeneratorDataComponentClassName="v_day_sumTableAdapter" Name="v_day_sum" UserDataComponentName="v_day_sumTableAdapter">
+            <MainSource>
+              <DbSource ConnectionRef="accountingConnectionString (Settings)" DbObjectName="accounting.dbo.v_day_sum" DbObjectType="View" FillMethodModifier="Public" FillMethodName="Fill" GenerateMethods="Both" GenerateShortCommands="false" GeneratorGetMethodName="GetData" GeneratorSourceName="Fill" GetMethodModifier="Public" GetMethodName="GetData" QueryType="Rowset" ScalarCallRetval="System.Object, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" UseOptimisticConcurrency="true" UserGetMethodName="GetData" UserSourceName="Fill">
+                <SelectCommand>
+                  <DbCommand CommandType="Text" ModifiedByUser="false">
+                    <CommandText>SELECT date, receipt, interpay, exterpay, salary, sum FROM dbo.v_day_sum</CommandText>
+                    <Parameters />
+                  </DbCommand>
+                </SelectCommand>
+              </DbSource>
+            </MainSource>
+            <Mappings>
+              <Mapping SourceColumn="date" DataSetColumn="date" />
+              <Mapping SourceColumn="receipt" DataSetColumn="receipt" />
+              <Mapping SourceColumn="interpay" DataSetColumn="interpay" />
+              <Mapping SourceColumn="exterpay" DataSetColumn="exterpay" />
+              <Mapping SourceColumn="salary" DataSetColumn="salary" />
+              <Mapping SourceColumn="sum" DataSetColumn="sum" />
+            </Mappings>
+            <Sources />
+          </TableAdapter>
+        </Tables>
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="accountingDataSet4" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="True" msprop:Generator_DataSetName="accountingDataSet4" msprop:Generator_UserDSName="accountingDataSet4">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="v_day_sum" msprop:Generator_TableClassName="v_day_sumDataTable" msprop:Generator_TableVarName="tablev_day_sum" msprop:Generator_TablePropName="v_day_sum" msprop:Generator_RowDeletingName="v_day_sumRowDeleting" msprop:Generator_RowChangingName="v_day_sumRowChanging" msprop:Generator_RowEvHandlerName="v_day_sumRowChangeEventHandler" msprop:Generator_RowDeletedName="v_day_sumRowDeleted" msprop:Generator_UserTableName="v_day_sum" msprop:Generator_RowChangedName="v_day_sumRowChanged" msprop:Generator_RowEvArgName="v_day_sumRowChangeEvent" msprop:Generator_RowClassName="v_day_sumRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="date" msprop:Generator_ColumnVarNameInTable="columndate" msprop:Generator_ColumnPropNameInRow="date" msprop:Generator_ColumnPropNameInTable="dateColumn" msprop:Generator_UserColumnName="date" type="xs:dateTime" minOccurs="0" />
+              <xs:element name="receipt" msprop:Generator_ColumnVarNameInTable="columnreceipt" msprop:Generator_ColumnPropNameInRow="receipt" msprop:Generator_ColumnPropNameInTable="receiptColumn" msprop:Generator_UserColumnName="receipt" type="xs:long" minOccurs="0" />
+              <xs:element name="interpay" msprop:Generator_ColumnVarNameInTable="columninterpay" msprop:Generator_ColumnPropNameInRow="interpay" msprop:Generator_ColumnPropNameInTable="interpayColumn" msprop:Generator_UserColumnName="interpay" type="xs:long" minOccurs="0" />
+              <xs:element name="exterpay" msprop:Generator_ColumnVarNameInTable="columnexterpay" msprop:Generator_ColumnPropNameInRow="exterpay" msprop:Generator_ColumnPropNameInTable="exterpayColumn" msprop:Generator_UserColumnName="exterpay" type="xs:long" minOccurs="0" />
+              <xs:element name="salary" msprop:Generator_ColumnVarNameInTable="columnsalary" msprop:Generator_ColumnPropNameInRow="salary" msprop:Generator_ColumnPropNameInTable="salaryColumn" msprop:Generator_UserColumnName="salary" type="xs:long" minOccurs="0" />
+              <xs:element name="sum" msdata:ReadOnly="true" msprop:Generator_ColumnVarNameInTable="columnsum" msprop:Generator_ColumnPropNameInRow="sum" msprop:Generator_ColumnPropNameInTable="sumColumn" msprop:Generator_UserColumnName="sum" type="xs:long" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

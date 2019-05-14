@@ -1,0 +1,143 @@
+lExternalPaymentPanel
+lExterPaymentPanel
+
+lExternalPaymentDataPanel
+lExternalPaymentSearchPanel
+
++ crt table salary
+ 7 salary_col
++ load data
+	m_salaryPanel
+	lSalaryPanel
++ class
+	lSalaryDataPanel
+	lSalarySearchPanel
+
+# refine
+1. view
+	+ sum
+	+ hide id col
+	+ column name
+	+ search ctrl
+	
+tableinfo
+	internal_payment
+	lInternalPaymentTblInfo
+2. clean code
+	+ receipt tbl
+  + public scope
+3. custom cell
+	+ DTP
+  + combobox
+  + auto add new row
+  + on scroll
+  + auto fill datetime to new row (set cell template)
+  + datetime short format (ToShortDateString)
+  + comboBox with dataTable
+  + auto correct case
+  + genKey
+  + dgv calendar column
+  + dgv comboBox column
+4. redesign
+  + content provider
+  + load data
+  + search ctrl text - auto complete
+
+5. fix report .rdlc
+  + fix search ctrl load data
+  + fix get report params
+  + fix receipts report - details param
+  + release view data
+  + report by month
+  + sql qry
+  + refine design src file
+  + report menu
+  + report dlg
+  + days report
+  + week report
+  + improve qry - no group ~ group
+  + fix qry month data - use union
+  
+6. showing edit control - auto complete
+  + search by content - auto complete
+7. refine table - unicode
+  + fix combox set, get value
+  + format sumtxt, cell type currency
+8. format date time
+9. config
+  + reStore panel
+  + json xml style
+  + table - schema
+10. sizing search ctrls - not yet
+11. sqlite db
+  + db schema
+  + view
+12 search sql
+  lEntity -> dictionary
+  simple where
+13 seach ctrl comboBox
+  lower case
+  search txt comboBox
+  multi comboBox - single binding src
+  auto check
+  bindingSource - tbl: many to one
+14 menu: edit, file, help
+15 not use empty string
+16 event data row change
+  + auto fill actually_spent
+  + header cell style
+  + auto fill month (1-12)
+17 speed loading
+  + adater fill - best
+  + page select
+  + command reader - slowest
+18 progress
+  + show progress dialog
+  + show progress
+  + load tbl data
+  + load view data
+  + on top most
+  + simplify
+19 generate test data
+  + test 1000*1000 rows
+  + gen data 4 tbls
+  
+20 error handing
+  + dgv data error
+  + insert new row - udpate rowid
+21 fix warning
+  + dispose
+22 fix sql qry error
+23 fetch data
+  + on fill data complete event
+  + update last rowid
+24 thread delegate event
+  + invokeFetchLargeData
+25 index - not yet
+26 ms sql db
+  + gen data
+  + use nchar instead of nvarchar
+  + trim - not yet
+  + use bigint instead of int
+27 qry performance improve
+  + index on receipts, payment, salary: date, group name, receipts content
+  + display search time, update time
+28 expert search edt - not yet
+29 config font
+30 + input panel
+  + input ctrl
+    label text center x
+    container         x
+  + clear
+  + edit, delete
+  + column order      x
+  + show all column   x
+  + one receipt/page  x
+  + print guide       ?
+  + number input format ?
+  + currentcy to text ?
+  + gridview position x
+  + auto gen rpt number x
+    inputCtrl.setVal(); getVal
+    on add() -> inckey() ->setVal()
+  + unique text         x

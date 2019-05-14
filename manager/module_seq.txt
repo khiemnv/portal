@@ -1,0 +1,40 @@
+tab
+	data content
+		+ getdata()
+			return databinding
+		+ reload()
+		+ submit()
+	search panel
+		+ search ctrl            |(control panel)
+		+ search btn             |
+			->getdata()          |
+			->update()           |
+	--------------------------   |
+		+ reload, submit         |
+			reload()             |
+			update()             |
+	data panel
+		+ sum
+		+ data grid
+		+ update()
+			cal sum
+			update data grid - auto
+	search btn ->getdata ->update data panel
+	
+	datacontent(cnn, table)
+	datapanel(datacontent)
+	searchpanel(datapanel)
+	
+	
+#use table info
+lInterPaymentPanel()
+	m_data - without cnn & table info
+	m_dataPanel
+	m_searchPanel
+	>init control
+		init search - req tableInfo
+
+=>req init cnn early
+
+#load module
+	m_data.init(cnn, tableInfo)
