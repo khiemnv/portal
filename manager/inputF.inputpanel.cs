@@ -692,9 +692,9 @@ namespace test_binding
             {
                 var row = rows[0];
                 DataRow dr = ((DataRowView)row.DataBoundItem).Row;
-                m_rptAsst.setData(dr);
+                //m_rptAsst.setData(dr);
 
-                if (RefreshPreview != null) { RefreshPreview(this, null); }
+                //if (RefreshPreview != null) { RefreshPreview(this, null); }
             }
         }
 
@@ -785,8 +785,8 @@ namespace test_binding
                 //inc key
                 bIncKeyReq = true;
                 //add new record to bills
-                m_rptAsst.setData(newRow);
-                if (RefreshPreview != null) { RefreshPreview(this, null); }
+                //m_rptAsst.setData(newRow);
+                //if (RefreshPreview != null) { RefreshPreview(this, null); }
             }
                 
             //clear control text
@@ -825,8 +825,8 @@ namespace test_binding
         }
         protected virtual void Save()
         {
-            billRptData.Clear();
-            if (RefreshPreview != null) { RefreshPreview(this, null); }
+            //billRptData.Clear();
+            //if (RefreshPreview != null) { RefreshPreview(this, null); }
 
             m_dataContent.Submit();
 #if use_bg_work
@@ -1470,5 +1470,62 @@ namespace test_binding
         }
     }
 #endif
+    [DataContract(Name = "TaskInputPanel")]
+    public class lTaskInputPanel : lInputPanel
+    {
+        protected override lInputCtrl m_keyCtrl { get { return m_inputsCtrls[0]; } }
+        private keyMng m_key;
+        protected override keyMng m_keyMng { get { return m_key; } }
+        public lTaskInputPanel()
+        {
+            m_tblName = "task";
+
+            m_inputsCtrls = new List<lInputCtrl> {
+                crtInputCtrl(m_tblInfo, "task_number", new Point(0, 0), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, "group_name" , new Point(0, 1), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, "task_name"  , new Point(0, 2), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, "start_date" , new Point(0, 3), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, "end_date"   , new Point(0, 4), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, "note"       , new Point(0, 5), new Size(1, 1)),
+            };
+            m_inputsCtrls[0].ReadOnly = true;
+            m_key = new keyMng("CV", m_tblName, "task_number");
+
+            //Dictionary<string, string> dict = new Dictionary<string, string> {
+            //    { "name","name" },
+            //    { "addr","addr" },
+            //    { "date","date" },
+            //    { "num","receipt_number" },
+            //    { "content","content" },
+            //    { "note","note" },
+            //    { "amount","amount" },
+            //};
+            //m_rptAsst = new rptAssist(1, dict);
+        }
+    }
+    [DataContract(Name = "TaskInputPanel")]
+    public class lTaskOrderInputPanel : lInputPanel
+    {
+        protected override lInputCtrl m_keyCtrl { get { return m_inputsCtrls[1]; } }
+        private keyMng m_key;
+        protected override keyMng m_keyMng { get { return m_key; } }
+        public lTaskOrderInputPanel()
+        {
+            m_tblName = "order";
+
+            m_inputsCtrls = new List<lInputCtrl> {
+                crtInputCtrl(m_tblInfo, "task_number" , new Point(0, 0), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, "order_number", new Point(0, 1), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, "order_type"  , new Point(0, 2), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, "number"      , new Point(0, 3), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, "status"      , new Point(0, 4), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, "note"        , new Point(0, 5), new Size(1, 1)),
+            };
+            m_inputsCtrls[0].ReadOnly = true;
+            m_inputsCtrls[1].ReadOnly = true;
+            m_inputsCtrls[4].ReadOnly = true;
+            m_key = new keyMng("YC", m_tblName, "order");
+        }
+    }
 }
 

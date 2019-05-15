@@ -275,28 +275,32 @@ namespace test_binding
             exterPayIF,
             interPayIF,
             salaryIF,
-            advanceIF
+            advanceIF,
+            taskIF
         }
         private void openInputForm(inputFormType type)
         {
             inputF inputDlg = null;
             switch (type)
             {
-                case inputFormType.receiptIF:
-                    inputDlg = new lReceiptsInputF();
-                    break;
-                case inputFormType.exterPayIF:
-                    inputDlg = new lExterPayInputF();
-                    break;
-                case inputFormType.interPayIF:
-                    inputDlg = new lInterPayInputF();
-                    break;
-                case inputFormType.salaryIF:
-                    inputDlg = new lSalaryInputF();
-                    break;
+                //case inputFormType.receiptIF:
+                //    inputDlg = new lReceiptsInputF();
+                //    break;
+                //case inputFormType.exterPayIF:
+                //    inputDlg = new lExterPayInputF();
+                //    break;
+                //case inputFormType.interPayIF:
+                //    inputDlg = new lInterPayInputF();
+                //    break;
+                //case inputFormType.salaryIF:
+                //    inputDlg = new lSalaryInputF();
+                //    break;
                 //case inputFormType.advanceIF:
                 //    inputDlg = new lAdvanceInputF();
                 //    break;
+                case inputFormType.taskIF:
+                    inputDlg = new lTaskInputF();
+                    break;
             }
 
 #if fullscreen_onload

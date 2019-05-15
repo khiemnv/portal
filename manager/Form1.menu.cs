@@ -91,22 +91,24 @@ namespace test_binding
 
             //Input
             var miInput = crtMenuItem("Input");
-            var miReceipt = crtMenuItem("Phiếu Thu");
-            miReceipt.Click += MiReceipt_Click;
-            addChild(miInput, miReceipt);
-            var miInterpay = crtMenuItem("Phiếu Chi Nội Chúng");
-            miInterpay.Click += miInterpay_Click;
-            addChild(miInput, miInterpay);
-            var miExterpay = crtMenuItem("Phiếu Chi Ngoại Chúng");
-            miExterpay.Click += miExterpay_Click;
-            addChild(miInput, miExterpay);
-            var miSalary = crtMenuItem("Phiếu Chi Lương");
-            miSalary.Click += miSalary_Click;
-            addChild(miInput, miSalary);
+            //var miReceipt = crtMenuItem("Phiếu Thu");
+            //miReceipt.Click += MiReceipt_Click;
+            //addChild(miInput, miReceipt);
+            //var miInterpay = crtMenuItem("Phiếu Chi Nội Chúng");
+            //miInterpay.Click += miInterpay_Click;
+            //addChild(miInput, miInterpay);
+            //var miExterpay = crtMenuItem("Phiếu Chi Ngoại Chúng");
+            //miExterpay.Click += miExterpay_Click;
+            //addChild(miInput, miExterpay);
+            //var miSalary = crtMenuItem("Phiếu Chi Lương");
+            //miSalary.Click += miSalary_Click;
+            //addChild(miInput, miSalary);
             //var miAdvance = crtMenuItem("Phiếu Chi Tạm Ứng");
             //miAdvance.Click += MiAdvance_Click;
             //addChild(miInput, miAdvance);
-
+            var miTask = crtMenuItem("Công Việc");
+            miTask.Click += MiTask_Click;
+            addChild(miInput, miTask);
 #if use_menuitem
             mainMenu.MenuItems.AddRange(new MenuItem[] { miFile, miEdit, miReport, miConfig, miHelp });
             this.Menu = mainMenu;
@@ -142,6 +144,12 @@ namespace test_binding
         //{
         //    openInputForm(inputFormType.advanceIF);
         //}
+
+        private void MiTask_Click(object sender, EventArgs e)
+        {
+            //load input
+            openInputForm(inputFormType.taskIF);
+        }
 
         private void MiFont_Click(object sender, EventArgs e)
         {

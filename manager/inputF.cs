@@ -182,4 +182,28 @@ namespace test_binding
         }
     }
 #endif
+    public class lTaskInputF : inputF
+    {
+        protected override void initCtrls()
+        {
+            this.Text = "Công Việc";
+            base.initCtrls();
+        }
+        protected override lInputPanel CrtInputPanel()
+        {
+            return new lTaskInputPanel();
+        }
+    }
+    public class lTaskOrderInputF : inputF
+    {
+        protected override void initCtrls()
+        {
+            this.Text = "Công Việc - Yêu cầu";
+            base.initCtrls();
+        }
+        protected override lInputPanel CrtInputPanel()
+        {
+            return new lTaskOrderInputPanel();
+        }
+    }
 }
