@@ -61,6 +61,9 @@ namespace test_binding
                     //new lExternalPaymentPanel(),
                     //new lSalaryPanel(),
                     new lTaskPanel(),
+                    new lOrderPanel(),
+                    new lHumanPanel(),
+                    new lEquipmentPanel(),
                 };
 #if save_config
                 appConfig.s_config.UpdateConfig();
@@ -276,7 +279,8 @@ namespace test_binding
             interPayIF,
             salaryIF,
             advanceIF,
-            taskIF
+            taskIF,
+            orderIF
         }
         private void openInputForm(inputFormType type)
         {
@@ -301,14 +305,32 @@ namespace test_binding
                 case inputFormType.taskIF:
                     inputDlg = new lTaskInputF();
                     break;
+                case inputFormType.orderIF:
+                    //not open order when task DGV empty
+                    if (chkTaskDGV())
+                    {
+                        inputDlg = new lOrderInputF();
+                    }
+                    else
+                    {
+                        lConfigMng.showInputError("Không có CV nào trong bảng");
+                    }
+                    break;
             }
 
 #if fullscreen_onload
             inputDlg.WindowState = FormWindowState.Maximized;
 #endif
-            inputDlg.ShowDialog();
+            //chk error
+            if (inputDlg != null) { inputDlg.ShowDialog(); }
         }
 
+        private bool chkTaskDGV()
+        {
+            lDataContent taskDC = appConfig.s_contentProvider.CreateDataContent("task");
+            bool bChk = taskDC.m_dataTable.Rows.Count > 0;
+            return bChk;
+        }
 
         private TabPage crtTab(lBasePanel newPanel)
         {
@@ -569,6 +591,42 @@ namespace test_binding
             m_dataPanel = new lTaskDataPanel();
             m_searchPanel = new lTaskSearchPanel(m_dataPanel);
             m_report = new lTaskReport();
+            base.init();
+        }
+    }
+
+    [DataContract(Name = "OrderPanel")]
+    public class lOrderPanel : lBasePanel
+    {
+        public lOrderPanel()
+        {
+            m_dataPanel = new lOrderDataPanel();
+            m_searchPanel = new lOrderSearchPanel(m_dataPanel);
+            m_report = new lOrderReport();
+            base.init();
+        }
+    }
+
+    [DataContract(Name = "HumanPanel")]
+    public class lHumanPanel : lBasePanel
+    {
+        public lHumanPanel()
+        {
+            m_dataPanel = new lHumanDataPanel();
+            m_searchPanel = new lHumanSearchPanel(m_dataPanel);
+            m_report = new lHumanReport();
+            base.init();
+        }
+    }
+
+    [DataContract(Name = "EquipmentPanel")]
+    public class lEquipmentPanel : lBasePanel
+    {
+        public lEquipmentPanel()
+        {
+            m_dataPanel = new lEquipmentDataPanel();
+            m_searchPanel = new lEquipmentSearchPanel(m_dataPanel);
+            m_report = new lEquipmentReport();
             base.init();
         }
     }

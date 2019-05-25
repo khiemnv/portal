@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System;
 using System.Data;
 using System.Runtime.Serialization;
+using System.Diagnostics;
 
 namespace test_binding
 {
@@ -107,6 +108,136 @@ namespace test_binding
         public string key;
         public string val;
         public DbType type;
+    }
+
+    public class lSearchBuilder
+    {
+        lTableInfo m_tblInfo;
+        Dictionary<string, lTableInfo.lColInfo> m_dict;
+        public List<string> exprs = new List<string>();
+        public List<lSearchParam> srchParams = new List<lSearchParam>();
+        public lDataContent dc;
+        public lSearchBuilder(lTableInfo tblInfo)
+        {
+            m_tblInfo = tblInfo;
+            m_dict = new Dictionary<string, lTableInfo.lColInfo>();
+            foreach (lTableInfo.lColInfo colInfo in m_tblInfo.m_cols)
+            {
+                m_dict.Add(colInfo.m_field, colInfo);
+            }
+            dc = appConfig.s_contentProvider.CreateDataContent(m_tblInfo.m_tblName);
+        }
+        public void clear()
+        {
+            exprs.Clear();
+            srchParams.Clear();
+        }
+
+        public void add(string col, DateTime start, string oper="=")
+        {
+            Debug.Assert(m_dict.ContainsKey(col));
+
+            lTableInfo.lColInfo colInfo = m_dict[col];
+            Debug.Assert(colInfo.m_type == lTableInfo.lColInfo.lColType.dateTime);
+
+            exprs.Add(string.Format("({0}{1}@startDate)",colInfo.m_field, oper));
+            string zStartDate = start.ToString(lConfigMng.getDateFormat());
+            srchParams.Add(
+                    new lSearchParam()
+                    {
+                        key = "@startDate",
+                        val = string.Format("{0} 00:00:00", zStartDate),
+                        type = DbType.Date
+                    }
+                );
+        }
+        public void add(string col, DateTime startDate, DateTime endDate)
+        {
+            Debug.Assert (m_dict.ContainsKey(col));
+
+            lTableInfo.lColInfo colInfo = m_dict[col];
+            Debug.Assert(colInfo.m_type == lTableInfo.lColInfo.lColType.dateTime);
+
+            exprs.Add(string.Format("({0} between @startDate and @endDate)",colInfo.m_field));
+            string zStartDate = startDate.ToString(lConfigMng.getDateFormat());
+            string zEndDate = endDate.ToString(lConfigMng.getDateFormat());
+            srchParams.Add(
+                new lSearchParam()
+                {
+                    key = "@startDate",
+                    val = string.Format("{0} 00:00:00", zStartDate),
+                    type = DbType.Date
+                }
+            );
+            srchParams.Add(
+                new lSearchParam()
+                {
+                    key = "@endDate",
+                    val = string.Format("{0} 00:00:00", zEndDate),
+                    type = DbType.Date
+                }
+            );
+        }
+
+        public void add(string col, string arg1, lSearchCtrl.SearchMode mode = lSearchCtrl.SearchMode.match)
+        {
+            Debug.Assert(m_dict.ContainsKey(col));
+
+            lTableInfo.lColInfo colInfo = m_dict[col];
+            switch (colInfo.m_type)
+            {
+                case lTableInfo.lColInfo.lColType.text:
+                    break;
+                case lTableInfo.lColInfo.lColType.num:
+                    break;
+                case lTableInfo.lColInfo.lColType.uniqueText:
+                    break;
+                default:
+                    Debug.Assert(false);
+                    break;
+            }
+
+#if use_sqlite
+            if (mode == lSearchCtrl.SearchMode.like)
+            {
+                exprs.Add(string.Format("({0} like @{0})", colInfo.m_field));
+                srchParams.Add(
+                    new lSearchParam()
+                    {
+                        key = string.Format("@{0}", colInfo.m_field),
+                        val = string.Format("%{0}%", arg1)
+                    }
+                );
+            }
+            else
+            {
+                exprs.Add(string.Format("({0}=@{0})", colInfo.m_field));
+                srchParams.Add(
+                    new lSearchParam()
+                    {
+                        key = string.Format("@{0}", colInfo.m_field),
+                        val = arg1
+                    }
+                );
+            }
+#else   //use sql server
+                    exprs.Add(string.Format("({0} like @{0})", m_fieldName));
+                    srchParams.Add(
+                        new lSearchParam()
+                        {
+                            key = string.Format("@{0}", m_fieldName),
+                            val = string.Format("%{0}%", m_value),
+                            type = DbType.String
+                        }
+                    );
+                    //exprs.Add(string.Format("({0} like @{0})", m_fieldName));
+                    //srchParams.Add(string.Format("@{0}", m_fieldName), string.Format("%{0}%", m_value));
+#endif
+        }
+        public void search()
+        {
+            dc.Search(exprs, srchParams);
+        }
     }
 
     [DataContract(Name = "SearchCtrlText")]
@@ -337,7 +468,7 @@ namespace test_binding
                 );
                 if (m_to.Checked)
                 {
-                    exprs.Add("(date between @startDate and @endDate)");
+                    exprs.Add(string.Format("({0} between @startDate and @endDate)", m_fieldName));
                     string zEndDate = m_enddate.Value.ToString(lConfigMng.getDateFormat());
                     srchParams.Add(
                         new lSearchParam()
@@ -350,7 +481,7 @@ namespace test_binding
                 }
                 else
                 {
-                    exprs.Add("(date=@startDate)");
+                    exprs.Add(string.Format("({0}=@startDate)",m_fieldName));
                 }
             }
         }
@@ -803,6 +934,47 @@ namespace test_binding
                     crtSearchCtrl(m_tblInfo, "task_name"     , new Point(1, 0), new Size(1, 1), lSearchCtrl.SearchMode.like),
                     crtSearchCtrl(m_tblInfo, "group_name"    , new Point(1, 1), new Size(1, 1), lSearchCtrl.SearchMode.match),
                     crtSearchCtrl(m_tblInfo, "note"          , new Point(1, 2), new Size(1, 1), lSearchCtrl.SearchMode.like),
+                };
+        }
+    }
+    [DataContract(Name = "OrderSearchPanel")]
+    public class lOrderSearchPanel : lSearchPanel
+    {
+        public lOrderSearchPanel(lDataPanel dataPanel)
+        {
+            m_dataPanel = dataPanel;
+            m_searchCtrls = new List<lSearchCtrl> {
+                    crtSearchCtrl(m_tblInfo, "task_number"    , new Point(0, 0), new Size(1, 1)),
+                    crtSearchCtrl(m_tblInfo, "order_number"   , new Point(0, 1), new Size(1, 1)),
+                    crtSearchCtrl(m_tblInfo, "note"           , new Point(1, 1), new Size(1, 1), lSearchCtrl.SearchMode.like),
+                };
+        }
+    }
+
+    [DataContract(Name = "HumanSearchPanel")]
+    public class lHumanSearchPanel : lSearchPanel
+    {
+        public lHumanSearchPanel(lDataPanel dataPanel)
+        {
+            m_dataPanel = dataPanel;
+            m_searchCtrls = new List<lSearchCtrl> {
+                    crtSearchCtrl(m_tblInfo, "human_number"    , new Point(0, 0), new Size(1, 1)),
+                    crtSearchCtrl(m_tblInfo, "start_date"   , new Point(0, 1), new Size(1, 1)),
+                    crtSearchCtrl(m_tblInfo, "end_date"   , new Point(0, 1), new Size(1, 1)),
+                    crtSearchCtrl(m_tblInfo, "note"           , new Point(1, 1), new Size(1, 1), lSearchCtrl.SearchMode.like),
+                };
+        }
+    }
+
+    [DataContract(Name = "EquipmentSearchPanel")]
+    public class lEquipmentSearchPanel : lSearchPanel
+    {
+        public lEquipmentSearchPanel(lDataPanel dataPanel)
+        {
+            m_dataPanel = dataPanel;
+            m_searchCtrls = new List<lSearchCtrl> {
+                    crtSearchCtrl(m_tblInfo, "equipment_number"    , new Point(0, 0), new Size(1, 1)),
+                    crtSearchCtrl(m_tblInfo, "note"           , new Point(1, 1), new Size(1, 1), lSearchCtrl.SearchMode.like),
                 };
         }
     }

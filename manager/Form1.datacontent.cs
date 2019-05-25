@@ -105,6 +105,7 @@ namespace test_binding
             {
                 if (colInfo.m_lookupTbl != null)
                 {
+                    //use columns[1] - zero base
                     colInfo.m_lookupData = appConfig.s_contentProvider.CreateDataSync(colInfo.m_lookupTbl);
                     colInfo.m_lookupData.LoadData();
                 }
@@ -353,7 +354,7 @@ namespace test_binding
                 };
         }
     };
-    [DataContract(Name = "lReceiptsContentTblInfo")]
+    [DataContract(Name = "lTaskTblInfo")]
     public class lTaskTblInfo : lTableInfo
     {
         public lTaskTblInfo()
@@ -376,6 +377,118 @@ namespace test_binding
                    new lColInfo( "start_date" ,"Ngày bắt đầu", lColInfo.lColType.dateTime),
                    new lColInfo( "end_date"   ,"Ngày kết thúc", lColInfo.lColType.dateTime),
                    new lColInfo( "note"       ,"Ghi Chú", lColInfo.lColType.text),
+                };
+        }
+    };
+    [DataContract(Name = "lOrderTblInfo")]
+    public class lOrderTblInfo : lTableInfo
+    {
+        public lOrderTblInfo()
+        {
+            m_tblName = "order_tbl";
+            m_tblAlias = "Yêu Cầu";
+            m_crtQry = "CREATE TABLE if not exists order_tbl("
+                + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "task_number char(31),"
+                + "order_number char(31),"
+                + "order_type INTEGER,"
+                + "number INTEGER,"
+                + "order_status INTEGER,"
+                + "note text)";
+            m_cols = new lColInfo[] {
+                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
+                   new lColInfo( "order_number" ,"Mã YC", lColInfo.lColType.uniqueText),
+                   new lColInfo( "task_number"  ,"Mã CV", lColInfo.lColType.text, "task"),  //columns[1]
+                   new lColInfo( "order_type"   ,"Loại YC", lColInfo.lColType.map),
+                   new lColInfo( "number"       ,"Số lượng", lColInfo.lColType.num),
+                   new lColInfo( "order_status" ,"Trạng thái", lColInfo.lColType.map),
+                   new lColInfo( "note"         ,"Ghi Chú", lColInfo.lColType.text),
+                };
+        }
+    };
+    [DataContract(Name = "lHumanTblInfo")]
+    public class lHumanTblInfo : lTableInfo
+    {
+        public lHumanTblInfo()
+        {
+            m_tblName = "human";
+            m_tblAlias = "Nhân Sự";
+            m_crtQry = "CREATE TABLE if not exists human("
+                + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "human_number char(31),"
+                + "start_date datetime,"
+                + "end_date datetime,"
+                + "sex INTEGER,"
+                + "age INTEGER,"
+                + "note text)";
+            m_cols = new lColInfo[] {
+                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
+                   new lColInfo( "human_number" ,"Mã NS", lColInfo.lColType.uniqueText),
+                   new lColInfo( "start_date"   ,"Ngày vào", lColInfo.lColType.dateTime),
+                   new lColInfo( "end_date"     ,"Ngày ra", lColInfo.lColType.dateTime),
+                   new lColInfo( "sex"          ,"Giới tính", lColInfo.lColType.num),
+                   new lColInfo( "age"          ,"Tuổi", lColInfo.lColType.num),
+                   new lColInfo( "note"         ,"Ghi Chú", lColInfo.lColType.text),
+                };
+        }
+    };
+    [DataContract(Name = "lEquipmentTblInfo")]
+    public class lEquipmentTblInfo : lTableInfo
+    {
+        public lEquipmentTblInfo()
+        {
+            m_tblName = "equipment";
+            m_tblAlias = "Thiết Bị";
+            m_crtQry = "CREATE TABLE if not exists equipment("
+                + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "equipment_number char(31),"
+                + "equipment_type INTEGER,"
+                + "note text)";
+            m_cols = new lColInfo[] {
+                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
+                   new lColInfo( "equipment_number" ,"Mã TB", lColInfo.lColType.uniqueText),
+                   new lColInfo( "equipment_type"   ,"Loại TB", lColInfo.lColType.text),
+                   new lColInfo( "note"         ,"Ghi Chú", lColInfo.lColType.text),
+                };
+        }
+    };
+    [DataContract(Name = "lOrderEquipmentTblInfo")]
+    public class lOrderEquipmentTblInfo : lTableInfo
+    {
+        public lOrderEquipmentTblInfo()
+        {
+            m_tblName = "order_equipment";
+            m_tblAlias = "Yêu Cầu - Thiết Bị";
+            m_crtQry = "CREATE TABLE if not exists order_equipment("
+                + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "order_number char(31),"
+                + "equipment_number char(31),"
+                + "note text)";
+            m_cols = new lColInfo[] {
+                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
+                   new lColInfo( "order_number"    ,"Mã YC", lColInfo.lColType.uniqueText),
+                   new lColInfo( "equipment_number","Mã TB", lColInfo.lColType.uniqueText),
+                   new lColInfo( "note"            ,"Ghi Chú", lColInfo.lColType.text),
+                };
+        }
+    }
+    [DataContract(Name = "lOrderHumanTblInfo")]
+    public class lOrderHumanTblInfo : lTableInfo
+    {
+        public lOrderHumanTblInfo()
+        {
+            m_tblName = "order_human";
+            m_tblAlias = "Yêu Cầu - Nhân Sự";
+            m_crtQry = "CREATE TABLE if not exists order_human("
+                + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "order_number char(31),"
+                + "human_number char(31),"
+                + "note text)";
+            m_cols = new lColInfo[] {
+                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
+                   new lColInfo( "order_number","Mã YC", lColInfo.lColType.uniqueText),
+                   new lColInfo( "human_number","Mã NS", lColInfo.lColType.uniqueText),
+                   new lColInfo( "note"        ,"Ghi Chú", lColInfo.lColType.text),
                 };
         }
     };
@@ -736,6 +849,7 @@ namespace test_binding
 #endregion
     }
 
+    //status - map - colinfo
     public class lAdvanceStatus
     {
         public const int nAdvance = 0;
@@ -750,7 +864,31 @@ namespace test_binding
                 new lInputCtrlEnum.comboItem { name = zActual, val = nActual },
             };
     }
-
+    public class lOrderStatus
+    {
+        public const int nRequest = 0;
+        public const int nApprove = 1;
+        public const string zRequest = "Đang xin phép";
+        public const string zAprove = "Đã chấp nhận";
+        public static List<lInputCtrlEnum.comboItem> lst = new List<lInputCtrlEnum.comboItem> {
+                new lInputCtrlEnum.comboItem { name = zRequest, val = nRequest },
+                new lInputCtrlEnum.comboItem { name = zAprove, val = nApprove },
+            };
+    }
+    public class lOrderType
+    {
+        public const int nWorker = 0;
+        public const int nEquip = 1;
+        public const int nExpense = 2;
+        public const string zWorker = "Nhân công";
+        public const string zEquip = "Thiết bị";
+        public const string zExpense = "Kinh phí";
+        public static List<lInputCtrlEnum.comboItem> lst = new List<lInputCtrlEnum.comboItem> {
+                new lInputCtrlEnum.comboItem { name = zWorker, val = nWorker },
+                new lInputCtrlEnum.comboItem { name = zEquip, val = nEquip },
+                new lInputCtrlEnum.comboItem { name = zExpense, val = nExpense },
+            };
+    }
 #if use_sqlite
     public class lSQLiteContentProvider : lContentProvider
     {
@@ -872,6 +1010,11 @@ namespace test_binding
                     new lBuildingTblInfo(),
                     new lConstrorgTblInfo(),
                     new lTaskTblInfo(),
+                    new lOrderTblInfo(),
+                    new lHumanTblInfo(),
+                    new lEquipmentTblInfo(),
+                    new lOrderEquipmentTblInfo(),
+                    new lOrderHumanTblInfo(),
                 };
             m_views = new List<lTableInfo>() {
                     new lReceiptsViewInfo(),
@@ -1643,6 +1786,7 @@ namespace test_binding
         private lDataContent m_data;
         public AutoCompleteStringCollection m_colls;
         public Dictionary<string, string> m_maps;
+        public int m_col = 1;
         public lDataSync(lDataContent data)
         {
             m_data = data;
@@ -1679,7 +1823,7 @@ namespace test_binding
             DataTable tbl = m_dataSource;
             foreach (DataRow row in tbl.Rows)
             {
-                string val = row[1].ToString();
+                string val = row[m_col].ToString();
                 string key = genKey(val);
                 m_colls.Add(val);
                 m_colls.Add(key);

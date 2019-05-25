@@ -1274,9 +1274,40 @@ namespace test_binding
         }
     }
 
+    //not impl
     public class lTaskReport : lCurReceiptsReport
     {
         public lTaskReport()
+        {
+            m_rdlcPath = @"..\..\rpt_interpayment.rdlc";
+            m_viewName = "v_advance";
+        }
+    }
+
+    //not impl
+    public class lOrderReport : lCurReceiptsReport
+    {
+        public lOrderReport()
+        {
+            m_rdlcPath = @"..\..\rpt_interpayment.rdlc";
+            m_viewName = "v_advance";
+        }
+    }
+
+    //not impl
+    public class lHumanReport : lCurReceiptsReport
+    {
+        public lHumanReport()
+        {
+            m_rdlcPath = @"..\..\rpt_interpayment.rdlc";
+            m_viewName = "v_advance";
+        }
+    }
+
+    //not impl
+    public class lEquipmentReport : lCurReceiptsReport
+    {
+        public lEquipmentReport()
         {
             m_rdlcPath = @"..\..\rpt_interpayment.rdlc";
             m_viewName = "v_advance";

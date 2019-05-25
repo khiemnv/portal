@@ -194,16 +194,25 @@ namespace test_binding
             return new lTaskInputPanel();
         }
     }
-    public class lTaskOrderInputF : inputF
+    public class lOrderInputF : inputF
     {
         protected override void initCtrls()
         {
-            this.Text = "Công Việc - Yêu cầu";
+            this.Text = "Yêu cầu";
             base.initCtrls();
+
+            //splitContainer1.Panel2Collapsed = true;
+            //splitContainer1.Panel2.Hide();
+            //splitContainer1.Panel1.Anchor = AnchorStyles.Right;
+            //splitContainer1.Panel2.Controls.Add(rightTbl);
+            splitContainer1.Panel2.Controls.Clear();
+            splitContainer1.Panel2.Controls.Add(m_inputPanel.m_tbl2);
         }
+        public lOrderInputPanel m_panel;
         protected override lInputPanel CrtInputPanel()
         {
-            return new lTaskOrderInputPanel();
+            m_panel = new lOrderInputPanel();
+            return m_panel;
         }
     }
 }

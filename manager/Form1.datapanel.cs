@@ -698,11 +698,56 @@ namespace test_binding
         }
     }
 
+    [DataContract(Name = "lTaskDataPanel")]
     public class lTaskDataPanel : lDataPanel
     {
         public lTaskDataPanel()
         {
             m_tblName = "task";
+        }
+        public override Int64 getSum()
+        {
+            BindingSource bs = (BindingSource)m_dataGridView.DataSource;
+            DataTable tbl = (DataTable)bs.DataSource;
+            return tbl.Rows.Count;
+        }
+    }
+
+    [DataContract(Name = "lOrderDataPanel")]
+    public class lOrderDataPanel : lDataPanel
+    {
+        public lOrderDataPanel()
+        {
+            m_tblName = "order_tbl";
+        }
+        public override Int64 getSum()
+        {
+            BindingSource bs = (BindingSource)m_dataGridView.DataSource;
+            DataTable tbl = (DataTable)bs.DataSource;
+            return tbl.Rows.Count;
+        }
+    }
+
+    [DataContract(Name = "lHumanDataPanel")]
+    public class lHumanDataPanel : lDataPanel
+    {
+        public lHumanDataPanel()
+        {
+            m_tblName = "human";
+        }
+        public override Int64 getSum()
+        {
+            BindingSource bs = (BindingSource)m_dataGridView.DataSource;
+            DataTable tbl = (DataTable)bs.DataSource;
+            return tbl.Rows.Count;
+        }
+    }
+    [DataContract(Name = "lEquipmentDataPanel")]
+    public class lEquipmentDataPanel : lDataPanel
+    {
+        public lEquipmentDataPanel()
+        {
+            m_tblName = "equipment";
         }
         public override Int64 getSum()
         {

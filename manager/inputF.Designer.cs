@@ -93,8 +93,8 @@
 
         #endregion
 
-        private System.Windows.Forms.SplitContainer splitContainer1;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private Microsoft.Reporting.WinForms.ReportViewer reportViewer2;
+        protected System.Windows.Forms.SplitContainer splitContainer1;
+        protected System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        protected Microsoft.Reporting.WinForms.ReportViewer reportViewer2;
     }
 }

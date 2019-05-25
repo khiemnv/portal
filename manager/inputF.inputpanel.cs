@@ -32,10 +32,20 @@ namespace test_binding
         }
         public virtual bool ReadOnly { get; set; }
         public virtual string Text { get; set; }
-        public event EventHandler<string> EditingCompleted;
+        //private EventHandler<string> m_EditingCompleted;
+        protected virtual void addEvent(EventHandler<string> handler)
+        {
+            //m_EditingCompleted += handler;
+            throw new NotImplementedException();
+        }
+        public event EventHandler<string> EditingCompleted {
+            add { addEvent(value); }
+            remove { }
+        }
         protected virtual void onEditingCompleted()
         {
-            if (EditingCompleted != null) { EditingCompleted(this, Text); }
+            //if (m_EditingCompleted != null) { m_EditingCompleted(this, Text); }
+            throw new NotImplementedException();
         }
         //protected override void Dispose(bool disposing)
         //{
@@ -117,8 +127,25 @@ namespace test_binding
 
                 m_text.Dispose();
                 m_text = null;
+
+                m_combo.SelectedValueChanged += M_combo_SelectedValueChanged;
 #endif
             }
+        }
+
+        //public event EventHandler<string> EditingCompleted;
+        private EventHandler<string> m_EditingCompleted;
+        protected override void addEvent(EventHandler<string> handler)
+        {
+            m_EditingCompleted += handler;
+        }
+        protected override void onEditingCompleted()
+        {
+            if (m_EditingCompleted != null) { m_EditingCompleted(this, Text); }
+        }
+        private void M_combo_SelectedValueChanged(object sender, EventArgs e)
+        {
+            onEditingCompleted();
         }
 #if use_auto_complete
         private void M_text_Validated(object sender, EventArgs e)
@@ -144,13 +171,28 @@ namespace test_binding
         {
             get
             {
-                return m_text.ReadOnly;
+                if (m_text != null)
+                {
+                    return m_text.ReadOnly;
+                }
+                else
+                {
+                    return m_combo.Enabled;
+                }
             }
 
             set
             {
-                m_text.ReadOnly = value;
-                m_text.TabStop = !value;
+                if (m_text != null) {
+                    m_text.ReadOnly = value;
+                    m_text.TabStop = !value;
+                }
+                else
+                {
+                    m_combo.Enabled = value;
+                    m_combo.TabStop = !value;
+                    m_combo.DropDownStyle = ComboBoxStyle.DropDownList;
+                }
             }
         }
         public override string Text
@@ -165,9 +207,14 @@ namespace test_binding
                 {
                     m_text.Text = value;
                 }
+                else
+                {
+                    m_combo.Text = value;
+                }
             }
 
         }
+
     }
     [DataContract(Name = "InputCtrlDate")]
     public class lInputCtrlDate : lInputCtrl
@@ -240,6 +287,16 @@ namespace test_binding
             m_panel.Controls.AddRange(new Control[] { m_label, m_val });
         }
 
+        //public event EventHandler<string> EditingCompleted;
+        private EventHandler<string> m_EditingCompleted;
+        protected override void addEvent(EventHandler<string> handler)
+        {
+            m_EditingCompleted += handler;
+        }
+        protected override void onEditingCompleted()
+        {
+            if (m_EditingCompleted != null) { m_EditingCompleted(this, Text); }
+        }
         private void M_val_Validated(object sender, EventArgs e)
         {
             onEditingCompleted();
@@ -408,11 +465,28 @@ namespace test_binding
             m_combo.Width = 100;
             m_panel.Controls.AddRange(new Control[] { m_label, m_combo });
         }
+
+        //public event EventHandler<string> EditingCompleted;
+        private EventHandler<string> m_EditingCompleted;
+        protected override void addEvent(EventHandler<string> handler)
+        {
+            m_EditingCompleted += handler;
+        }
+        protected override void onEditingCompleted()
+        {
+            if (m_EditingCompleted != null) { m_EditingCompleted(this, Text); }
+        }
+        private void M_combo_SelectedValueChanged(object sender, EventArgs e)
+        {
+            onEditingCompleted();
+        }
+        
         public class comboItem
         {
             public string name;
             public int val;
         }
+        bool isInit = false;
         public void init(List<comboItem> arr)
         {
             var dt = new DataTable();
@@ -428,6 +502,11 @@ namespace test_binding
             m_combo.DataSource = dt;
             m_combo.DisplayMember = "name";
             m_combo.ValueMember = "val";
+
+            m_combo.SelectedValueChanged += M_combo_SelectedValueChanged;
+
+            Debug.Assert(!isInit);
+            isInit = true;
         }
         public override void updateInsertParams(List<string> exprs, List<lSearchParam> srchParams)
         {
@@ -446,7 +525,7 @@ namespace test_binding
         {
             get
             {
-                return m_combo.SelectedItem.ToString();
+                return m_combo.SelectedValue.ToString();
             }
 
             set
@@ -585,6 +664,7 @@ namespace test_binding
         protected lTableInfo m_tblInfo { get { return appConfig.s_config.getTable(m_tblName); } }
 
         public TableLayoutPanel m_tbl;
+        public TableLayoutPanel m_tbl2;
         protected DataGridView m_dataGridView;
         public virtual void initCtrls()
         {
@@ -662,6 +742,7 @@ namespace test_binding
             m_tbl.Controls.Add(m_dataGridView, 0, ++lastRow);
             m_tbl.Dock = DockStyle.Fill;
             m_tbl.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
+            m_tbl.RowCount = lastRow;
         }
 
         private void M_dataGridView_CellParsing(object sender, DataGridViewCellParsingEventArgs e)
@@ -685,6 +766,11 @@ namespace test_binding
             }
         }
 
+        //
+        protected virtual void onDGV_CellClick()
+        {
+
+        }
         private void M_dataGridView_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             var rows = m_dataGridView.SelectedRows;
@@ -696,6 +782,7 @@ namespace test_binding
 
                 //if (RefreshPreview != null) { RefreshPreview(this, null); }
             }
+            onDGV_CellClick();
         }
 
         private void Clear()
@@ -704,8 +791,8 @@ namespace test_binding
             m_dataContent.m_dataTable.Clear();
 
             //clean bills
-            m_rptAsst.clearData();
-            if (RefreshPreview != null) { RefreshPreview(this, null); }
+            //m_rptAsst.clearData();
+            //if (RefreshPreview != null) { RefreshPreview(this, null); }
 
 #if use_bg_work
             m_wkr.qryFgTask(new FgTask
@@ -865,7 +952,7 @@ namespace test_binding
             DataTable tbl = (DataTable)m_dataContent.m_bindingSource.DataSource;
             if (tbl != null)
             {
-                updateCols();
+                updateCols(m_dataGridView,m_tblInfo);
                 m_dataGridView.AutoGenerateColumns = false;
             }
             else
@@ -905,14 +992,14 @@ namespace test_binding
 #endif
         }
 
-        private void crtColumns()
+        protected void crtColumns(DataGridView dgv, lTableInfo tblInfo)
         {
             int i = 0;
-            foreach (var field in m_tblInfo.m_cols)
+            foreach (var field in tblInfo.m_cols)
             {
 #if !use_custom_cols
-                i = m_dataGridView.Columns.Add(field.m_field, field.m_alias);
-                var dgvcol = m_dataGridView.Columns[i];
+                i = dgv.Columns.Add(field.m_field, field.m_alias);
+                var dgvcol = dgv.Columns[i];
 #else
                     DataGridViewColumn dgvcol;
                     if (field.m_type == lTableInfo.lColInfo.lColType.dateTime)
@@ -938,7 +1025,7 @@ namespace test_binding
                     { 
                         dgvcol = new DataGridViewTextBoxColumn();
                     }
-                    i = m_dataGridView.Columns.Add(dgvcol);
+                    i = dgv.Columns.Add(dgvcol);
                     dgvcol.HeaderText = field.m_alias;
                     dgvcol.Name = field.m_field;
 #endif //use_custom_cols
@@ -955,62 +1042,67 @@ namespace test_binding
                         break;
                 }
             }
-            m_dataGridView.Columns[0].Visible = false;
+            dgv.Columns[0].Visible = false;
             //last columns
-            var lastCol = m_dataGridView.Columns[i];
+            var lastCol = dgv.Columns[i];
             lastCol.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             lastCol.FillWeight = 1;
 #if set_column_order
             for (; i > 0; i--)
             {
-                m_dataGridView.Columns[i].DisplayIndex = i - 1;
+                dgv.Columns[i].DisplayIndex = i - 1;
             }
 #endif
         }
 
-        private void updateCols()
+        protected void updateCols(DataGridView dgv, lTableInfo ti)
         {
-            m_dataGridView.Columns[0].Visible = false;
-            lTableInfo tblInfo = m_tblInfo;
+            dgv.Columns[0].Visible = false;
             int i = 1;
-            for (; i < m_dataGridView.ColumnCount; i++)
+            for (; i < dgv.ColumnCount; i++)
             {
                 //show hide columns
-                if (tblInfo.m_cols[i].m_visible == false)
+                if (ti.m_cols[i].m_visible == false)
                 {
-                    m_dataGridView.Columns[i].Visible = false;
+                    dgv.Columns[i].Visible = false;
                     continue;
                 }
 
-                m_dataGridView.Columns[i].HeaderText = tblInfo.m_cols[i].m_alias;
+                dgv.Columns[i].HeaderText = ti.m_cols[i].m_alias;
 
 #if header_blue
                 //header color blue
-                m_dataGridView.Columns[i].HeaderCell.Style.BackColor = Color.Blue;
-                m_dataGridView.Columns[i].HeaderCell.Style.ForeColor = Color.White;
+                dgv.Columns[i].HeaderCell.Style.BackColor = Color.Blue;
+                dgv.Columns[i].HeaderCell.Style.ForeColor = Color.White;
 #endif
 
-                switch (tblInfo.m_cols[i].m_type)
+                switch (ti.m_cols[i].m_type)
                 {
                     case lTableInfo.lColInfo.lColType.currency:
-                        m_dataGridView.Columns[i].DefaultCellStyle.Format = lConfigMng.getCurrencyFormat();
+                        dgv.Columns[i].DefaultCellStyle.Format = lConfigMng.getCurrencyFormat();
                         break;
                     case lTableInfo.lColInfo.lColType.dateTime:
-                        m_dataGridView.Columns[i].DefaultCellStyle.Format = lConfigMng.getDisplayDateFormat();
+                        dgv.Columns[i].DefaultCellStyle.Format = lConfigMng.getDisplayDateFormat();
                         break;
                 }
 #if false
-                    m_dataGridView.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                    m_dataGridView.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-                    m_dataGridView.Columns[i].FillWeight = 1;
+                    dgv.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    dgv.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                    dgv.Columns[i].FillWeight = 1;
 #endif
 #if set_column_order
-                m_dataGridView.Columns[i].DisplayIndex = i - 1;
+                dgv.Columns[i].DisplayIndex = i - 1;
 #endif
             }
-            m_dataGridView.Columns[1].ReadOnly = true;
-            m_dataGridView.Columns[i - 1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            m_dataGridView.Columns[i - 1].FillWeight = 1;
+            dgv.Columns[1].ReadOnly = true;
+            dgv.Columns[i - 1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            dgv.Columns[i - 1].FillWeight = 1;
+        }
+        public lInputCtrl crtInputCtrl(lTableInfo tblInfo, string colName, Point pos, Size size, List<lInputCtrlEnum.comboItem> map)
+        {
+            lInputCtrlEnum enumCtrl = (lInputCtrlEnum)crtInputCtrl(tblInfo, colName, pos, size, lSearchCtrl.SearchMode.match);
+            enumCtrl.init(map);
+            return enumCtrl;
         }
         public lInputCtrl crtInputCtrl(lTableInfo tblInfo, string colName, Point pos, Size size)
         {
@@ -1490,41 +1582,467 @@ namespace test_binding
             };
             m_inputsCtrls[0].ReadOnly = true;
             m_key = new keyMng("CV", m_tblName, "task_number");
+        }
 
-            //Dictionary<string, string> dict = new Dictionary<string, string> {
-            //    { "name","name" },
-            //    { "addr","addr" },
-            //    { "date","date" },
-            //    { "num","receipt_number" },
-            //    { "content","content" },
-            //    { "note","note" },
-            //    { "amount","amount" },
-            //};
-            //m_rptAsst = new rptAssist(1, dict);
+        protected override void onDGV_CellClick()
+        {
+            base.onDGV_CellClick();
+            DataGridViewSelectedRowCollection rows = m_dataGridView.SelectedRows;
+            if (rows.Count > 0)
+            {
+                lOrderInputF inputDlg;
+                inputDlg = new lOrderInputF();
+                var cell = rows[0].Cells["task_number"];
+                inputDlg.m_panel.m_taskNumber = (string)cell.Value;
+                cell = rows[0].Cells["start_date"];
+                inputDlg.m_panel.m_taskStartDate = (DateTime)cell.Value;
+                cell = rows[0].Cells["end_date"];
+                inputDlg.m_panel.m_taskEndDate = (DateTime)cell.Value;
+                inputDlg.ShowDialog();
+            }
         }
     }
-    [DataContract(Name = "TaskInputPanel")]
-    public class lTaskOrderInputPanel : lInputPanel
+    [DataContract(Name = "OrderInputPanel")]
+    public class lOrderInputPanel : lInputPanel
     {
         protected override lInputCtrl m_keyCtrl { get { return m_inputsCtrls[1]; } }
         private keyMng m_key;
         protected override keyMng m_keyMng { get { return m_key; } }
-        public lTaskOrderInputPanel()
+
+        //right tbl
+        //TableLayoutPanel rightTbl = new TableLayoutPanel();
+        TextBox resLbl = lConfigMng.crtTextBox();
+        DataGridView resGV = lConfigMng.crtDGV();
+        Button downBtn = lConfigMng.crtButton();
+        Button upBtn = lConfigMng.crtButton();
+        Button saveResBtn = lConfigMng.crtButton();
+        FlowLayoutPanel tflow = new FlowLayoutPanel();
+        DataGridView orderResGV = lConfigMng.crtDGV();
+        public lOrderInputPanel()
         {
-            m_tblName = "order";
+            m_tblName = "order_tbl";
 
             m_inputsCtrls = new List<lInputCtrl> {
                 crtInputCtrl(m_tblInfo, "task_number" , new Point(0, 0), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, "order_number", new Point(0, 1), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, "order_type"  , new Point(0, 2), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, "order_type"  , new Point(0, 2), new Size(1, 1), lOrderType.lst),
                 crtInputCtrl(m_tblInfo, "number"      , new Point(0, 3), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, "status"      , new Point(0, 4), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, "order_status", new Point(0, 4), new Size(1, 1), lOrderStatus.lst),
                 crtInputCtrl(m_tblInfo, "note"        , new Point(0, 5), new Size(1, 1)),
             };
-            m_inputsCtrls[0].ReadOnly = true;
+
             m_inputsCtrls[1].ReadOnly = true;
             m_inputsCtrls[4].ReadOnly = true;
-            m_key = new keyMng("YC", m_tblName, "order");
+            m_key = new keyMng("YC", m_tblName, "order_number");
+            //oder type change ->update resource
+            m_inputsCtrls[2].EditingCompleted += LOrderInputPanel_EditingCompleted;
+
+            //hide ID
+            resGV.ColumnAdded += ResGV_ColumnAdded;
+            resGV.DataBindingComplete += ResGV_DataBindingComplete;
+            //resGV.AutoGenerateColumns = false;
+            resGV.AllowUserToAddRows = false;
+            resGV.AllowUserToDeleteRows = false;
+            //orderResGV.AutoGenerateColumns = false;
+            orderResGV.ColumnAdded += OrderResGV_ColumnAdded;
+            orderResGV.AllowUserToAddRows = false;
+            orderResGV.AllowUserToDeleteRows = false;
+            orderResGV.RowsRemoved += OrderResGV_RowsRemoved;
+            //
+            resLbl.ReadOnly = true;
+            resLbl.Dock = DockStyle.Fill;
+            resLbl.BorderStyle = BorderStyle.None;
+        }
+
+        private void OrderResGV_RowsRemoved(object sender, DataGridViewRowsRemovedEventArgs e)
+        {
+            //var row = orderResGV.Rows[e.RowIndex]; //error to access removed row
+
+            //->use dict <key>,<resRowIdx, orderResRowIdx>
+            //string resId = row.Cells[2].Value.ToString();
+
+            //udpate dict & gui
+            //int resRowIndex = m_usedResDict[resId];
+            //unmarkResRow(resRowIndex);
+            //m_usedResDict.Remove(resId);
+
+            //commit
+            //lDataContent orderResDC = appConfig.s_contentProvider.CreateDataContent(m_curOrderResTbl);
+            //orderResDC.Submit();
+        }
+
+        private void ResGV_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            for (int i = 0; i < resGV.Rows.Count; i++)
+            {
+                var key = resGV.Rows[i].Cells[1].Value.ToString();
+                if (m_usedResDict.ContainsKey(key))
+                {
+                    m_usedResDict[key] = i;
+                    markResRow(i);
+                }
+            }
+        }
+
+        private void OrderResGV_ColumnAdded(object sender, DataGridViewColumnEventArgs e)
+        {
+            //hide colnum ID
+            if (e.Column.HeaderText == "ID")
+            {
+                e.Column.Visible = false;
+            }
+        }
+
+        private void ResGV_ColumnAdded(object sender, DataGridViewColumnEventArgs e)
+        {
+            //hide colnum ID
+            if (e.Column.HeaderText == "ID")
+            {
+                e.Column.Visible = false;
+            }
+        }
+
+        private lInputCtrl taskCmb;
+        public override void LoadData()
+        {
+            base.LoadData();    //init combo box & data
+
+            taskCmb = m_inputsCtrls[0];
+            taskCmb.ReadOnly = true;
+            taskCmb.EditingCompleted += taskCmb_EditingCompleted;
+            if (m_taskNumber != null)
+            {
+                taskCmb.Text = m_taskNumber;
+            }
+
+            string taskNumber = taskCmb.Text;
+            updateOrderDGV(taskCmb.Text);
+
+        }
+
+        lSearchBuilder m_taskSB;
+        lSearchBuilder m_orderSB;
+        private void taskCmb_EditingCompleted(object sender, string e)
+        {
+            if (sender == taskCmb) { 
+                if ( e != "")
+                {
+                    string taskNumber = e;
+                    if (m_orderSB == null) { m_orderSB = new lSearchBuilder(appConfig.s_config.getTable("order_tbl")); }
+                    m_orderSB.clear();
+                    m_orderSB.add("task_number", taskNumber);
+                    m_orderSB.search();
+
+                    //clean lbl, resLst, orderResLst
+                    resLbl.Clear();
+                    resGV.DataSource = null;
+                    orderResGV.DataSource = null;
+
+                    updateTaskInfo(taskNumber);
+                }
+            }
+        }
+
+        private void updateOrderDGV(string taskNumber)
+        {
+            if (m_orderSB == null) { m_orderSB = new lSearchBuilder(appConfig.s_config.getTable("order_tbl")); }
+            m_orderSB.clear();
+            m_orderSB.add("task_number", taskNumber);
+            m_orderSB.search();
+
+            updateTaskInfo(taskNumber);
+        }
+
+        private void updateTaskInfo(string taskNumber)
+        {
+            m_taskNumber = taskNumber;
+            //access task data - singleton
+            lDataContent dc = appConfig.s_contentProvider.CreateDataContent("task");
+            var rows = dc.m_dataTable.Rows;
+            for (int i = 0; i < rows.Count; i++)
+            {
+                string tskNum = rows[i]["task_number"].ToString();
+                if (tskNum == taskNumber)
+                {
+                    m_taskStartDate = (DateTime)rows[i]["start_date"];
+                    m_taskEndDate = (DateTime)rows[i]["end_date"];
+                    break;
+                }
+            }
+        }
+
+        lSearchBuilder m_humanSB;
+        lSearchBuilder m_equipSB;
+        private void LOrderInputPanel_EditingCompleted(object sender, string e)
+        {
+            //update res?
+            int orderType = int.Parse(e);
+        }
+
+        private void UpBtn_Click(object sender, EventArgs e)
+        {
+            lDataContent orderResDC = appConfig.s_contentProvider.CreateDataContent(m_curOrderResTbl);
+            DataTable orderResTbl = orderResDC.m_dataTable;
+            List<int> idxLst = new List<int>();
+            for (int i = 0; i < orderResGV.SelectedRows.Count; i++)
+            {
+                DataGridViewRow row = orderResGV.SelectedRows[i];
+                var resId = row.Cells[2].Value.ToString();
+
+                //udpate dict & gui
+                int resRowIndex = m_usedResDict[resId];
+                unmarkResRow(resRowIndex);
+                m_usedResDict.Remove(resId);
+
+                idxLst.Add(row.Index);
+            }
+            removeOrderResByIdx(idxLst);
+        }
+
+        private void removeOrderResByIdx(List<int> idxLst)
+        {
+            lDataContent orderResDC = appConfig.s_contentProvider.CreateDataContent(m_curOrderResTbl);
+            //remove in datatable
+            idxLst.Sort();
+            for (int idx = idxLst.Count - 1; idx >= 0; idx--)
+            {
+                orderResDC.m_bindingSource.RemoveAt(idx);
+                //orderResGV.Rows.RemoveAt(idx);
+            }
+            orderResDC.Submit();
+        }
+
+        private void DownBtn_Click(object sender, EventArgs e)
+        {
+            lDataContent orderResDC = appConfig.s_contentProvider.CreateDataContent(m_curOrderResTbl);
+            DataTable orderResTbl = orderResDC.m_dataTable;
+            for (int i = 0; i < resGV.SelectedRows.Count; i++)
+            {
+                DataGridViewRow row = resGV.SelectedRows[i];
+                var resId = row.Cells[1].Value.ToString();
+                if (!m_usedResDict.ContainsKey(resId))
+                {
+                    var resRowIdx = row.Index;
+
+                    var newRow = orderResTbl.NewRow();
+                    newRow[1] = m_curOrder;
+                    newRow[2] = resId;
+                    orderResTbl.Rows.Add(newRow);
+
+                    //udpate dict & gui
+                    m_usedResDict.Add(resId, resRowIdx);
+                    markResRow(row.Index);
+                }
+            }
+            orderResDC.Submit();
+        }
+        private void unmarkResRow(int i) { resGV.Rows[i].DefaultCellStyle.BackColor = Color.White; }
+        private void markResRow(int i) { resGV.Rows[i].DefaultCellStyle.BackColor = Color.Gray; }
+        public override void initCtrls()
+        {
+            base.initCtrls();
+
+#if DEBUG_DRAWING
+                m_tbl.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
+#endif
+            m_tbl2 = new TableLayoutPanel();
+            int n = m_inputsCtrls.Count;
+            int iRow = 0;
+            //  lable <human dd/mm/yy - dd/mm/yy>
+            m_tbl2.Controls.Add(resLbl, 0, ++iRow);
+            //  res
+            m_tbl2.Controls.Add(resGV, 0, ++iRow);
+            resGV.EnableHeadersVisualStyles = false;
+            resGV.Dock = DockStyle.Fill;
+            //m_tbl2.SetRowSpan(resGV, n);
+            //  up  | down  | save
+            downBtn.Text = "Down";
+            downBtn.Click += DownBtn_Click;
+            upBtn.Text = "Up";
+            upBtn.Click += UpBtn_Click;
+            saveResBtn.Text = "Save";
+            saveResBtn.Click += SaveResBtn_Click;
+            tflow.FlowDirection = FlowDirection.LeftToRight;
+            tflow.Controls.AddRange(new Control[] { downBtn, upBtn, saveResBtn });
+            tflow.AutoSize = true;
+            tflow.Anchor = AnchorStyles.Right;
+            //m_tbl2.Controls.Add(tflow, 0, n);
+            m_tbl2.Controls.Add(tflow, 0, ++iRow);
+            //  order - res
+            m_tbl2.Controls.Add(orderResGV, 0, ++iRow);
+            orderResGV.EnableHeadersVisualStyles = false;
+            orderResGV.Dock = DockStyle.Fill;
+
+            m_tbl2.Dock = DockStyle.Fill;
+        }
+
+        private void SaveResBtn_Click(object sender, EventArgs e)
+        {
+            lDataContent orderResDC = appConfig.s_contentProvider.CreateDataContent(m_curOrderResTbl);
+            lDataContent resDC = appConfig.s_contentProvider.CreateDataContent(m_curResTbl);
+            orderResDC.Submit();
+            resDC.Submit();
+        }
+
+        public string m_taskNumber;
+        public DateTime m_taskStartDate;
+        public DateTime m_taskEndDate;
+        private void getTaskInfo(ref DateTime startDate, ref DateTime endDate)
+        {
+            if (m_taskNumber == null)
+            {
+                startDate = DateTime.Now;
+                endDate = DateTime.Now;
+            }
+            else
+            {
+                startDate = m_taskStartDate;
+                endDate = m_taskEndDate;
+            }
+        }
+
+        private string m_curOrder;
+        private int m_curOrderType;
+        private string m_curResTbl;
+        private string m_curOrderResTbl;
+        protected override void onDGV_CellClick()
+        {
+            base.onDGV_CellClick();
+            DataGridViewSelectedRowCollection rows = m_dataGridView.SelectedRows;
+            if (rows.Count > 0)
+            {
+                //save cur order
+                m_curOrder = rows[0].Cells["order_number"].Value.ToString();
+
+                //get type
+                //get date
+                var cell = rows[0].Cells["order_type"];
+                int orderType = int.Parse(cell.Value.ToString());
+                m_curOrderType = orderType;
+                switch (orderType)
+                {
+                    case 0: //human
+                        {
+                            m_curResTbl = "human";
+                            m_curOrderResTbl = "order_human";
+
+                            //update order-human
+                            updateOrderRes();
+
+                            //update human list
+                            DateTime startDate = DateTime.Now; ;
+                            DateTime endDate = DateTime.Now; ;
+                            getTaskInfo(ref startDate, ref endDate);
+                            var tblInfo = appConfig.s_config.getTable("human");
+                            if (m_humanSB == null) { m_humanSB = new lSearchBuilder(tblInfo); }
+                            m_humanSB.clear();
+                            m_humanSB.add("start_date", startDate, "<=");
+                            m_humanSB.add("end_date", endDate, ">=");
+                            m_humanSB.search();
+                            resGV.DataSource = m_humanSB.dc.m_bindingSource;
+
+                            //hide col["ID"]
+                            updateCols(resGV, tblInfo);
+                            //update lable
+                            updateResLabel(tblInfo.m_tblAlias, startDate, endDate);
+                        }
+                        break;
+                    case 1: //equipment
+                        {
+                            m_curResTbl = "equipment";
+                            m_curOrderResTbl = "order_equipment";
+
+                            //update order-equipment
+                            updateOrderRes();
+
+                            //update res list
+                            var tblInfo = appConfig.s_config.getTable("equipment");
+                            if (m_equipSB == null) { m_equipSB = new lSearchBuilder(tblInfo); }
+                            m_equipSB.clear();
+                            m_equipSB.search();
+                            resGV.DataSource = m_equipSB.dc.m_bindingSource;
+
+                            //hide col["ID"]
+                            updateCols(resGV, tblInfo);
+                            //update lable
+                            updateResLabel(tblInfo.m_tblAlias);
+                        }
+                        break;
+                }
+            }
+        }
+        private void updateResLabel(string resTblAlias)
+        {
+            resLbl.Text = resTblAlias;
+        }
+        private void updateResLabel(string resTblAlias, DateTime startDate, DateTime endDate)
+        {
+            string datef = lConfigMng.getDisplayDateFormat();
+            resLbl.Text = string.Format("{0} {1}-{2}",resTblAlias,
+                startDate.ToString(datef), endDate.ToString(datef));
+        }
+
+        lSearchBuilder m_orderHumanSB;
+        lSearchBuilder m_orderEquipmentSB;
+        protected void updateOrderRes()
+        {
+            switch (m_curResTbl)
+            {
+                case "human":
+                    updateOrderHumanRes();
+                    break;
+                case "equipment":
+                    updateOrderEquipmentRes();
+                    break;
+            }
+        }
+        protected void updateOrderEquipmentRes()
+        {
+            var tblInfo = appConfig.s_config.getTable("order_equipment");
+            if (m_orderEquipmentSB == null) { m_orderEquipmentSB = new lSearchBuilder(tblInfo); }
+            m_orderEquipmentSB.clear();
+            m_orderEquipmentSB.add("order_number", m_curOrder);
+            m_orderEquipmentSB.search();
+            orderResGV.DataSource = m_orderEquipmentSB.dc.m_dataTable;
+
+            updateCols(orderResGV, tblInfo);
+
+            //build dict
+            m_usedResDict.Clear();
+            var rows = m_orderEquipmentSB.dc.m_dataTable.Rows;
+            int i;
+            for (i = 0; i < rows.Count; i++)
+            {
+                var key = rows[i]["equipment_number"].ToString();
+                m_usedResDict.Add(key, -1); //not set res row index
+            }
+        }
+        protected void updateOrderHumanRes()
+        {
+            var tblInfo = appConfig.s_config.getTable("order_human");
+            if (m_orderHumanSB == null) { m_orderHumanSB = new lSearchBuilder(tblInfo); }
+            m_orderHumanSB.clear();
+            m_orderHumanSB.add("order_number", m_curOrder);
+            m_orderHumanSB.search();
+            orderResGV.DataSource = m_orderHumanSB.dc.m_dataTable;
+
+            updateCols(orderResGV, tblInfo);
+
+            //build dict
+            m_usedResDict.Clear();
+            var rows = m_orderHumanSB.dc.m_dataTable.Rows;
+            int i;
+            for (i = 0;i< rows.Count;i++)
+            {
+                var key = rows[i]["human_number"].ToString();
+                m_usedResDict.Add(key, -1); //not set res row index
+            }
+        }
+
+        Dictionary<string,int> m_usedResDict = new Dictionary<string, int>();
+        private void hightLightRes()
+        {
+
         }
     }
 }
