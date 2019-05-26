@@ -487,16 +487,16 @@ namespace test_binding
             public int val;
         }
         bool isInit = false;
-        public void init(List<comboItem> arr)
+        public void init(Dictionary<string,int>dict)
         {
             var dt = new DataTable();
             dt.Columns.Add("name");
             dt.Columns.Add("val");
-            foreach (var item in arr)
+            for (int i = 0; i< dict.Count;i++)
             {
                 var newRow = dt.NewRow();
-                newRow[0] = item.name;
-                newRow[1] = item.val;
+                newRow[0] = dict.Keys.ElementAt(i);
+                newRow[1] = i;
                 dt.Rows.Add(newRow);
             }
             m_combo.DataSource = dt;
@@ -666,24 +666,11 @@ namespace test_binding
         public TableLayoutPanel m_tbl;
         public TableLayoutPanel m_tbl2;
         protected DataGridView m_dataGridView;
+        protected FlowLayoutPanel m_flow;
+        protected Button m_addBtn;
+        protected Button m_saveBtn;
         public virtual void initCtrls()
         {
-            //create input ctrls
-            //List<lInputCtrl> inputCtrls = m_inputsCtrls;
-            //m_inputsCtrls = new List<lInputCtrl>();
-            //foreach (lInputCtrl ctrl in inputCtrls)
-            //{
-            //    m_inputsCtrls.Add(
-            //        crtInputCtrl(
-            //            m_tblInfo,
-            //            ctrl.m_fieldName,
-            //            ctrl.m_pos,
-            //            ctrl.m_size,
-            //            ctrl.m_mode
-            //            )
-            //        );
-            //}
-
             //create table layout & add ctrls to
             //  +-------------------------+
             //  |search ctrl|             |
@@ -710,26 +697,28 @@ namespace test_binding
                 lastRow = Math.Max(lastRow, ctrl.m_pos.Y);
             }
 
-            //add buttons
-            Button m_addBtn = lConfigMng.crtButton();
+            //flow  |    save btn|delete btn  |
+            m_addBtn = lConfigMng.crtButton();
             m_addBtn.Text = "Add";
             m_addBtn.Click += M_addBtn_Click;
-            Button m_saveBtn = lConfigMng.crtButton();
+
+            m_saveBtn = lConfigMng.crtButton();
             m_saveBtn.Text = "Save";
             m_saveBtn.Click += M_saveBtn_Click;
+
             Button m_editBtn = lConfigMng.crtButton();
             m_editBtn.Text = "Edit";
             m_editBtn.Click += M_editBtn_Click;
             Button m_clearBtn = lConfigMng.crtButton();
             m_clearBtn.Text = "Clear";
             m_clearBtn.Click += M_clearBtn_Click;
-            FlowLayoutPanel tflow = new FlowLayoutPanel();
-            tflow.FlowDirection = FlowDirection.LeftToRight;
-            tflow.Controls.AddRange(new Control[] { m_addBtn, m_saveBtn, m_clearBtn });
-            tflow.AutoSize = true;
+            m_flow = new FlowLayoutPanel();
+            m_flow.FlowDirection = FlowDirection.LeftToRight;
+            m_flow.Controls.AddRange(new Control[] { m_addBtn, m_saveBtn, m_clearBtn });
+            m_flow.AutoSize = true;
 
             //  add buttons to last row
-            m_tbl.Controls.Add(tflow, 0, ++lastRow);
+            m_tbl.Controls.Add(m_flow, 0, ++lastRow);
 
             // add data grid view
             m_dataGridView = lConfigMng.crtDGV();
@@ -738,11 +727,33 @@ namespace test_binding
             m_dataGridView.CellClick += M_dataGridView_CellClick;
             //fix date dd/MM/yyyy
             m_dataGridView.CellParsing += M_dataGridView_CellParsing;
+            //enum ->string
+            m_dataGridView.CellFormatting += M_dataGridView_CellFormatting;
 
             m_tbl.Controls.Add(m_dataGridView, 0, ++lastRow);
             m_tbl.Dock = DockStyle.Fill;
             m_tbl.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
             m_tbl.RowCount = lastRow;
+        }
+
+        private void M_dataGridView_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            var col = m_tblInfo.m_cols[e.ColumnIndex];
+            switch (col.m_type)
+            {
+                case lTableInfo.lColInfo.lColType.map:
+                    string txt;
+                    int n;
+                    if( int.TryParse(e.Value.ToString(), out n))
+                    {
+                        if (col.parseEnum(n,out txt))
+                        {
+                            e.Value = txt;
+                            e.FormattingApplied = true;
+                        }
+                    }
+                    break;
+            }
         }
 
         private void M_dataGridView_CellParsing(object sender, DataGridViewCellParsingEventArgs e)
@@ -751,15 +762,29 @@ namespace test_binding
             switch (col.m_type)
             {
                 case lTableInfo.lColInfo.lColType.dateTime:
-                    Debug.WriteLine("OnCellParsing parsing date");
-                    if (lConfigMng.getDisplayDateFormat() == "dd/MM/yyyy")
                     {
+                        Debug.WriteLine("OnCellParsing parsing date");
+                        if (lConfigMng.getDisplayDateFormat() == "dd/MM/yyyy")
+                        {
+                            string val = e.Value.ToString();
+                            DateTime dt;
+                            if (lConfigMng.parseDisplayDate(val, out dt))
+                            {
+                                e.ParsingApplied = true;
+                                e.Value = dt;
+                            }
+                        }
+                    }
+                    break;
+                case lTableInfo.lColInfo.lColType.map:
+                    {
+                        Debug.WriteLine("OnCellParsing parsing enum");
                         string val = e.Value.ToString();
-                        DateTime dt;
-                        if (lConfigMng.parseDisplayDate(val, out dt))
+                        int n;
+                        if (col.parseEnum(val, out n))
                         {
                             e.ParsingApplied = true;
-                            e.Value = dt;
+                            e.Value = n;
                         }
                     }
                     break;
@@ -1098,12 +1123,6 @@ namespace test_binding
             dgv.Columns[i - 1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             dgv.Columns[i - 1].FillWeight = 1;
         }
-        public lInputCtrl crtInputCtrl(lTableInfo tblInfo, string colName, Point pos, Size size, List<lInputCtrlEnum.comboItem> map)
-        {
-            lInputCtrlEnum enumCtrl = (lInputCtrlEnum)crtInputCtrl(tblInfo, colName, pos, size, lSearchCtrl.SearchMode.match);
-            enumCtrl.init(map);
-            return enumCtrl;
-        }
         public lInputCtrl crtInputCtrl(lTableInfo tblInfo, string colName, Point pos, Size size)
         {
             return crtInputCtrl(tblInfo, colName, pos, size, lSearchCtrl.SearchMode.match);
@@ -1143,6 +1162,7 @@ namespace test_binding
                     return currencyCtrl;
                 case lTableInfo.lColInfo.lColType.map:
                     lInputCtrlEnum enumCtrl = new lInputCtrlEnum(col.m_field, col.m_alias, lSearchCtrl.ctrlType.map, pos, size);
+                    enumCtrl.init(col.getDict());
                     return enumCtrl;
             }
             return null;
@@ -1324,7 +1344,7 @@ namespace test_binding
             actually_spent = crtInputCtrl(m_tblInfo, "actually_spent",   new Point(0, 7), new Size(1, 1));
             status = (lInputCtrlEnum)crtInputCtrl(m_tblInfo, "status", new Point(0, 8), new Size(1, 1));
             note = crtInputCtrl(m_tblInfo, "note", new Point(0, 9), new Size(1, 1));
-            status.init(lAdvanceStatus.lst);
+            //status.init(lAdvanceStatus.lst);
 
             m_inputsCtrls = new List<lInputCtrl>
             {
@@ -1609,25 +1629,27 @@ namespace test_binding
         private keyMng m_key;
         protected override keyMng m_keyMng { get { return m_key; } }
 
-        //right tbl
-        //TableLayoutPanel rightTbl = new TableLayoutPanel();
+        //left panel
+        Button removeBtn = lConfigMng.crtButton();
+        //right panel
         TextBox resLbl = lConfigMng.crtTextBox();
-        DataGridView resGV = lConfigMng.crtDGV();
+        DataGridView resDGV = lConfigMng.crtDGV();
         Button downBtn = lConfigMng.crtButton();
         Button upBtn = lConfigMng.crtButton();
         Button saveResBtn = lConfigMng.crtButton();
         FlowLayoutPanel tflow = new FlowLayoutPanel();
-        DataGridView orderResGV = lConfigMng.crtDGV();
+        DataGridView orderResDGV = lConfigMng.crtDGV();
+
         public lOrderInputPanel()
         {
             m_tblName = "order_tbl";
 
-            m_inputsCtrls = new List<lInputCtrl> {
+               = new List<lInputCtrl> {
                 crtInputCtrl(m_tblInfo, "task_number" , new Point(0, 0), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, "order_number", new Point(0, 1), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, "order_type"  , new Point(0, 2), new Size(1, 1), lOrderType.lst),
+                crtInputCtrl(m_tblInfo, "order_type"  , new Point(0, 2), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, "number"      , new Point(0, 3), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, "order_status", new Point(0, 4), new Size(1, 1), lOrderStatus.lst),
+                crtInputCtrl(m_tblInfo, "order_status", new Point(0, 4), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, "note"        , new Point(0, 5), new Size(1, 1)),
             };
 
@@ -1638,20 +1660,21 @@ namespace test_binding
             m_inputsCtrls[2].EditingCompleted += LOrderInputPanel_EditingCompleted;
 
             //hide ID
-            resGV.ColumnAdded += ResGV_ColumnAdded;
-            resGV.DataBindingComplete += ResGV_DataBindingComplete;
+            resDGV.ColumnAdded += ResGV_ColumnAdded;
+            resDGV.DataBindingComplete += ResGV_DataBindingComplete;
             //resGV.AutoGenerateColumns = false;
-            resGV.AllowUserToAddRows = false;
-            resGV.AllowUserToDeleteRows = false;
+            resDGV.AllowUserToAddRows = false;
+            resDGV.AllowUserToDeleteRows = false;
             //orderResGV.AutoGenerateColumns = false;
-            orderResGV.ColumnAdded += OrderResGV_ColumnAdded;
-            orderResGV.AllowUserToAddRows = false;
-            orderResGV.AllowUserToDeleteRows = false;
-            orderResGV.RowsRemoved += OrderResGV_RowsRemoved;
-            //
+            orderResDGV.ColumnAdded += OrderResGV_ColumnAdded;
+            orderResDGV.AllowUserToAddRows = false;
+            orderResDGV.AllowUserToDeleteRows = false;
+            orderResDGV.RowsRemoved += OrderResGV_RowsRemoved;
+            //lable |<res table >       |
             resLbl.ReadOnly = true;
-            resLbl.Dock = DockStyle.Fill;
+            resLbl.Anchor = (AnchorStyles.Left | AnchorStyles.Right);
             resLbl.BorderStyle = BorderStyle.None;
+            
         }
 
         private void OrderResGV_RowsRemoved(object sender, DataGridViewRowsRemovedEventArgs e)
@@ -1673,9 +1696,9 @@ namespace test_binding
 
         private void ResGV_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
-            for (int i = 0; i < resGV.Rows.Count; i++)
+            for (int i = 0; i < resDGV.Rows.Count; i++)
             {
-                var key = resGV.Rows[i].Cells[1].Value.ToString();
+                var key = resDGV.Rows[i].Cells[1].Value.ToString();
                 if (m_usedResDict.ContainsKey(key))
                 {
                     m_usedResDict[key] = i;
@@ -1735,8 +1758,8 @@ namespace test_binding
 
                     //clean lbl, resLst, orderResLst
                     resLbl.Clear();
-                    resGV.DataSource = null;
-                    orderResGV.DataSource = null;
+                    resDGV.DataSource = null;
+                    orderResDGV.DataSource = null;
 
                     updateTaskInfo(taskNumber);
                 }
@@ -1784,9 +1807,9 @@ namespace test_binding
             lDataContent orderResDC = appConfig.s_contentProvider.CreateDataContent(m_curOrderResTbl);
             DataTable orderResTbl = orderResDC.m_dataTable;
             List<int> idxLst = new List<int>();
-            for (int i = 0; i < orderResGV.SelectedRows.Count; i++)
+            for (int i = 0; i < orderResDGV.SelectedRows.Count; i++)
             {
-                DataGridViewRow row = orderResGV.SelectedRows[i];
+                DataGridViewRow row = orderResDGV.SelectedRows[i];
                 var resId = row.Cells[2].Value.ToString();
 
                 //udpate dict & gui
@@ -1816,9 +1839,9 @@ namespace test_binding
         {
             lDataContent orderResDC = appConfig.s_contentProvider.CreateDataContent(m_curOrderResTbl);
             DataTable orderResTbl = orderResDC.m_dataTable;
-            for (int i = 0; i < resGV.SelectedRows.Count; i++)
+            for (int i = 0; i < resDGV.SelectedRows.Count; i++)
             {
-                DataGridViewRow row = resGV.SelectedRows[i];
+                DataGridViewRow row = resDGV.SelectedRows[i];
                 var resId = row.Cells[1].Value.ToString();
                 if (!m_usedResDict.ContainsKey(resId))
                 {
@@ -1836,25 +1859,35 @@ namespace test_binding
             }
             orderResDC.Submit();
         }
-        private void unmarkResRow(int i) { resGV.Rows[i].DefaultCellStyle.BackColor = Color.White; }
-        private void markResRow(int i) { resGV.Rows[i].DefaultCellStyle.BackColor = Color.Gray; }
+        private void unmarkResRow(int i) { resDGV.Rows[i].DefaultCellStyle.BackColor = Color.White; }
+        private void markResRow(int i) { resDGV.Rows[i].DefaultCellStyle.BackColor = Color.Gray; }
         public override void initCtrls()
         {
+            //spliter panel 1
             base.initCtrls();
+            //flow      |add    |remove |save   |
+            m_flow.Controls.Clear();
+            m_flow.Controls.AddRange(new Control[] { m_addBtn, removeBtn, m_saveBtn });
+
 
 #if DEBUG_DRAWING
                 m_tbl.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
 #endif
+            //spliter panel 2
+            //lable     | <res tbl name>        |
+            //res DGV   | res data              |
+            //flow      | up    |down   |save   |
+            //order-res | order-res map record  |
+ 
             m_tbl2 = new TableLayoutPanel();
             int n = m_inputsCtrls.Count;
             int iRow = 0;
             //  lable <human dd/mm/yy - dd/mm/yy>
             m_tbl2.Controls.Add(resLbl, 0, ++iRow);
             //  res
-            m_tbl2.Controls.Add(resGV, 0, ++iRow);
-            resGV.EnableHeadersVisualStyles = false;
-            resGV.Dock = DockStyle.Fill;
-            //m_tbl2.SetRowSpan(resGV, n);
+            m_tbl2.Controls.Add(resDGV, 0, ++iRow);
+            resDGV.EnableHeadersVisualStyles = false;
+            resDGV.Dock = DockStyle.Fill;
             //  up  | down  | save
             downBtn.Text = "Down";
             downBtn.Click += DownBtn_Click;
@@ -1866,14 +1899,57 @@ namespace test_binding
             tflow.Controls.AddRange(new Control[] { downBtn, upBtn, saveResBtn });
             tflow.AutoSize = true;
             tflow.Anchor = AnchorStyles.Right;
-            //m_tbl2.Controls.Add(tflow, 0, n);
             m_tbl2.Controls.Add(tflow, 0, ++iRow);
             //  order - res
-            m_tbl2.Controls.Add(orderResGV, 0, ++iRow);
-            orderResGV.EnableHeadersVisualStyles = false;
-            orderResGV.Dock = DockStyle.Fill;
+            m_tbl2.Controls.Add(orderResDGV, 0, ++iRow);
+            orderResDGV.EnableHeadersVisualStyles = false;
+            orderResDGV.Dock = DockStyle.Fill;
 
             m_tbl2.Dock = DockStyle.Fill;
+
+            //enum: already process in InputPanel
+            //order DGV: single select (ref delete order)
+            m_dataGridView.MultiSelect = false;
+            m_dataGridView.AllowUserToDeleteRows = false;
+
+            //remove btn
+            removeBtn.Text = "Remove";
+            removeBtn.Click += RemoveBtn_Click;
+        }
+
+        private void RemoveBtn_Click(object sender, EventArgs e)
+        {
+            if (m_dataGridView.SelectedRows.Count > 0)
+            {
+                //req: all order - res rec were removed
+                if (orderResDGV.Rows.Count == 0)
+                {
+                    List<int> idxLst = new List<int>();
+                    for (int i = 0; i<m_dataGridView.SelectedRows.Count;i++)
+                    {
+                        var row = m_dataGridView.SelectedRows[i];
+                        idxLst.Add(row.Index);
+                    }
+                    idxLst.Sort();
+                    for (int idx = idxLst.Count -1; idx >= 0; idx--)
+                    {
+                        m_dataGridView.Rows.RemoveAt(idx);
+                    }
+                    m_dataContent.Submit();
+
+                    //clearn resDGV, orderResDGV
+                    orderResDGV.DataSource = null;
+                    resDGV.DataSource = null;
+                }
+                else
+                {
+                    lConfigMng.showInputError("Hãy xóa tất cả các liên kết của yêu cầu với tài nguyên");
+                }
+            }
+            else
+            {
+                lConfigMng.showInputError("Không có dòng nào được chọn");
+            }
         }
 
         private void SaveResBtn_Click(object sender, EventArgs e)
@@ -1939,10 +2015,10 @@ namespace test_binding
                             m_humanSB.add("start_date", startDate, "<=");
                             m_humanSB.add("end_date", endDate, ">=");
                             m_humanSB.search();
-                            resGV.DataSource = m_humanSB.dc.m_bindingSource;
+                            resDGV.DataSource = m_humanSB.dc.m_bindingSource;
 
                             //hide col["ID"]
-                            updateCols(resGV, tblInfo);
+                            updateCols(resDGV, tblInfo);
                             //update lable
                             updateResLabel(tblInfo.m_tblAlias, startDate, endDate);
                         }
@@ -1960,10 +2036,10 @@ namespace test_binding
                             if (m_equipSB == null) { m_equipSB = new lSearchBuilder(tblInfo); }
                             m_equipSB.clear();
                             m_equipSB.search();
-                            resGV.DataSource = m_equipSB.dc.m_bindingSource;
+                            resDGV.DataSource = m_equipSB.dc.m_bindingSource;
 
                             //hide col["ID"]
-                            updateCols(resGV, tblInfo);
+                            updateCols(resDGV, tblInfo);
                             //update lable
                             updateResLabel(tblInfo.m_tblAlias);
                         }
@@ -2003,9 +2079,9 @@ namespace test_binding
             m_orderEquipmentSB.clear();
             m_orderEquipmentSB.add("order_number", m_curOrder);
             m_orderEquipmentSB.search();
-            orderResGV.DataSource = m_orderEquipmentSB.dc.m_dataTable;
+            orderResDGV.DataSource = m_orderEquipmentSB.dc.m_dataTable;
 
-            updateCols(orderResGV, tblInfo);
+            updateCols(orderResDGV, tblInfo);
 
             //build dict
             m_usedResDict.Clear();
@@ -2024,9 +2100,9 @@ namespace test_binding
             m_orderHumanSB.clear();
             m_orderHumanSB.add("order_number", m_curOrder);
             m_orderHumanSB.search();
-            orderResGV.DataSource = m_orderHumanSB.dc.m_dataTable;
+            orderResDGV.DataSource = m_orderHumanSB.dc.m_dataTable;
 
-            updateCols(orderResGV, tblInfo);
+            updateCols(orderResDGV, tblInfo);
 
             //build dict
             m_usedResDict.Clear();
@@ -2043,6 +2119,16 @@ namespace test_binding
         private void hightLightRes()
         {
 
+        }
+    }
+
+    public class lAprroveInputPanel: lOrderInputPanel
+    {
+        public override void initCtrls()
+        {
+            base.initCtrls();
+
+            m_tbl.Controls.Clear();
         }
     }
 }

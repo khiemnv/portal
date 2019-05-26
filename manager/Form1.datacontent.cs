@@ -23,6 +23,9 @@ using System.Text.RegularExpressions;
 using System.Data.Common;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Linq;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace test_binding
 {
@@ -66,27 +69,71 @@ namespace test_binding
             public lColType m_type;
             [DataMember(Name = "visible", EmitDefaultValue = false)]
             public bool m_visible;
+            [DataMember(Name = "lst", EmitDefaultValue = false)]
+            public string m_lst;        //";"
 
             public lDataSync m_lookupData;
-            private void init(string field, string alias, lColType type, string lookupTbl, bool visible)
+            public void init(string field, string alias, lColType type, string lookupTbl = null, bool visible = true, string lst = null)
             {
                 m_lookupTbl = lookupTbl;
                 m_field = field;
                 m_alias = alias;
                 m_type = type;
                 m_visible = visible;
+                m_lst = lst;
             }
             public lColInfo(string field, string alias, lColType type, string lookupTbl, bool visible)
             {
                 init(field, alias, type, lookupTbl, visible);
             }
-            public lColInfo(string field, string alias, lColType type, string lookupTbl)
+            public lColInfo(string field, string alias, lColType type, string param)
             {
-                init(field, alias, type, lookupTbl, true);
+                switch (type)
+                {
+                    case lColType.map:
+                        init(field, alias, type, null, true, param);
+                        break;
+                    default:
+                        Debug.Assert(type == lColType.text);
+                        init(field, alias, type, param);
+                        break;
+                }
             }
             public lColInfo(string field, string alias, lColType type)
             {
                 init(field, alias, type, null, true);
+            }
+
+            Dictionary<string, int> m_dict;
+            public Dictionary<string,int> getDict()
+            {
+                if (m_dict == null) { initDict(); }
+                return m_dict;
+            }
+            public bool parseEnum(int n, out string txt)
+            {
+                if (m_dict == null) { initDict(); }
+                bool ret = (n <= m_dict.Count);
+                txt = null;
+                if (ret) { txt = m_dict.Keys.ElementAt(n); }
+                return ret;
+            }
+            private void initDict()
+            {
+                    m_dict = new Dictionary<string, int>();
+                    var arr = m_lst.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                    for (int i = 0; i < arr.Length;i++)
+                    {
+                        m_dict.Add(arr[i], i);
+                    }
+            }
+            public bool parseEnum(string txt, out int n )
+            {
+                if (m_dict == null) {initDict();}
+                bool ret = m_dict.ContainsKey(txt);
+                n = -1;
+                if (ret) { n = m_dict[txt]; }
+                return ret;
             }
         };
 
@@ -399,9 +446,9 @@ namespace test_binding
                    new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
                    new lColInfo( "order_number" ,"Mã YC", lColInfo.lColType.uniqueText),
                    new lColInfo( "task_number"  ,"Mã CV", lColInfo.lColType.text, "task"),  //columns[1]
-                   new lColInfo( "order_type"   ,"Loại YC", lColInfo.lColType.map),
+                   new lColInfo( "order_type"   ,"Loại YC", lColInfo.lColType.map, lOrderType.zLst),
                    new lColInfo( "number"       ,"Số lượng", lColInfo.lColType.num),
-                   new lColInfo( "order_status" ,"Trạng thái", lColInfo.lColType.map),
+                   new lColInfo( "order_status" ,"Trạng thái", lColInfo.lColType.map, lOrderStatus.zLst),
                    new lColInfo( "note"         ,"Ghi Chú", lColInfo.lColType.text),
                 };
         }
@@ -864,16 +911,65 @@ namespace test_binding
                 new lInputCtrlEnum.comboItem { name = zActual, val = nActual },
             };
     }
+
+    public static class EnumExtensions
+    {
+        // This extension method is broken out so you can use a similar pattern with 
+        // other MetaData elements in the future. This is your base method for each.
+        public static T GetAttribute<T>(this Enum value) where T : Attribute
+        {
+            var type = value.GetType();
+            var memberInfo = type.GetMember(value.ToString());
+            var attributes = memberInfo[0].GetCustomAttributes(typeof(T), false);
+            return attributes.Length > 0
+              ? (T)attributes[0]
+              : null;
+        }
+
+        // This method creates a specific call to the above method, requesting the
+        // Description MetaData attribute.
+        public static string ToName(this Enum value)
+        {
+            var attribute = value.GetAttribute<DescriptionAttribute>();
+            return attribute == null ? value.ToString() : attribute.Description;
+        }
+
+    }
     public class lOrderStatus
     {
-        public const int nRequest = 0;
-        public const int nApprove = 1;
-        public const string zRequest = "Đang xin phép";
-        public const string zAprove = "Đã chấp nhận";
-        public static List<lInputCtrlEnum.comboItem> lst = new List<lInputCtrlEnum.comboItem> {
-                new lInputCtrlEnum.comboItem { name = zRequest, val = nRequest },
-                new lInputCtrlEnum.comboItem { name = zAprove, val = nApprove },
-            };
+        public enum eOrderStatus
+        {
+            [Description("Đang xin phép")] eRequest,
+            [Description("Đã chấp nhận")] eApprove,
+        }
+        static Dictionary<string, eOrderStatus> m_dict;
+        public static string zLst
+        {
+            get
+            {
+                string txt;
+                eOrderStatus var = 0;
+                txt = var.ToName();
+                for (int i = 1; i < 2; i++)
+                {
+                    var = (eOrderStatus)i;
+                    txt = txt + ";" + var.ToName();
+                }
+                return txt;
+            }
+        }
+        //public static Dictionary<string, eOrderStatus> getDict()
+        //{
+        //    if (m_dict == null)
+        //    {
+        //        m_dict = new Dictionary<string, eOrderStatus>();
+        //        for(int i = 0; i < 2; i++)
+        //        {
+        //            m_dict.Add(Enum.GetName(typeof(eOrderStatus), (eOrderStatus)i),i);
+        //        }
+        //    }
+        //    return m_dict;
+        //}
     }
     public class lOrderType
     {
@@ -888,6 +984,7 @@ namespace test_binding
                 new lInputCtrlEnum.comboItem { name = zEquip, val = nEquip },
                 new lInputCtrlEnum.comboItem { name = zExpense, val = nExpense },
             };
+        public static string zLst = zWorker + ";" + zEquip + ";" + zExpense;
     }
 #if use_sqlite
     public class lSQLiteContentProvider : lContentProvider
