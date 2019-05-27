@@ -729,6 +729,10 @@ namespace test_binding
             m_dataGridView.CellParsing += M_dataGridView_CellParsing;
             //enum ->string
             m_dataGridView.CellFormatting += M_dataGridView_CellFormatting;
+            //check valid input
+            m_dataGridView.CellValidating += M_dataGridView_CellValidating;
+            //show tool tip
+            m_dataGridView.EditingControlShowing += M_dataGridView_EditingControlShowing; ;
 
             m_tbl.Controls.Add(m_dataGridView, 0, ++lastRow);
             m_tbl.Dock = DockStyle.Fill;
@@ -736,6 +740,47 @@ namespace test_binding
             m_tbl.RowCount = lastRow;
         }
 
+        private void M_dataGridView_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
+        {
+            var col = m_tblInfo.m_cols[m_dataGridView.CurrentCell.ColumnIndex];
+            switch (col.m_type)
+            {
+                case lTableInfo.lColInfo.lColType.map:
+                    ToolTip tt = new ToolTip();
+                    tt.IsBalloon = true;
+                    tt.InitialDelay = 0;
+                    tt.ShowAlways = true;
+                    tt.SetToolTip(e.Control, col.getHelp());
+                    break;
+            }
+        }
+
+        private void M_dataGridView_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+        {
+            var col = m_tblInfo.m_cols[e.ColumnIndex];
+            switch (col.m_type)
+            {
+                case lTableInfo.lColInfo.lColType.map:
+                    string txt = e.FormattedValue.ToString();
+                    int n;
+                    bool bChk;
+                    if (int.TryParse(txt, out n))
+                    {
+                        bChk = col.parseEnum(n, out txt);
+                    }
+                    else
+                    {
+                        bChk = col.parseEnum(txt, out n);
+                    }
+                    if (bChk == false)
+                    {
+                        string msg = string.Format("Invalid input for {0}\n{1}", col.m_alias, col.getHelp());
+                        lConfigMng.showInputError(msg);
+                        e.Cancel = true;
+                    }
+                    break;
+            }
+        }
         private void M_dataGridView_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             var col = m_tblInfo.m_cols[e.ColumnIndex];
@@ -1644,7 +1689,7 @@ namespace test_binding
         {
             m_tblName = "order_tbl";
 
-               = new List<lInputCtrl> {
+            m_inputsCtrls = new List<lInputCtrl> {
                 crtInputCtrl(m_tblInfo, "task_number" , new Point(0, 0), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, "order_number", new Point(0, 1), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, "order_type"  , new Point(0, 2), new Size(1, 1)),
@@ -2121,14 +2166,34 @@ namespace test_binding
 
         }
     }
-
-    public class lAprroveInputPanel: lOrderInputPanel
+    [DataContract(Name = "ApproveInputPanel")]
+    public class lApproveInputPanel: lOrderInputPanel
     {
         public override void initCtrls()
         {
             base.initCtrls();
 
+            //re-arrange left panel
             m_tbl.Controls.Clear();
+            m_tbl.RowCount = 3;
+            //  +-------------------------+
+            //  |task info                |
+            //  +-------------------------+
+            //  |    save btn|            |
+            //  +-------------------------+
+            //  |    grid view            |
+            //  +-------------------------+
+            //add search ctrls to table layout
+            lInputCtrl taskCtrl = m_inputsCtrls[0];
+            m_tbl.Controls.Add(taskCtrl.m_panel, 0, 0);
+
+            //flow  |    save btn  |
+            m_flow.Controls.Clear();
+            m_flow.Controls.AddRange(new Control[] { m_saveBtn });
+            m_tbl.Controls.Add(m_flow, 0, 1);
+
+            // add data grid view
+            m_tbl.Controls.Add(m_dataGridView, 0, 2);
         }
     }
 }

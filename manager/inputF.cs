@@ -198,7 +198,7 @@ namespace test_binding
     {
         protected override void initCtrls()
         {
-            this.Text = "Yêu cầu";
+            this.Text = "Yêu Cầu";
             base.initCtrls();
 
             //splitContainer1.Panel2Collapsed = true;
@@ -212,6 +212,23 @@ namespace test_binding
         protected override lInputPanel CrtInputPanel()
         {
             m_panel = new lOrderInputPanel();
+            return m_panel;
+        }
+    }
+    public class lApproveInputF : inputF
+    {
+        protected override void initCtrls()
+        {
+            this.Text = "Phê Duyệt YC";
+            base.initCtrls();
+            
+            splitContainer1.Panel2.Controls.Clear();
+            splitContainer1.Panel2.Controls.Add(m_inputPanel.m_tbl2);
+        }
+        public lApproveInputPanel m_panel;
+        protected override lInputPanel CrtInputPanel()
+        {
+            m_panel = new lApproveInputPanel();
             return m_panel;
         }
     }

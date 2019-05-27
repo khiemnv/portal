@@ -112,6 +112,10 @@ namespace test_binding
             var miOrder = crtMenuItem("Yêu Cầu");
             miOrder.Click += MiOrder_Click;
             addChild(miInput, miOrder);
+
+            var miApporve = crtMenuItem("Phê Duyệt YC");
+            miApporve.Click += MiApprove_Click;
+            addChild(miInput, miApporve);
 #if use_menuitem
             mainMenu.MenuItems.AddRange(new MenuItem[] { miFile, miEdit, miReport, miConfig, miHelp });
             this.Menu = mainMenu;
@@ -158,6 +162,12 @@ namespace test_binding
         {
             //load input
             openInputForm(inputFormType.orderIF);
+        }
+
+        private void MiApprove_Click(object sender, EventArgs e)
+        {
+            //load input
+            openInputForm(inputFormType.approveIF);
         }
 
         private void MiFont_Click(object sender, EventArgs e)

@@ -104,6 +104,17 @@ namespace test_binding
                 init(field, alias, type, null, true);
             }
 
+            public string getHelp()
+            {
+                if (m_dict == null) { initDict(); }
+                string txt = string.Format("Please input number from 0 to {0}", m_dict.Count-1);
+                for (int i = 0; i < m_dict.Count;i++)
+                {
+                    txt = txt + "\n" + string.Format("  {0} ({1})", i, m_dict.Keys.ElementAt(i));
+                }
+                return txt;
+            }
+
             Dictionary<string, int> m_dict;
             public Dictionary<string,int> getDict()
             {
@@ -113,7 +124,7 @@ namespace test_binding
             public bool parseEnum(int n, out string txt)
             {
                 if (m_dict == null) { initDict(); }
-                bool ret = (n <= m_dict.Count);
+                bool ret = (n < m_dict.Count);
                 txt = null;
                 if (ret) { txt = m_dict.Keys.ElementAt(n); }
                 return ret;

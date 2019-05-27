@@ -280,7 +280,8 @@ namespace test_binding
             salaryIF,
             advanceIF,
             taskIF,
-            orderIF
+            orderIF,
+            approveIF
         }
         private void openInputForm(inputFormType type)
         {
@@ -315,6 +316,9 @@ namespace test_binding
                     {
                         lConfigMng.showInputError("Không có CV nào trong bảng");
                     }
+                    break;
+                case inputFormType.approveIF:
+                    inputDlg = new lApproveInputF();
                     break;
             }
 
