@@ -206,7 +206,7 @@ namespace test_binding
             //splitContainer1.Panel1.Anchor = AnchorStyles.Right;
             //splitContainer1.Panel2.Controls.Add(rightTbl);
             splitContainer1.Panel2.Controls.Clear();
-            splitContainer1.Panel2.Controls.Add(m_inputPanel.m_tbl2);
+            splitContainer1.Panel2.Controls.Add(m_panel.rightSC);
         }
         public lOrderInputPanel m_panel;
         protected override lInputPanel CrtInputPanel()
@@ -221,9 +221,11 @@ namespace test_binding
         {
             this.Text = "Phê Duyệt YC";
             base.initCtrls();
-            
+
+            splitContainer1.Panel1.Controls.Clear();
             splitContainer1.Panel2.Controls.Clear();
-            splitContainer1.Panel2.Controls.Add(m_inputPanel.m_tbl2);
+            splitContainer1.Panel1.Controls.Add(m_panel.leftSC);
+            splitContainer1.Panel2.Controls.Add(m_panel.rightSC);
         }
         public lApproveInputPanel m_panel;
         protected override lInputPanel CrtInputPanel()

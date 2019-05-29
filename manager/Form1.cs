@@ -318,7 +318,11 @@ namespace test_binding
                     }
                     break;
                 case inputFormType.approveIF:
-                    inputDlg = new lApproveInputF();
+                    //not open order when task DGV empty
+                    if (chkTaskDGV())
+                        inputDlg = new lApproveInputF();
+                    else
+                        lConfigMng.showInputError("Không có CV nào trong bảng");
                     break;
             }
 
