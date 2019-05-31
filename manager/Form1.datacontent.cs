@@ -36,15 +36,15 @@ namespace test_binding
     /// + alias
     /// </summary>
     [DataContract(Name = "TableInfo")]
-    public class lTableInfo
+    public class TableInfo
     {
         //#define col_class
 #if col_class
         [DataContract(Name = "ColInfo")]
-        public class lColInfo
+        public class ColInfo
         {
             [DataContract(Name = "ColType")]
-            public enum lColType
+            public enum ColType
             {
                 [EnumMember]
                 text,
@@ -66,14 +66,14 @@ namespace test_binding
             [DataMember(Name = "lookupTbl", EmitDefaultValue = false)]
             public string m_lookupTbl;
             [DataMember(Name = "type", EmitDefaultValue = false)]
-            public lColType m_type;
+            public ColType m_type;
             [DataMember(Name = "visible", EmitDefaultValue = false)]
             public bool m_visible;
             [DataMember(Name = "lst", EmitDefaultValue = false)]
             public string m_lst;        //";"
 
             public lDataSync m_lookupData;
-            public void init(string field, string alias, lColType type, string lookupTbl = null, bool visible = true, string lst = null)
+            public void Init(string field, string alias, ColType type, string lookupTbl = null, bool visible = true, string lst = null)
             {
                 m_lookupTbl = lookupTbl;
                 m_field = field;
@@ -82,31 +82,31 @@ namespace test_binding
                 m_visible = visible;
                 m_lst = lst;
             }
-            public lColInfo(string field, string alias, lColType type, string lookupTbl, bool visible)
+            public ColInfo(string field, string alias, ColType type, string lookupTbl, bool visible)
             {
-                init(field, alias, type, lookupTbl, visible);
+                Init(field, alias, type, lookupTbl, visible);
             }
-            public lColInfo(string field, string alias, lColType type, string param)
+            public ColInfo(string field, string alias, ColType type, string param)
             {
                 switch (type)
                 {
-                    case lColType.map:
-                        init(field, alias, type, null, true, param);
+                    case ColType.map:
+                        Init(field, alias, type, null, true, param);
                         break;
                     default:
-                        Debug.Assert(type == lColType.text);
-                        init(field, alias, type, param);
+                        Debug.Assert(type == ColType.text);
+                        Init(field, alias, type, param);
                         break;
                 }
             }
-            public lColInfo(string field, string alias, lColType type)
+            public ColInfo(string field, string alias, ColType type)
             {
-                init(field, alias, type, null, true);
+                Init(field, alias, type, null, true);
             }
 
-            public string getHelp()
+            public string GetHelp()
             {
-                if (m_dict == null) { initDict(); }
+                if (m_dict == null) { InitDict(); }
                 string txt = string.Format("Please input number from 0 to {0}", m_dict.Count-1);
                 for (int i = 0; i < m_dict.Count;i++)
                 {
@@ -116,20 +116,20 @@ namespace test_binding
             }
 
             Dictionary<string, int> m_dict;
-            public Dictionary<string,int> getDict()
+            public Dictionary<string,int> GetDict()
             {
-                if (m_dict == null) { initDict(); }
+                if (m_dict == null) { InitDict(); }
                 return m_dict;
             }
-            public bool parseEnum(int n, out string txt)
+            public bool ParseEnum(int n, out string txt)
             {
-                if (m_dict == null) { initDict(); }
+                if (m_dict == null) { InitDict(); }
                 bool ret = (n < m_dict.Count);
                 txt = null;
                 if (ret) { txt = m_dict.Keys.ElementAt(n); }
                 return ret;
             }
-            private void initDict()
+            private void InitDict()
             {
                     m_dict = new Dictionary<string, int>();
                     var arr = m_lst.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
@@ -138,9 +138,9 @@ namespace test_binding
                         m_dict.Add(arr[i], i);
                     }
             }
-            public bool parseEnum(string txt, out int n )
+            public bool ParseEnum(string txt, out int n )
             {
-                if (m_dict == null) {initDict();}
+                if (m_dict == null) {InitDict();}
                 bool ret = m_dict.ContainsKey(txt);
                 n = -1;
                 if (ret) { n = m_dict[txt]; }
@@ -149,7 +149,7 @@ namespace test_binding
         };
 
         [DataMember(Name = "cols", EmitDefaultValue = false)]
-        public lColInfo[] m_cols;
+        public ColInfo[] m_cols;
         [DataMember(Name = "name", EmitDefaultValue = false)]
         public string m_tblName;
         [DataMember(Name = "alias", EmitDefaultValue = false)]
@@ -159,7 +159,7 @@ namespace test_binding
 
         public virtual void LoadData()
         {
-            foreach (lColInfo colInfo in m_cols)
+            foreach (ColInfo colInfo in m_cols)
             {
                 if (colInfo.m_lookupTbl != null)
                 {
@@ -187,7 +187,7 @@ namespace test_binding
         public int getColIndex(string colName)
         {
             int i = 0;
-            foreach (lColInfo col in m_cols)
+            foreach (ColInfo col in m_cols)
             {
                 if (col.m_field == colName)
                 {
@@ -200,7 +200,7 @@ namespace test_binding
     }
 
     [DataContract(Name = "ReceiptsTblInfo")]
-    public class lReceiptsTblInfo : lTableInfo
+    public class lReceiptsTblInfo : TableInfo
     {
 #if col_class
         public lReceiptsTblInfo()
@@ -217,15 +217,15 @@ namespace test_binding
             + "content text,"
             + "note text"
             + ")";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
-                   new lColInfo( "receipt_number","Mã PT", lColInfo.lColType.uniqueText),
-                   new lColInfo( "date","Ngày Tháng", lColInfo.lColType.dateTime),
-                   new lColInfo( "name","Họ tên", lColInfo.lColType.text),
-                   new lColInfo( "addr","Địa chỉ", lColInfo.lColType.text),
-                   new lColInfo( "content","Nội dung", lColInfo.lColType.text, "receipts_content"),
-                   new lColInfo( "note","Ghi chú", lColInfo.lColType.text),
-                   new lColInfo( "amount","Số tiền", lColInfo.lColType.currency),
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
+                   new ColInfo( "receipt_number","Mã PT", ColInfo.ColType.uniqueText),
+                   new ColInfo( "date","Ngày Tháng", ColInfo.ColType.dateTime),
+                   new ColInfo( "name","Họ tên", ColInfo.ColType.text),
+                   new ColInfo( "addr","Địa chỉ", ColInfo.ColType.text),
+                   new ColInfo( "content","Nội dung", ColInfo.ColType.text, "receipts_content"),
+                   new ColInfo( "note","Ghi chú", ColInfo.ColType.text),
+                   new ColInfo( "amount","Số tiền", ColInfo.ColType.currency),
                 };
         }
 #else
@@ -240,7 +240,7 @@ namespace test_binding
 
     };
     [DataContract(Name = "InternalPaymentTblInfo")]
-    public class lInternalPaymentTblInfo : lTableInfo
+    public class lInternalPaymentTblInfo : TableInfo
     {
         public lInternalPaymentTblInfo()
         {
@@ -260,24 +260,24 @@ namespace test_binding
             + "content text,"
             + "note text"
             + ")";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "ID"               ,"ID"           , lColInfo.lColType.num, null, false),
-                   new lColInfo( "payment_number"   ,"Mã Phiếu Chi" , lColInfo.lColType.uniqueText),
-                   new lColInfo( "date"             ,"Ngày Tháng"   , lColInfo.lColType.dateTime),
-                   new lColInfo( "name"             ,"Họ Tên"       , lColInfo.lColType.text),
-                   new lColInfo( "addr"             ,"Địa chỉ"      , lColInfo.lColType.text),
-                   new lColInfo( "group_name"       ,"Thuộc ban"    , lColInfo.lColType.text, "group_name"),
-                   new lColInfo( "content"          ,"Nội dung"     , lColInfo.lColType.text),
-                   new lColInfo( "advance_payment"  ,"Tạm ứng"      , lColInfo.lColType.currency),
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID"               ,"ID"           , ColInfo.ColType.num, null, false),
+                   new ColInfo( "payment_number"   ,"Mã Phiếu Chi" , ColInfo.ColType.uniqueText),
+                   new ColInfo( "date"             ,"Ngày Tháng"   , ColInfo.ColType.dateTime),
+                   new ColInfo( "name"             ,"Họ Tên"       , ColInfo.ColType.text),
+                   new ColInfo( "addr"             ,"Địa chỉ"      , ColInfo.ColType.text),
+                   new ColInfo( "group_name"       ,"Thuộc ban"    , ColInfo.ColType.text, "group_name"),
+                   new ColInfo( "content"          ,"Nội dung"     , ColInfo.ColType.text),
+                   new ColInfo( "advance_payment"  ,"Tạm ứng"      , ColInfo.ColType.currency),
                    //new lColInfo( "reimbursement"    ,"Hoàn ứng"     , lColInfo.lColType.currency, null, false),
-                   new lColInfo( "actually_spent"   ,"Thực chi"     , lColInfo.lColType.currency),
-                   new lColInfo( "status"           ,"Trạng thái"   , lColInfo.lColType.map),
-                   new lColInfo( "note"             ,"Ghi Chú"      , lColInfo.lColType.text),
+                   new ColInfo( "actually_spent"   ,"Thực chi"     , ColInfo.ColType.currency),
+                   new ColInfo( "status"           ,"Trạng thái"   , ColInfo.ColType.map),
+                   new ColInfo( "note"             ,"Ghi Chú"      , ColInfo.ColType.text),
                 };
         }
     };
     [DataContract(Name = "ExternalPaymentTblInfo")]
-    public class lExternalPaymentTblInfo : lTableInfo
+    public class lExternalPaymentTblInfo : TableInfo
     {
         public lExternalPaymentTblInfo()
         {
@@ -296,23 +296,23 @@ namespace test_binding
             + "content text,"
             + "note text"
             + ")";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
-                   new lColInfo( "payment_number"   ,"Mã Phiếu Chi", lColInfo.lColType.uniqueText),
-                   new lColInfo( "date"             ,"Ngày Tháng", lColInfo.lColType.dateTime),
-                   new lColInfo( "name"             ,"Họ Tên", lColInfo.lColType.text),
-                   new lColInfo( "addr"             ,"Địa chỉ", lColInfo.lColType.text),
-                   new lColInfo( "content"          ,"Nội dung", lColInfo.lColType.text),
-                   new lColInfo( "constr_org"       ,"Đơn vị TC", lColInfo.lColType.text, "constr_org"),
-                   new lColInfo( "building"         ,"Công trình", lColInfo.lColType.text, "building"),
-                   new lColInfo( "group_name"       ,"Thuộc ban", lColInfo.lColType.text, "group_name"),
-                   new lColInfo( "spent"            ,"Số tiền", lColInfo.lColType.currency),
-                   new lColInfo( "note"             ,"Ghi Chú", lColInfo.lColType.text),
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
+                   new ColInfo( "payment_number"   ,"Mã Phiếu Chi", ColInfo.ColType.uniqueText),
+                   new ColInfo( "date"             ,"Ngày Tháng", ColInfo.ColType.dateTime),
+                   new ColInfo( "name"             ,"Họ Tên", ColInfo.ColType.text),
+                   new ColInfo( "addr"             ,"Địa chỉ", ColInfo.ColType.text),
+                   new ColInfo( "content"          ,"Nội dung", ColInfo.ColType.text),
+                   new ColInfo( "constr_org"       ,"Đơn vị TC", ColInfo.ColType.text, "constr_org"),
+                   new ColInfo( "building"         ,"Công trình", ColInfo.ColType.text, "building"),
+                   new ColInfo( "group_name"       ,"Thuộc ban", ColInfo.ColType.text, "group_name"),
+                   new ColInfo( "spent"            ,"Số tiền", ColInfo.ColType.currency),
+                   new ColInfo( "note"             ,"Ghi Chú", ColInfo.ColType.text),
                 };
         }
     };
     [DataContract(Name = "SalaryTblInfo")]
-    public class lSalaryTblInfo : lTableInfo
+    public class lSalaryTblInfo : TableInfo
     {
         public lSalaryTblInfo()
         {
@@ -332,24 +332,24 @@ namespace test_binding
             + "content text,"
             + "note text"
             + ")";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
-                   new lColInfo( "payment_number"   ,"Mã Phiếu Chi", lColInfo.lColType.uniqueText),
-                   new lColInfo( "month"            ,"Tháng(1...12)", lColInfo.lColType.num, null, false),
-                   new lColInfo( "date"             ,"Ngày Tháng", lColInfo.lColType.dateTime),
-                   new lColInfo( "name"             ,"Họ Tên", lColInfo.lColType.text),
-                   new lColInfo( "addr"             ,"Địa chỉ", lColInfo.lColType.text),
-                   new lColInfo( "group_name"       ,"Thuộc ban", lColInfo.lColType.text, "group_name"),
-                   new lColInfo( "content"          ,"Nội dung", lColInfo.lColType.text),
-                   new lColInfo( "bsalary"           ,"Lương CB", lColInfo.lColType.currency),
-                   new lColInfo( "esalary"           ,"Lương TN", lColInfo.lColType.currency),
-                   new lColInfo( "salary"           ,"Tổng lương", lColInfo.lColType.currency),
-                   new lColInfo( "note"             ,"Ghi Chú", lColInfo.lColType.text),
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
+                   new ColInfo( "payment_number"   ,"Mã Phiếu Chi", ColInfo.ColType.uniqueText),
+                   new ColInfo( "month"            ,"Tháng(1...12)", ColInfo.ColType.num, null, false),
+                   new ColInfo( "date"             ,"Ngày Tháng", ColInfo.ColType.dateTime),
+                   new ColInfo( "name"             ,"Họ Tên", ColInfo.ColType.text),
+                   new ColInfo( "addr"             ,"Địa chỉ", ColInfo.ColType.text),
+                   new ColInfo( "group_name"       ,"Thuộc ban", ColInfo.ColType.text, "group_name"),
+                   new ColInfo( "content"          ,"Nội dung", ColInfo.ColType.text),
+                   new ColInfo( "bsalary"           ,"Lương CB", ColInfo.ColType.currency),
+                   new ColInfo( "esalary"           ,"Lương TN", ColInfo.ColType.currency),
+                   new ColInfo( "salary"           ,"Tổng lương", ColInfo.ColType.currency),
+                   new ColInfo( "note"             ,"Ghi Chú", ColInfo.ColType.text),
                 };
         }
     };
     [DataContract(Name = "lGroupNameTblInfo")]
-    public class lGroupNameTblInfo : lTableInfo
+    public class lGroupNameTblInfo : TableInfo
     {
         public lGroupNameTblInfo()
         {
@@ -358,14 +358,14 @@ namespace test_binding
             m_crtQry = "CREATE TABLE if not exists group_name("
                 + "ID INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "name nchar(31))";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
-                   new lColInfo( "name","Các ban", lColInfo.lColType.text)
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
+                   new ColInfo( "name","Các ban", ColInfo.ColType.text)
                 };
         }
     };
     [DataContract(Name = "lBuildingTblInfo")]
-    public class lBuildingTblInfo : lTableInfo
+    public class lBuildingTblInfo : TableInfo
     {
         public lBuildingTblInfo()
         {
@@ -374,14 +374,14 @@ namespace test_binding
             m_crtQry = "CREATE TABLE if not exists building("
                 + "ID INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "name nchar(31))";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
-                   new lColInfo( "name","Công trình", lColInfo.lColType.text)
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
+                   new ColInfo( "name","Công trình", ColInfo.ColType.text)
                 };
         }
     };
     [DataContract(Name = "lConstrorgTblInfo")]
-    public class lConstrorgTblInfo : lTableInfo
+    public class lConstrorgTblInfo : TableInfo
     {
         public lConstrorgTblInfo()
         {
@@ -390,14 +390,14 @@ namespace test_binding
             m_crtQry = "CREATE TABLE if not exists constr_org("
                 + "ID INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "name nchar(31))";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
-                   new lColInfo( "name","Đơn vị TC", lColInfo.lColType.text)
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
+                   new ColInfo( "name","Đơn vị TC", ColInfo.ColType.text)
                 };
         }
     };
     [DataContract(Name = "lReceiptsContentTblInfo")]
-    public class lReceiptsContentTblInfo : lTableInfo
+    public class lReceiptsContentTblInfo : TableInfo
     {
         public lReceiptsContentTblInfo()
         {
@@ -406,14 +406,14 @@ namespace test_binding
             m_crtQry = "CREATE TABLE if not exists receipts_content("
                 + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + " content nchar(31))";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
-                   new lColInfo( "content","Nguồn thu", lColInfo.lColType.text)
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
+                   new ColInfo( "content","Nguồn thu", ColInfo.ColType.text)
                 };
         }
     };
     [DataContract(Name = "lTaskTblInfo")]
-    public class lTaskTblInfo : lTableInfo
+    public class lTaskTblInfo : TableInfo
     {
         public lTaskTblInfo()
         {
@@ -427,21 +427,21 @@ namespace test_binding
                 + "start_date datetime,"
                 + "end_date datetime,"
                 + "note text)";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
-                   new lColInfo( "task_number","Mã CV", lColInfo.lColType.uniqueText),
-                   new lColInfo( "group_name" ,"Thuộc ban", lColInfo.lColType.text, "group_name"),
-                   new lColInfo( "task_name"  ,"Tên CV", lColInfo.lColType.text),
-                   new lColInfo( "start_date" ,"Ngày bắt đầu", lColInfo.lColType.dateTime),
-                   new lColInfo( "end_date"   ,"Ngày kết thúc", lColInfo.lColType.dateTime),
-                   new lColInfo( "note"       ,"Ghi Chú", lColInfo.lColType.text),
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
+                   new ColInfo( "task_number","Mã CV", ColInfo.ColType.uniqueText),
+                   new ColInfo( "group_name" ,"Thuộc ban", ColInfo.ColType.text, "group_name"),
+                   new ColInfo( "task_name"  ,"Tên CV", ColInfo.ColType.text),
+                   new ColInfo( "start_date" ,"Ngày bắt đầu", ColInfo.ColType.dateTime),
+                   new ColInfo( "end_date"   ,"Ngày kết thúc", ColInfo.ColType.dateTime),
+                   new ColInfo( "note"       ,"Ghi Chú", ColInfo.ColType.text),
                 };
         }
     };
     [DataContract(Name = "lOrderTblInfo")]
-    public class lOrderTblInfo : lTableInfo
+    public class OrderTblInfo : TableInfo
     {
-        public lOrderTblInfo()
+        public OrderTblInfo()
         {
             m_tblName = "order_tbl";
             m_tblAlias = "Yêu Cầu";
@@ -453,21 +453,28 @@ namespace test_binding
                 + "number INTEGER,"
                 + "order_status INTEGER,"
                 + "note text)";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
-                   new lColInfo( "order_number" ,"Mã YC", lColInfo.lColType.uniqueText),
-                   new lColInfo( "task_number"  ,"Mã CV", lColInfo.lColType.text, "task"),  //columns[1]
-                   new lColInfo( "order_type"   ,"Loại YC", lColInfo.lColType.map, lOrderType.zLst),
-                   new lColInfo( "number"       ,"Số lượng", lColInfo.lColType.num),
-                   new lColInfo( "order_status" ,"Trạng thái", lColInfo.lColType.map, lOrderStatus.zLst),
-                   new lColInfo( "note"         ,"Ghi Chú", lColInfo.lColType.text),
+            string OrderStatusLst = string.Join(";", new string[] {
+                OrderStatus.Request.ToName(),
+                OrderStatus.Approve.ToName()});
+            string OrderTypeLst = string.Join(";", new string[]{
+                OrderType.Worker.ToName(),
+                OrderType.Equip.ToName(),
+                OrderType.Expense.ToName()});
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
+                   new ColInfo( "order_number" ,"Mã YC", ColInfo.ColType.uniqueText),
+                   new ColInfo( "task_number"  ,"Mã CV", ColInfo.ColType.text, "task"),  //columns[1]
+                   new ColInfo( "order_type"   ,"Loại YC", ColInfo.ColType.map, OrderTypeLst),
+                   new ColInfo( "number"       ,"Số lượng", ColInfo.ColType.num),
+                   new ColInfo( "order_status" ,"Trạng thái", ColInfo.ColType.map, OrderStatusLst),
+                   new ColInfo( "note"         ,"Ghi Chú", ColInfo.ColType.text),
                 };
         }
     };
     [DataContract(Name = "lHumanTblInfo")]
-    public class lHumanTblInfo : lTableInfo
+    public class HumanTblInfo : TableInfo
     {
-        public lHumanTblInfo()
+        public HumanTblInfo()
         {
             m_tblName = "human";
             m_tblAlias = "Nhân Sự";
@@ -476,24 +483,25 @@ namespace test_binding
                 + "human_number char(31),"
                 + "start_date datetime,"
                 + "end_date datetime,"
-                + "sex INTEGER,"
+                + "gender INTEGER,"
                 + "age INTEGER,"
                 + "note text)";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
-                   new lColInfo( "human_number" ,"Mã NS", lColInfo.lColType.uniqueText),
-                   new lColInfo( "start_date"   ,"Ngày vào", lColInfo.lColType.dateTime),
-                   new lColInfo( "end_date"     ,"Ngày ra", lColInfo.lColType.dateTime),
-                   new lColInfo( "sex"          ,"Giới tính", lColInfo.lColType.num),
-                   new lColInfo( "age"          ,"Tuổi", lColInfo.lColType.num),
-                   new lColInfo( "note"         ,"Ghi Chú", lColInfo.lColType.text),
+            string GenderLst = string.Join(";",new string[] { Gender.Male.ToName(), Gender.Female.ToName() });
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
+                   new ColInfo( "human_number" ,"Mã NS", ColInfo.ColType.uniqueText),
+                   new ColInfo( "start_date"   ,"Ngày vào", ColInfo.ColType.dateTime),
+                   new ColInfo( "end_date"     ,"Ngày ra" , ColInfo.ColType.dateTime),
+                   new ColInfo( "gender"       ,"Giới tính", ColInfo.ColType.map, GenderLst),
+                   new ColInfo( "age"          ,"Tuổi"   , ColInfo.ColType.num),
+                   new ColInfo( "note"         ,"Ghi Chú", ColInfo.ColType.text),
                 };
         }
     };
     [DataContract(Name = "lEquipmentTblInfo")]
-    public class lEquipmentTblInfo : lTableInfo
+    public class EquipmentTblInfo : TableInfo
     {
-        public lEquipmentTblInfo()
+        public EquipmentTblInfo()
         {
             m_tblName = "equipment";
             m_tblAlias = "Thiết Bị";
@@ -502,18 +510,18 @@ namespace test_binding
                 + "equipment_number char(31),"
                 + "equipment_type INTEGER,"
                 + "note text)";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
-                   new lColInfo( "equipment_number" ,"Mã TB", lColInfo.lColType.uniqueText),
-                   new lColInfo( "equipment_type"   ,"Loại TB", lColInfo.lColType.text),
-                   new lColInfo( "note"         ,"Ghi Chú", lColInfo.lColType.text),
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
+                   new ColInfo( "equipment_number" ,"Mã TB", ColInfo.ColType.uniqueText),
+                   new ColInfo( "equipment_type"   ,"Loại TB", ColInfo.ColType.text),
+                   new ColInfo( "note"         ,"Ghi Chú", ColInfo.ColType.text),
                 };
         }
     };
     [DataContract(Name = "lOrderEquipmentTblInfo")]
-    public class lOrderEquipmentTblInfo : lTableInfo
+    public class OrderEquipmentTblInfo : TableInfo
     {
-        public lOrderEquipmentTblInfo()
+        public OrderEquipmentTblInfo()
         {
             m_tblName = "order_equipment";
             m_tblAlias = "Yêu Cầu - Thiết Bị";
@@ -522,18 +530,18 @@ namespace test_binding
                 + "order_number char(31),"
                 + "equipment_number char(31),"
                 + "note text)";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
-                   new lColInfo( "order_number"    ,"Mã YC", lColInfo.lColType.uniqueText),
-                   new lColInfo( "equipment_number","Mã TB", lColInfo.lColType.uniqueText),
-                   new lColInfo( "note"            ,"Ghi Chú", lColInfo.lColType.text),
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
+                   new ColInfo( "order_number"    ,"Mã YC", ColInfo.ColType.uniqueText),
+                   new ColInfo( "equipment_number","Mã TB", ColInfo.ColType.uniqueText),
+                   new ColInfo( "note"            ,"Ghi Chú", ColInfo.ColType.text),
                 };
         }
     }
     [DataContract(Name = "lOrderHumanTblInfo")]
-    public class lOrderHumanTblInfo : lTableInfo
+    public class OrderHumanTblInfo : TableInfo
     {
-        public lOrderHumanTblInfo()
+        public OrderHumanTblInfo()
         {
             m_tblName = "order_human";
             m_tblAlias = "Yêu Cầu - Nhân Sự";
@@ -542,11 +550,11 @@ namespace test_binding
                 + "order_number char(31),"
                 + "human_number char(31),"
                 + "note text)";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "ID","ID", lColInfo.lColType.num, null, false),
-                   new lColInfo( "order_number","Mã YC", lColInfo.lColType.uniqueText),
-                   new lColInfo( "human_number","Mã NS", lColInfo.lColType.uniqueText),
-                   new lColInfo( "note"        ,"Ghi Chú", lColInfo.lColType.text),
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
+                   new ColInfo( "order_number","Mã YC", ColInfo.ColType.uniqueText),
+                   new ColInfo( "human_number","Mã NS", ColInfo.ColType.uniqueText),
+                   new ColInfo( "note"        ,"Ghi Chú", ColInfo.ColType.text),
                 };
         }
     };
@@ -589,7 +597,7 @@ namespace test_binding
 #endif
 
     [DataContract(Name = "lReceiptsViewInfo")]
-    public class lReceiptsViewInfo : lTableInfo
+    public class lReceiptsViewInfo : TableInfo
     {
         public lReceiptsViewInfo()
         {
@@ -600,16 +608,16 @@ namespace test_binding
                 + "(strftime('%m', date) + 2) / 3 as qtr "
                 + "from receipts "
                 + "where strftime('%Y', 'now') - strftime('%Y', date) between 0 and 4;";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "content","Nội dung", lColInfo.lColType.text),
-                   new lColInfo( "amount","Số tiền", lColInfo.lColType.currency),
-                   new lColInfo( "year","Năm", lColInfo.lColType.num),
-                   new lColInfo( "qtr","Quý", lColInfo.lColType.num),
+            m_cols = new ColInfo[] {
+                   new ColInfo( "content","Nội dung", ColInfo.ColType.text),
+                   new ColInfo( "amount","Số tiền", ColInfo.ColType.currency),
+                   new ColInfo( "year","Năm", ColInfo.ColType.num),
+                   new ColInfo( "qtr","Quý", ColInfo.ColType.num),
                 };
         }
     };
     [DataContract(Name = "lInterPaymentViewInfo")]
-    public class lInterPaymentViewInfo : lTableInfo
+    public class lInterPaymentViewInfo : TableInfo
     {
         public lInterPaymentViewInfo()
         {
@@ -620,16 +628,16 @@ namespace test_binding
                 + "(strftime('%m', date) + 2) / 3 as qtr "
                 + "from internal_payment "
                 + "where strftime('%Y', 'now') - strftime('%Y', date) between 0 and 4;";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "group_name","Ban", lColInfo.lColType.text),
-                   new lColInfo( "actually_spent","Thực chi", lColInfo.lColType.currency),
-                   new lColInfo( "year","Năm", lColInfo.lColType.num),
-                   new lColInfo( "qtr","Quý", lColInfo.lColType.num),
+            m_cols = new ColInfo[] {
+                   new ColInfo( "group_name","Ban", ColInfo.ColType.text),
+                   new ColInfo( "actually_spent","Thực chi", ColInfo.ColType.currency),
+                   new ColInfo( "year","Năm", ColInfo.ColType.num),
+                   new ColInfo( "qtr","Quý", ColInfo.ColType.num),
                 };
         }
     };
     [DataContract(Name = "lExterPaymentViewInfo")]
-    public class lExterPaymentViewInfo : lTableInfo
+    public class lExterPaymentViewInfo : TableInfo
     {
         public lExterPaymentViewInfo()
         {
@@ -640,16 +648,16 @@ namespace test_binding
                 + "(strftime('%m', date) + 2) / 3 as qtr "
                 + "from external_payment "
                 + "where strftime('%Y', 'now') - strftime('%Y', date) between 0 and 4;";
-            m_cols = new lColInfo[] {
-                new lColInfo("group_name", "Ban", lColInfo.lColType.text),
-                new lColInfo("spent", "Chi", lColInfo.lColType.currency),
-                new lColInfo("year", "Năm", lColInfo.lColType.num),
-                new lColInfo("qtr", "Quý", lColInfo.lColType.num),
+            m_cols = new ColInfo[] {
+                new ColInfo("group_name", "Ban", ColInfo.ColType.text),
+                new ColInfo("spent", "Chi", ColInfo.ColType.currency),
+                new ColInfo("year", "Năm", ColInfo.ColType.num),
+                new ColInfo("qtr", "Quý", ColInfo.ColType.num),
             };
         }
     };
     [DataContract(Name = "lSalaryViewInfo")]
-    public class lSalaryViewInfo : lTableInfo
+    public class lSalaryViewInfo : TableInfo
     {
         public lSalaryViewInfo()
         {
@@ -660,16 +668,16 @@ namespace test_binding
                 + "(strftime('%m', date) + 2) / 3 as qtr "
                 + "from salary "
                 + "where strftime('%Y', 'now') - strftime('%Y', date) between 0 and 4;";
-            m_cols = new lColInfo[] {
-                new lColInfo("group_name", "Ban", lColInfo.lColType.text),
-                new lColInfo("salary", "Lương", lColInfo.lColType.currency),
-                new lColInfo("year", "Năm", lColInfo.lColType.num),
-                new lColInfo("qtr", "Quý", lColInfo.lColType.num),
+            m_cols = new ColInfo[] {
+                new ColInfo("group_name", "Ban", ColInfo.ColType.text),
+                new ColInfo("salary", "Lương", ColInfo.ColType.currency),
+                new ColInfo("year", "Năm", ColInfo.ColType.num),
+                new ColInfo("qtr", "Quý", ColInfo.ColType.num),
             };
         }
     };
     [DataContract(Name = "lAdvanceViewInfo")]
-    public class lAdvanceViewInfo : lTableInfo
+    public class lAdvanceViewInfo : TableInfo
     {
         public lAdvanceViewInfo()
         {
@@ -680,16 +688,16 @@ namespace test_binding
                 + "(strftime('%m', date) + 2) / 3 as qtr "
                 + "from advance "
                 + "where strftime('%Y', 'now') - strftime('%Y', date) between 0 and 4;";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "group_name","Ban", lColInfo.lColType.text),
-                   new lColInfo( "actually_spent","Thực chi", lColInfo.lColType.currency),
-                   new lColInfo( "year","Năm", lColInfo.lColType.num),
-                   new lColInfo( "qtr","Quý", lColInfo.lColType.num),
+            m_cols = new ColInfo[] {
+                   new ColInfo( "group_name","Ban", ColInfo.ColType.text),
+                   new ColInfo( "actually_spent","Thực chi", ColInfo.ColType.currency),
+                   new ColInfo( "year","Năm", ColInfo.ColType.num),
+                   new ColInfo( "qtr","Quý", ColInfo.ColType.num),
                 };
         }
     };
     [DataContract(Name = "lDaysumViewInfo")]
-    public class lDaysumViewInfo : lTableInfo
+    public class lDaysumViewInfo : TableInfo
     {
         public lDaysumViewInfo()
         {
@@ -735,13 +743,13 @@ namespace test_binding
                     + "              FROM salary"
                     + "        )"
                     + "  GROUP BY date";
-            m_cols = new lColInfo[] {
-                new lColInfo("date", "Ngày", lColInfo.lColType.text),
-                new lColInfo("receipt", "Thu", lColInfo.lColType.currency),
-                new lColInfo("interpay", "Chi nội", lColInfo.lColType.currency),
-                new lColInfo("exterpay", "Chi ngoại", lColInfo.lColType.currency),
-                new lColInfo("salary", "Lương", lColInfo.lColType.currency),
-                new lColInfo("sum", "Số dư cuối", lColInfo.lColType.currency),
+            m_cols = new ColInfo[] {
+                new ColInfo("date", "Ngày", ColInfo.ColType.text),
+                new ColInfo("receipt", "Thu", ColInfo.ColType.currency),
+                new ColInfo("interpay", "Chi nội", ColInfo.ColType.currency),
+                new ColInfo("exterpay", "Chi ngoại", ColInfo.ColType.currency),
+                new ColInfo("salary", "Lương", ColInfo.ColType.currency),
+                new ColInfo("sum", "Số dư cuối", ColInfo.ColType.currency),
             };
         }
     };
@@ -916,10 +924,10 @@ namespace test_binding
         public const string zAdvance = "Tạm ứng";
         public const string zRemain = "Hoàn ứng";
         public const string zActual = "Thực chi";
-        public static List<lInputCtrlEnum.comboItem> lst = new List<lInputCtrlEnum.comboItem> {
-                new lInputCtrlEnum.comboItem { name = zAdvance, val = nAdvance },
-                new lInputCtrlEnum.comboItem { name = zRemain, val = nRemain },
-                new lInputCtrlEnum.comboItem { name = zActual, val = nActual },
+        public static List<lInputCtrlEnum.ComboItem> lst = new List<lInputCtrlEnum.ComboItem> {
+                new lInputCtrlEnum.ComboItem { name = zAdvance, val = nAdvance },
+                new lInputCtrlEnum.ComboItem { name = zRemain, val = nRemain },
+                new lInputCtrlEnum.ComboItem { name = zActual, val = nActual },
             };
     }
 
@@ -946,57 +954,26 @@ namespace test_binding
         }
 
     }
-    public class lOrderStatus
+
+    public enum OrderStatus
     {
-        public enum eOrderStatus
-        {
-            [Description("Đang xin phép")] eRequest,
-            [Description("Đã chấp nhận")] eApprove,
-        }
-        static Dictionary<string, eOrderStatus> m_dict;
-        public static string zLst
-        {
-            get
-            {
-                string txt;
-                eOrderStatus var = 0;
-                txt = var.ToName();
-                for (int i = 1; i < 2; i++)
-                {
-                    var = (eOrderStatus)i;
-                    txt = txt + ";" + var.ToName();
-                }
-                return txt;
-            }
-        }
-        //public static Dictionary<string, eOrderStatus> getDict()
-        //{
-        //    if (m_dict == null)
-        //    {
-        //        m_dict = new Dictionary<string, eOrderStatus>();
-        //        for(int i = 0; i < 2; i++)
-        //        {
-        //            m_dict.Add(Enum.GetName(typeof(eOrderStatus), (eOrderStatus)i),i);
-        //        }
-        //    }
-        //    return m_dict;
-        //}
+        [Description("Đang xin phép")] Request,
+        [Description("Đã chấp nhận")] Approve
     }
-    public class lOrderType
+
+    public enum OrderType
     {
-        public const int nWorker = 0;
-        public const int nEquip = 1;
-        public const int nExpense = 2;
-        public const string zWorker = "Nhân công";
-        public const string zEquip = "Thiết bị";
-        public const string zExpense = "Kinh phí";
-        public static List<lInputCtrlEnum.comboItem> lst = new List<lInputCtrlEnum.comboItem> {
-                new lInputCtrlEnum.comboItem { name = zWorker, val = nWorker },
-                new lInputCtrlEnum.comboItem { name = zEquip, val = nEquip },
-                new lInputCtrlEnum.comboItem { name = zExpense, val = nExpense },
-            };
-        public static string zLst = zWorker + ";" + zEquip + ";" + zExpense;
+        [Description("Nhân công")] Worker,
+        [Description("Thiết bị")] Equip,
+        [Description("Kinh phí")] Expense
     }
+
+    public enum Gender
+    {
+        [Description("Nam")] Male,
+        [Description("Nữ")] Female,
+    }
+
 #if use_sqlite
     public class lSQLiteContentProvider : lContentProvider
     {
@@ -1030,11 +1007,11 @@ namespace test_binding
                 SQLiteCommand cmd = new SQLiteCommand();
                 cmd.Connection = m_cnn;
                 List<string> sqls = new List<string>();
-                foreach (lTableInfo tbl in appConfig.s_config.m_dbSchema.m_tables)
+                foreach (TableInfo tbl in appConfig.s_config.m_dbSchema.m_tables)
                 {
                     sqls.Add(tbl.m_crtQry);
                 }
-                foreach (lTableInfo view in appConfig.s_config.m_dbSchema.m_views)
+                foreach (TableInfo view in appConfig.s_config.m_dbSchema.m_views)
                 {
                     sqls.Add(view.m_crtQry);
                 }
@@ -1098,16 +1075,16 @@ namespace test_binding
             public List<string> m_crtViewSqls;
 #endif
         [DataMember(Name = "tables")]
-        public List<lTableInfo> m_tables;
+        public List<TableInfo> m_tables;
         [DataMember(Name = "views")]
-        public List<lTableInfo> m_views;
+        public List<TableInfo> m_views;
 
         public lDbSchema()
         {
         }
         protected void init()
         {
-            m_tables = new List<lTableInfo>() {
+            m_tables = new List<TableInfo>() {
                     new lReceiptsTblInfo(),
                     new lInternalPaymentTblInfo(),
                     new lExternalPaymentTblInfo(),
@@ -1118,13 +1095,13 @@ namespace test_binding
                     new lBuildingTblInfo(),
                     new lConstrorgTblInfo(),
                     new lTaskTblInfo(),
-                    new lOrderTblInfo(),
-                    new lHumanTblInfo(),
-                    new lEquipmentTblInfo(),
-                    new lOrderEquipmentTblInfo(),
-                    new lOrderHumanTblInfo(),
+                    new OrderTblInfo(),
+                    new HumanTblInfo(),
+                    new EquipmentTblInfo(),
+                    new OrderEquipmentTblInfo(),
+                    new OrderHumanTblInfo(),
                 };
-            m_views = new List<lTableInfo>() {
+            m_views = new List<TableInfo>() {
                     new lReceiptsViewInfo(),
                     new lInterPaymentViewInfo(),
                     new lExterPaymentViewInfo(),
@@ -1510,7 +1487,7 @@ namespace test_binding
         {
             if (m_dataTable.Columns.Count == 0)
             {
-                lTableInfo tbl = appConfig.s_config.getTable(m_table);
+                TableInfo tbl = appConfig.s_config.getTable(m_table);
                 if (tbl == null) return;
 
                 //not need to init cols for views
@@ -1521,11 +1498,11 @@ namespace test_binding
                     DataColumn dc = m_dataTable.Columns.Add(col.m_field);
                     switch (col.m_type)
                     {
-                        case lTableInfo.lColInfo.lColType.num:
-                        case lTableInfo.lColInfo.lColType.currency:
+                        case TableInfo.ColInfo.ColType.num:
+                        case TableInfo.ColInfo.ColType.currency:
                             dc.DataType = typeof(Int64);
                             break;
-                        case lTableInfo.lColInfo.lColType.dateTime:
+                        case TableInfo.ColInfo.ColType.dateTime:
                             dc.DataType = typeof(DateTime);
                             break;
                     }
@@ -1548,8 +1525,8 @@ namespace test_binding
             }
 #endif
 #if use_cmd_params
-        public virtual void Search(List<string> exprs, List<lSearchParam> srchParams) { throw new NotImplementedException(); }
-        public virtual void AddRec(List<string> exprs, List<lSearchParam> srchParams) { throw new NotImplementedException(); }
+        public virtual void Search(List<string> exprs, List<SearchParam> srchParams) { throw new NotImplementedException(); }
+        public virtual void AddRec(List<string> exprs, List<SearchParam> srchParams) { throw new NotImplementedException(); }
 #endif
         bool m_changed = true;
         public virtual void Load(bool isView) { throw new NotFiniteNumberException(); }
@@ -1647,7 +1624,7 @@ namespace test_binding
 #endif
 #if use_cmd_params
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
-        public override void Search(List<string> exprs, List<lSearchParam> srchParams)
+        public override void Search(List<string> exprs, List<SearchParam> srchParams)
         {
             SQLiteCommand selectCommand;
             string sql = string.Format("select * from {0} ", m_table);
@@ -1667,7 +1644,7 @@ namespace test_binding
             GetData(selectCommand);
         }
 #endif
-        public override void AddRec(List<string> exprs, List<lSearchParam> srchParams)
+        public override void AddRec(List<string> exprs, List<SearchParam> srchParams)
         {
             SQLiteCommand cmd;
 
@@ -1819,7 +1796,7 @@ namespace test_binding
 #endif
 #if use_cmd_params
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
-        public override void Search(List<string> exprs, List<lSearchParam> srchParams)
+        public override void Search(List<string> exprs, List<SearchParam> srchParams)
         {
             string sql = string.Format("select * from {0} ", m_table);
 

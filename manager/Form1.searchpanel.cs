@@ -11,13 +11,14 @@ using System;
 using System.Data;
 using System.Runtime.Serialization;
 using System.Diagnostics;
+using System.Linq;
 
 namespace test_binding
 {
     [DataContract(Name = "SearchCtrl")]
-    public class lSearchCtrl : IDisposable
+    public class SearchCtrl : IDisposable
     {
-        public enum ctrlType
+        public enum CtrlType
         {
             text,
             dateTime,
@@ -25,11 +26,11 @@ namespace test_binding
             currency,
             map
         };
-        public lTableInfo.lColInfo m_colInfo;
+        public TableInfo.ColInfo m_colInfo;
         [DataMember(Name = "field", EmitDefaultValue = false)]
         public string m_fieldName;
         public string m_alias;
-        public ctrlType m_type;
+        public CtrlType m_type;
         [DataMember(Name = "pos", EmitDefaultValue = false)]
         public Point m_pos;
         [DataMember(Name = "size", EmitDefaultValue = false)]
@@ -50,8 +51,8 @@ namespace test_binding
         public FlowLayoutPanel m_panel = new FlowLayoutPanel();
         public CheckBox m_label = lConfigMng.crtCheckBox();
 
-        public lSearchCtrl() { }
-        public lSearchCtrl(string fieldName, string alias, ctrlType type, Point pos, Size size)
+        public SearchCtrl() { }
+        public SearchCtrl(string fieldName, string alias, CtrlType type, Point pos, Size size)
         {
             m_fieldName = fieldName;
             m_alias = alias;
@@ -72,11 +73,11 @@ namespace test_binding
 #endif
         }
 
-        public virtual void updateInsertParams(List<string> exprs, List<lSearchParam> srchParams) { }
-        public virtual void updateSearchParams(List<string> exprs, List<lSearchParam> srchParams) { }
-        public virtual string getSearchParams() { return null; }
+        public virtual void UpdateInsertParams(List<string> exprs, List<SearchParam> srchParams) { }
+        public virtual void UpdateSearchParams(List<string> exprs, List<SearchParam> srchParams) { }
+        public virtual string GetSearchParams() { return null; }
         public virtual void LoadData() { }
-        protected virtual void valueChanged(object sender, EventArgs e)
+        protected virtual void ValueChanged(object sender, EventArgs e)
         {
             m_label.Checked = true;
         }
@@ -87,7 +88,7 @@ namespace test_binding
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        ~lSearchCtrl()
+        ~SearchCtrl()
         {
             // Finalizer calls Dispose(false)  
             Dispose(false);
@@ -103,25 +104,25 @@ namespace test_binding
         #endregion
     };
 
-    public class lSearchParam
+    public class SearchParam
     {
         public string key;
         public string val;
         public DbType type;
     }
 
-    public class lSearchBuilder
+    public class SearchBuilder
     {
-        lTableInfo m_tblInfo;
-        Dictionary<string, lTableInfo.lColInfo> m_dict;
+        TableInfo m_tblInfo;
+        Dictionary<string, TableInfo.ColInfo> m_dict;
         public List<string> exprs = new List<string>();
-        public List<lSearchParam> srchParams = new List<lSearchParam>();
+        public List<SearchParam> srchParams = new List<SearchParam>();
         public lDataContent dc;
-        public lSearchBuilder(lTableInfo tblInfo)
+        public SearchBuilder(TableInfo tblInfo)
         {
             m_tblInfo = tblInfo;
-            m_dict = new Dictionary<string, lTableInfo.lColInfo>();
-            foreach (lTableInfo.lColInfo colInfo in m_tblInfo.m_cols)
+            m_dict = new Dictionary<string, TableInfo.ColInfo>();
+            foreach (TableInfo.ColInfo colInfo in m_tblInfo.m_cols)
             {
                 m_dict.Add(colInfo.m_field, colInfo);
             }
@@ -137,13 +138,13 @@ namespace test_binding
         {
             Debug.Assert(m_dict.ContainsKey(col));
 
-            lTableInfo.lColInfo colInfo = m_dict[col];
-            Debug.Assert(colInfo.m_type == lTableInfo.lColInfo.lColType.dateTime);
+            TableInfo.ColInfo colInfo = m_dict[col];
+            Debug.Assert(colInfo.m_type == TableInfo.ColInfo.ColType.dateTime);
 
             exprs.Add(string.Format("({0}{1}@startDate)",colInfo.m_field, oper));
             string zStartDate = start.ToString(lConfigMng.getDateFormat());
             srchParams.Add(
-                    new lSearchParam()
+                    new SearchParam()
                     {
                         key = "@startDate",
                         val = string.Format("{0} 00:00:00", zStartDate),
@@ -155,14 +156,14 @@ namespace test_binding
         {
             Debug.Assert (m_dict.ContainsKey(col));
 
-            lTableInfo.lColInfo colInfo = m_dict[col];
-            Debug.Assert(colInfo.m_type == lTableInfo.lColInfo.lColType.dateTime);
+            TableInfo.ColInfo colInfo = m_dict[col];
+            Debug.Assert(colInfo.m_type == TableInfo.ColInfo.ColType.dateTime);
 
             exprs.Add(string.Format("({0} between @startDate and @endDate)",colInfo.m_field));
             string zStartDate = startDate.ToString(lConfigMng.getDateFormat());
             string zEndDate = endDate.ToString(lConfigMng.getDateFormat());
             srchParams.Add(
-                new lSearchParam()
+                new SearchParam()
                 {
                     key = "@startDate",
                     val = string.Format("{0} 00:00:00", zStartDate),
@@ -170,7 +171,7 @@ namespace test_binding
                 }
             );
             srchParams.Add(
-                new lSearchParam()
+                new SearchParam()
                 {
                     key = "@endDate",
                     val = string.Format("{0} 00:00:00", zEndDate),
@@ -179,18 +180,18 @@ namespace test_binding
             );
         }
 
-        public void add(string col, string arg1, lSearchCtrl.SearchMode mode = lSearchCtrl.SearchMode.match)
+        public void add(string col, string arg1, SearchCtrl.SearchMode mode = SearchCtrl.SearchMode.match)
         {
             Debug.Assert(m_dict.ContainsKey(col));
 
-            lTableInfo.lColInfo colInfo = m_dict[col];
+            TableInfo.ColInfo colInfo = m_dict[col];
             switch (colInfo.m_type)
             {
-                case lTableInfo.lColInfo.lColType.text:
+                case TableInfo.ColInfo.ColType.text:
                     break;
-                case lTableInfo.lColInfo.lColType.num:
+                case TableInfo.ColInfo.ColType.num:
                     break;
-                case lTableInfo.lColInfo.lColType.uniqueText:
+                case TableInfo.ColInfo.ColType.uniqueText:
                     break;
                 default:
                     Debug.Assert(false);
@@ -198,11 +199,11 @@ namespace test_binding
             }
 
 #if use_sqlite
-            if (mode == lSearchCtrl.SearchMode.like)
+            if (mode == SearchCtrl.SearchMode.like)
             {
                 exprs.Add(string.Format("({0} like @{0})", colInfo.m_field));
                 srchParams.Add(
-                    new lSearchParam()
+                    new SearchParam()
                     {
                         key = string.Format("@{0}", colInfo.m_field),
                         val = string.Format("%{0}%", arg1)
@@ -213,7 +214,7 @@ namespace test_binding
             {
                 exprs.Add(string.Format("({0}=@{0})", colInfo.m_field));
                 srchParams.Add(
-                    new lSearchParam()
+                    new SearchParam()
                     {
                         key = string.Format("@{0}", colInfo.m_field),
                         val = arg1
@@ -241,11 +242,11 @@ namespace test_binding
     }
 
     [DataContract(Name = "SearchCtrlText")]
-    public class lSearchCtrlText : lSearchCtrl
+    public class SearchCtrlText : SearchCtrl
     {
         protected TextBox m_text;
-        ComboBox m_combo;
-        string m_value
+        protected ComboBox m_combo;
+        protected virtual string m_value
         {
             get
             {
@@ -253,16 +254,16 @@ namespace test_binding
                 else return m_combo.Text;
             }
         }
-        public lSearchCtrlText(string fieldName, string alias, ctrlType type, Point pos, Size size)
+        public SearchCtrlText(string fieldName, string alias, CtrlType type, Point pos, Size size)
             : base(fieldName, alias, type, pos, size)
         {
             m_text = lConfigMng.crtTextBox();
             m_text.Width = 200;
-            m_text.TextChanged += valueChanged;
+            m_text.TextChanged += ValueChanged;
             m_panel.Controls.AddRange(new Control[] { m_label, m_text });
         }
 
-        public override string getSearchParams()
+        public override string GetSearchParams()
         {
             string srchParam = null;
             if (m_label.Checked)
@@ -280,18 +281,18 @@ namespace test_binding
             }
             return srchParam;
         }
-        public override void updateInsertParams(List<string> exprs, List<lSearchParam> srchParams)
+        public override void UpdateInsertParams(List<string> exprs, List<SearchParam> srchParams)
         {
             exprs.Add(m_fieldName);
             srchParams.Add(
-                new lSearchParam()
+                new SearchParam()
                 {
                     key = string.Format("@{0}", m_fieldName),
                     val = m_value
                 }
             );
         }
-        public override void updateSearchParams(List<string> exprs, List<lSearchParam> srchParams)
+        public override void UpdateSearchParams(List<string> exprs, List<SearchParam> srchParams)
         {
             if (m_label.Checked)
             {
@@ -300,7 +301,7 @@ namespace test_binding
                 {
                     exprs.Add(string.Format("({0} like @{0})", m_fieldName));
                     srchParams.Add(
-                        new lSearchParam()
+                        new SearchParam()
                         {
                             key = string.Format("@{0}", m_fieldName),
                             val = string.Format("%{0}%", m_value)
@@ -311,7 +312,7 @@ namespace test_binding
                 {
                     exprs.Add(string.Format("({0}=@{0})", m_fieldName));
                     srchParams.Add(
-                        new lSearchParam()
+                        new SearchParam()
                         {
                             key = string.Format("@{0}", m_fieldName),
                             val = m_value
@@ -356,7 +357,7 @@ namespace test_binding
                 AutoCompleteStringCollection col = m_colInfo.m_lookupData.m_colls;
                 m_combo.AutoCompleteCustomSource = col;
 
-                m_combo.Click += valueChanged;
+                m_combo.Click += ValueChanged;
                 m_combo.Validated += M_combo_Validated;
 
                 m_text.Dispose();
@@ -382,13 +383,60 @@ namespace test_binding
             base.Dispose(disposing);
         }
     }
+    [DataContract(Name = "SearchCtrlEnum")]
+    public class SearchCtrlEnum: SearchCtrlText
+    {
+        protected override string m_value{
+            get {
+                return m_combo.SelectedValue.ToString();
+            } }
+        public SearchCtrlEnum(string fieldName, string alias, CtrlType type, Point pos, Size size)
+            : base(fieldName, alias, type, pos, size)
+        {
+            m_mode = SearchMode.match;
+            m_combo = lConfigMng.crtComboBox();
+            m_combo.Width = 200;
+            m_combo.Click += ValueChanged;
+            m_panel.Controls.Clear();
+            m_panel.Controls.AddRange(new Control[] { m_label, m_combo });
+        }
+        public override void LoadData()
+        {
+            if (m_colInfo != null)
+            {
+                Dictionary<string, int> dict = m_colInfo.GetDict();
+                var dt = new DataTable();
+                dt.Columns.Add("name");
+                dt.Columns.Add("val");
+                for (int i = 0; i < dict.Count; i++)
+                {
+                    var newRow = dt.NewRow();
+                    newRow[0] = dict.Keys.ElementAt(i);
+                    newRow[1] = i;
+                    dt.Rows.Add(newRow);
+                }
+                m_combo.DataSource = dt;
+                m_combo.DisplayMember = "name";
+                m_combo.ValueMember = "val";
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (m_combo != null) m_combo.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
     [DataContract(Name = "SearchCtrlDate")]
-    public class lSearchCtrlDate : lSearchCtrl
+    public class lSearchCtrlDate : SearchCtrl
     {
         private DateTimePicker m_startdate = new DateTimePicker();
         private DateTimePicker m_enddate = new DateTimePicker();
         private CheckBox m_to = new CheckBox();
-        public lSearchCtrlDate(string fieldName, string alias, ctrlType type, Point pos, Size size)
+        public lSearchCtrlDate(string fieldName, string alias, CtrlType type, Point pos, Size size)
             : base(fieldName, alias, type, pos, size)
         {
 #if fit_txt_size
@@ -412,7 +460,7 @@ namespace test_binding
 
             m_panel.Controls.AddRange(new Control[] { m_label, datePanel });
 
-            m_startdate.TextChanged += valueChanged;
+            m_startdate.TextChanged += ValueChanged;
             m_enddate.TextChanged += M_enddate_TextChanged;
 
             //set font
@@ -426,7 +474,7 @@ namespace test_binding
             m_to.Checked = true;
         }
 
-        public override string getSearchParams()
+        public override string GetSearchParams()
         {
             string srchParams = null;
             if (m_label.Checked)
@@ -440,12 +488,12 @@ namespace test_binding
             }
             return srchParams;
         }
-        public override void updateInsertParams(List<string> exprs, List<lSearchParam> srchParams)
+        public override void UpdateInsertParams(List<string> exprs, List<SearchParam> srchParams)
         {
             string zStartDate = m_startdate.Value.ToString(lConfigMng.getDateFormat());
             exprs.Add(m_fieldName);
             srchParams.Add(
-                new lSearchParam()
+                new SearchParam()
                 {
                     key = string.Format("@{0}", m_fieldName),
                     val = string.Format("{0} 00:00:00", zStartDate),
@@ -453,13 +501,13 @@ namespace test_binding
                 }
             );
         }
-        public override void updateSearchParams(List<string> exprs, List<lSearchParam> srchParams)
+        public override void UpdateSearchParams(List<string> exprs, List<SearchParam> srchParams)
         {
             if (m_label.Checked)
             {
                 string zStartDate = m_startdate.Value.ToString(lConfigMng.getDateFormat());
                 srchParams.Add(
-                    new lSearchParam()
+                    new SearchParam()
                     {
                         key = "@startDate",
                         val = string.Format("{0} 00:00:00", zStartDate),
@@ -471,7 +519,7 @@ namespace test_binding
                     exprs.Add(string.Format("({0} between @startDate and @endDate)", m_fieldName));
                     string zEndDate = m_enddate.Value.ToString(lConfigMng.getDateFormat());
                     srchParams.Add(
-                        new lSearchParam()
+                        new SearchParam()
                         {
                             key = "@endDate",
                             val = string.Format("{0} 00:00:00", zEndDate),
@@ -487,22 +535,22 @@ namespace test_binding
         }
     }
     [DataContract(Name = "SearchCtrlNum")]
-    public class lSearchCtrlNum : lSearchCtrlText
+    public class lSearchCtrlNum : SearchCtrlText
     {
-        public lSearchCtrlNum(string fieldName, string alias, ctrlType type, Point pos, Size size)
+        public lSearchCtrlNum(string fieldName, string alias, CtrlType type, Point pos, Size size)
             : base(fieldName, alias, type, pos, size)
         {
             m_mode = SearchMode.match;
         }
     }
     [DataContract(Name = "SearchCtrlCurrency")]
-    public class lSearchCtrlCurrency : lSearchCtrl
+    public class lSearchCtrlCurrency : SearchCtrl
     {
         private TextBox m_endVal = lConfigMng.crtTextBox();
         private TextBox m_startVal = lConfigMng.crtTextBox();
         private CheckBox m_to = lConfigMng.crtCheckBox();
 
-        public lSearchCtrlCurrency(string fieldName, string alias, ctrlType type, Point pos, Size size)
+        public lSearchCtrlCurrency(string fieldName, string alias, CtrlType type, Point pos, Size size)
             : base(fieldName, alias, type, pos, size)
         {
             m_to.Text = "to";
@@ -523,7 +571,7 @@ namespace test_binding
 
             m_panel.Controls.AddRange(new Control[] { m_label, datePanel });
 
-            m_startVal.TextChanged += valueChanged;
+            m_startVal.TextChanged += ValueChanged;
             m_endVal.TextChanged += M_endVal_TextChanged;
         }
 
@@ -539,7 +587,7 @@ namespace test_binding
             if (startVal == "") startVal = "0";
             if (endVal == "") endVal = UInt64.MaxValue.ToString();
         }
-        public override string getSearchParams()
+        public override string GetSearchParams()
         {
             string startVal;
             string endVal;
@@ -562,7 +610,7 @@ namespace test_binding
             return srchParams;
         }
 
-        public override void updateInsertParams(List<string> exprs, List<lSearchParam> srchParams)
+        public override void UpdateInsertParams(List<string> exprs, List<SearchParam> srchParams)
         {
             string startVal;
             string endVal;
@@ -571,7 +619,7 @@ namespace test_binding
             if (m_label.Checked)
             {
                 srchParams.Add(
-                    new lSearchParam()
+                    new SearchParam()
                     {
                         key = "@" + m_fieldName,
                         val = string.Format("{0}", startVal),
@@ -581,7 +629,7 @@ namespace test_binding
                 exprs.Add(m_fieldName);
             }
         }
-        public override void updateSearchParams(List<string> exprs, List<lSearchParam> srchParams)
+        public override void UpdateSearchParams(List<string> exprs, List<SearchParam> srchParams)
         {
             string startVal;
             string endVal;
@@ -590,7 +638,7 @@ namespace test_binding
             if (m_label.Checked)
             {
                 srchParams.Add(
-                    new lSearchParam()
+                    new SearchParam()
                     {
                         key = "@startVal",
                         val = string.Format("{0}", startVal),
@@ -601,7 +649,7 @@ namespace test_binding
                 {
                     exprs.Add(string.Format("({0} between @startVal and @endVal)", m_fieldName));
                     srchParams.Add(
-                        new lSearchParam()
+                        new SearchParam()
                         {
                             key = "@endVal",
                             val = string.Format("{0}", endVal),
@@ -624,31 +672,31 @@ namespace test_binding
     /// + getWhereQry
     /// </summary>
     [DataContract(Name = "SearchPanel")]
-    public class lSearchPanel : IDisposable
+    public class SearchPanel : IDisposable
     {
         public lDataPanel m_dataPanel;
-        public lTableInfo m_tblInfo { get { return m_dataPanel.m_tblInfo; } }
+        public TableInfo m_tblInfo { get { return m_dataPanel.m_tblInfo; } }
 
         public TableLayoutPanel m_tblPanel;
         public Button m_searchBtn;
 
         [DataMember(Name = "searchCtrls")]
-        public List<lSearchCtrl> m_searchCtrls;
+        public List<SearchCtrl> m_searchCtrls;
 
 #if use_bg_work
         myWorker m_wkr;
 #endif
 
-        protected lSearchPanel() { }
+        protected SearchPanel() { }
 
-        public static lSearchPanel crtSearchPanel(lDataPanel dataPanel, List<lSearchCtrl> searchCtrls)
+        public static SearchPanel crtSearchPanel(lDataPanel dataPanel, List<SearchCtrl> searchCtrls)
         {
-            lSearchPanel newPanel = new lSearchPanel();
+            SearchPanel newPanel = new SearchPanel();
             newPanel.init(dataPanel, searchCtrls);
             return newPanel;
         }
 
-        protected void init(lDataPanel dataPanel, List<lSearchCtrl> searchCtrls)
+        protected void init(lDataPanel dataPanel, List<SearchCtrl> searchCtrls)
         {
             m_dataPanel = dataPanel;
             m_searchCtrls = searchCtrls;
@@ -662,12 +710,12 @@ namespace test_binding
             m_searchBtn.Click += new System.EventHandler(searchButton_Click);
 
             //create search ctrls
-            List<lSearchCtrl> searchCtrls = m_searchCtrls;
-            m_searchCtrls = new List<lSearchCtrl>();
-            foreach (lSearchCtrl ctrl in searchCtrls)
+            List<SearchCtrl> searchCtrls = m_searchCtrls;
+            m_searchCtrls = new List<SearchCtrl>();
+            foreach (SearchCtrl ctrl in searchCtrls)
             {
                 m_searchCtrls.Add(
-                    crtSearchCtrl(
+                    CrtSearchCtrl(
                         m_tblInfo,
                         ctrl.m_fieldName,
                         ctrl.m_pos,
@@ -693,7 +741,7 @@ namespace test_binding
 
             //add search ctrls to table layout
             int lastRow = 0;
-            foreach (lSearchCtrl searchCtrl in m_searchCtrls)
+            foreach (SearchCtrl searchCtrl in m_searchCtrls)
             {
                 m_tblPanel.Controls.Add(searchCtrl.m_panel, searchCtrl.m_pos.X, searchCtrl.m_pos.Y);
                 m_tblPanel.SetColumnSpan(searchCtrl.m_panel, searchCtrl.m_size.Width);
@@ -710,10 +758,10 @@ namespace test_binding
         {
 #if use_cmd_params
             List<string> exprs = new List<string>();
-            List<lSearchParam> srchParams = new List<lSearchParam>();
-            foreach (lSearchCtrl searchCtrl in m_searchCtrls)
+            List<SearchParam> srchParams = new List<SearchParam>();
+            foreach (SearchCtrl searchCtrl in m_searchCtrls)
             {
-                searchCtrl.updateSearchParams(exprs, srchParams);
+                searchCtrl.UpdateSearchParams(exprs, srchParams);
             }
 #if use_bg_work
             //send to form 1
@@ -754,7 +802,7 @@ namespace test_binding
 
         public virtual void LoadData()
         {
-            foreach (lSearchCtrl ctrl in m_searchCtrls)
+            foreach (SearchCtrl ctrl in m_searchCtrls)
             {
                 ctrl.LoadData();
             }
@@ -763,43 +811,47 @@ namespace test_binding
 #endif
         }
 
-        public lSearchCtrl crtSearchCtrl(lTableInfo tblInfo, string colName, Point pos, Size size)
+        public SearchCtrl CrtSearchCtrl(TableInfo tblInfo, string colName, Point pos, Size size)
         {
-            return crtSearchCtrl(tblInfo, colName, pos, size, lSearchCtrl.SearchMode.match);
+            return CrtSearchCtrl(tblInfo, colName, pos, size, SearchCtrl.SearchMode.match);
         }
-        public lSearchCtrl crtSearchCtrl(lTableInfo tblInfo, string colName, Point pos, Size size, lSearchCtrl.SearchMode mode)
+        public SearchCtrl CrtSearchCtrl(TableInfo tblInfo, string colName, Point pos, Size size, SearchCtrl.SearchMode mode)
         {
             int iCol = tblInfo.getColIndex(colName);
             if (iCol != -1)
             {
-                return crtSearchCtrl(tblInfo, iCol, pos, size, mode);
+                return CrtSearchCtrl(tblInfo, iCol, pos, size, mode);
             }
             return null;
         }
-        public lSearchCtrl crtSearchCtrl(lTableInfo tblInfo, int iCol, Point pos, Size size)
+        public SearchCtrl crtSearchCtrl(TableInfo tblInfo, int iCol, Point pos, Size size)
         {
-            return crtSearchCtrl(tblInfo, iCol, pos, size, lSearchCtrl.SearchMode.match);
+            return CrtSearchCtrl(tblInfo, iCol, pos, size, SearchCtrl.SearchMode.match);
         }
-        public lSearchCtrl crtSearchCtrl(lTableInfo tblInfo, int iCol, Point pos, Size size, lSearchCtrl.SearchMode mode)
+        public SearchCtrl CrtSearchCtrl(TableInfo tblInfo, int iCol, Point pos, Size size, SearchCtrl.SearchMode mode)
         {
-            lTableInfo.lColInfo col = tblInfo.m_cols[iCol];
+            TableInfo.ColInfo col = tblInfo.m_cols[iCol];
             switch (col.m_type)
             {
-                case lTableInfo.lColInfo.lColType.text:
-                case lTableInfo.lColInfo.lColType.uniqueText:
-                    lSearchCtrlText textCtrl = new lSearchCtrlText(col.m_field, col.m_alias, lSearchCtrl.ctrlType.text, pos, size);
+                case TableInfo.ColInfo.ColType.text:
+                case TableInfo.ColInfo.ColType.uniqueText:
+                    SearchCtrlText textCtrl = new SearchCtrlText(col.m_field, col.m_alias, SearchCtrl.CtrlType.text, pos, size);
                     textCtrl.m_mode = mode;
                     textCtrl.m_colInfo = col;
                     return textCtrl;
-                case lTableInfo.lColInfo.lColType.dateTime:
-                    lSearchCtrlDate dateCtrl = new lSearchCtrlDate(col.m_field, col.m_alias, lSearchCtrl.ctrlType.dateTime, pos, size);
+                case TableInfo.ColInfo.ColType.dateTime:
+                    lSearchCtrlDate dateCtrl = new lSearchCtrlDate(col.m_field, col.m_alias, SearchCtrl.CtrlType.dateTime, pos, size);
                     return dateCtrl;
-                case lTableInfo.lColInfo.lColType.num:
-                    lSearchCtrlNum numCtrl = new lSearchCtrlNum(col.m_field, col.m_alias, lSearchCtrl.ctrlType.num, pos, size);
+                case TableInfo.ColInfo.ColType.num:
+                    lSearchCtrlNum numCtrl = new lSearchCtrlNum(col.m_field, col.m_alias, SearchCtrl.CtrlType.num, pos, size);
                     return numCtrl;
-                case lTableInfo.lColInfo.lColType.currency:
-                    lSearchCtrlCurrency currencyCtrl = new lSearchCtrlCurrency(col.m_field, col.m_alias, lSearchCtrl.ctrlType.currency, pos, size);
+                case TableInfo.ColInfo.ColType.currency:
+                    lSearchCtrlCurrency currencyCtrl = new lSearchCtrlCurrency(col.m_field, col.m_alias, SearchCtrl.CtrlType.currency, pos, size);
                     return currencyCtrl;
+                case TableInfo.ColInfo.ColType.map:
+                    SearchCtrlEnum srchCtrl = new SearchCtrlEnum(col.m_field, col.m_alias, SearchCtrl.CtrlType.map, pos, size);
+                    srchCtrl.m_colInfo = col;
+                    return srchCtrl;
             }
             return null;
         }
@@ -813,7 +865,7 @@ namespace test_binding
         // NOTE: Leave out the finalizer altogether if this class doesn't   
         // own unmanaged resources itself, but leave the other methods  
         // exactly as they are.   
-        ~lSearchPanel()
+        ~SearchPanel()
         {
             // Finalizer calls Dispose(false)  
             Dispose(false);
@@ -837,144 +889,147 @@ namespace test_binding
     }
 
     [DataContract(Name = "ReceiptsSearchPanel")]
-    public class lReceiptsSearchPanel : lSearchPanel
+    public class lReceiptsSearchPanel : SearchPanel
     {
         public lReceiptsSearchPanel(lDataPanel dataPanel)
         {
             m_dataPanel = dataPanel;
-            m_searchCtrls = new List<lSearchCtrl> {
-                    crtSearchCtrl(m_tblInfo, "date", new Point(0, 0), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "receipt_number", new Point(0, 1), new Size(1, 1), lSearchCtrl.SearchMode.match),
-                    crtSearchCtrl(m_tblInfo, "name", new Point(1, 0), new Size(1, 1), lSearchCtrl.SearchMode.like),
-                    crtSearchCtrl(m_tblInfo, "content", new Point(1, 1), new Size(1, 1), lSearchCtrl.SearchMode.match),
+            m_searchCtrls = new List<SearchCtrl> {
+                    CrtSearchCtrl(m_tblInfo, "date", new Point(0, 0), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "receipt_number", new Point(0, 1), new Size(1, 1), SearchCtrl.SearchMode.match),
+                    CrtSearchCtrl(m_tblInfo, "name", new Point(1, 0), new Size(1, 1), SearchCtrl.SearchMode.like),
+                    CrtSearchCtrl(m_tblInfo, "content", new Point(1, 1), new Size(1, 1), SearchCtrl.SearchMode.match),
                 };
         }
     }
 
     [DataContract(Name = "InterPaymentSearchPanel")]
-    public class lInterPaymentSearchPanel : lSearchPanel
+    public class lInterPaymentSearchPanel : SearchPanel
     {
         public lInterPaymentSearchPanel(lDataPanel dataPanel)
         {
             m_dataPanel = dataPanel;
-            m_searchCtrls = new List<lSearchCtrl> {
-                    crtSearchCtrl(m_tblInfo, "date", new Point(0, 0), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "payment_number", new Point(0, 1), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "name", new Point(1, 0), new Size(1, 1), lSearchCtrl.SearchMode.like),
-                    crtSearchCtrl(m_tblInfo, "group_name", new Point(1, 1), new Size(1, 1), lSearchCtrl.SearchMode.match),
+            m_searchCtrls = new List<SearchCtrl> {
+                    CrtSearchCtrl(m_tblInfo, "date", new Point(0, 0), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "payment_number", new Point(0, 1), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "name", new Point(1, 0), new Size(1, 1), SearchCtrl.SearchMode.like),
+                    CrtSearchCtrl(m_tblInfo, "group_name", new Point(1, 1), new Size(1, 1), SearchCtrl.SearchMode.match),
                     //crtSearchCtrl(m_tblInfo, "advance_payment", new Point(0, 2), new Size(1, 1)),
                     //crtSearchCtrl(m_tblInfo, "reimbursement", new Point(1, 2), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "content", new Point(0, 2), new Size(1, 1), lSearchCtrl.SearchMode.like),
+                    CrtSearchCtrl(m_tblInfo, "content", new Point(0, 2), new Size(1, 1), SearchCtrl.SearchMode.like),
                 };
         }
     }
 
     [DataContract(Name = "ExternalPaymentSearchPanel")]
-    public class lExternalPaymentSearchPanel : lSearchPanel
+    public class lExternalPaymentSearchPanel : SearchPanel
     {
         public lExternalPaymentSearchPanel(lDataPanel dataPanel)
         {
             m_dataPanel = dataPanel;
-            m_searchCtrls = new List<lSearchCtrl> {
-                    crtSearchCtrl(m_tblInfo, "date", new Point(0, 0), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "payment_number", new Point(0, 1), new Size(1, 1), lSearchCtrl.SearchMode.match),
-                    crtSearchCtrl(m_tblInfo, "name", new Point(0, 2), new Size(1, 1), lSearchCtrl.SearchMode.like),
-                    crtSearchCtrl(m_tblInfo, "group_name", new Point(1, 0), new Size(1, 1), lSearchCtrl.SearchMode.match),
-                    crtSearchCtrl(m_tblInfo, "content", new Point(1, 1), new Size(1, 1), lSearchCtrl.SearchMode.like),
-                    crtSearchCtrl(m_tblInfo, "building", new Point(1, 2), new Size(1, 1), lSearchCtrl.SearchMode.match),
-                    crtSearchCtrl(m_tblInfo, "constr_org", new Point(1, 3), new Size(1, 1), lSearchCtrl.SearchMode.match),
+            m_searchCtrls = new List<SearchCtrl> {
+                    CrtSearchCtrl(m_tblInfo, "date", new Point(0, 0), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "payment_number", new Point(0, 1), new Size(1, 1), SearchCtrl.SearchMode.match),
+                    CrtSearchCtrl(m_tblInfo, "name", new Point(0, 2), new Size(1, 1), SearchCtrl.SearchMode.like),
+                    CrtSearchCtrl(m_tblInfo, "group_name", new Point(1, 0), new Size(1, 1), SearchCtrl.SearchMode.match),
+                    CrtSearchCtrl(m_tblInfo, "content", new Point(1, 1), new Size(1, 1), SearchCtrl.SearchMode.like),
+                    CrtSearchCtrl(m_tblInfo, "building", new Point(1, 2), new Size(1, 1), SearchCtrl.SearchMode.match),
+                    CrtSearchCtrl(m_tblInfo, "constr_org", new Point(1, 3), new Size(1, 1), SearchCtrl.SearchMode.match),
                 };
         }
     }
 
     [DataContract(Name = "SalarySearchPanel")]
-    public class lSalarySearchPanel : lSearchPanel
+    public class lSalarySearchPanel : SearchPanel
     {
         public lSalarySearchPanel(lDataPanel dataPanel)
         {
             m_dataPanel = dataPanel;
-            m_searchCtrls = new List<lSearchCtrl> {
+            m_searchCtrls = new List<SearchCtrl> {
                     //crtSearchCtrl(m_tblInfo, "month", new Point(0, 0), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "date"             , new Point(0, 0), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "payment_number"   , new Point(0, 1), new Size(1, 1), lSearchCtrl.SearchMode.match),
-                    crtSearchCtrl(m_tblInfo, "name"             , new Point(1, 0), new Size(1, 1), lSearchCtrl.SearchMode.like),
-                    crtSearchCtrl(m_tblInfo, "group_name"       , new Point(1, 1), new Size(1, 1), lSearchCtrl.SearchMode.match),
-                    crtSearchCtrl(m_tblInfo, "content"          , new Point(1, 2), new Size(1, 1), lSearchCtrl.SearchMode.like),
+                    CrtSearchCtrl(m_tblInfo, "date"             , new Point(0, 0), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "payment_number"   , new Point(0, 1), new Size(1, 1), SearchCtrl.SearchMode.match),
+                    CrtSearchCtrl(m_tblInfo, "name"             , new Point(1, 0), new Size(1, 1), SearchCtrl.SearchMode.like),
+                    CrtSearchCtrl(m_tblInfo, "group_name"       , new Point(1, 1), new Size(1, 1), SearchCtrl.SearchMode.match),
+                    CrtSearchCtrl(m_tblInfo, "content"          , new Point(1, 2), new Size(1, 1), SearchCtrl.SearchMode.like),
                 };
         }
     }
 
     [DataContract(Name = "AdvanceSearchPanel")]
-    public class lAdvanceSearchPanel : lSearchPanel
+    public class lAdvanceSearchPanel : SearchPanel
     {
         public lAdvanceSearchPanel(lDataPanel dataPanel)
         {
             m_dataPanel = dataPanel;
-            m_searchCtrls = new List<lSearchCtrl> {
+            m_searchCtrls = new List<SearchCtrl> {
                     //crtSearchCtrl(m_tblInfo, "month", new Point(0, 0), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "date"             , new Point(0, 0), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "payment_number"   , new Point(0, 1), new Size(1, 1), lSearchCtrl.SearchMode.match),
-                    crtSearchCtrl(m_tblInfo, "name"             , new Point(1, 0), new Size(1, 1), lSearchCtrl.SearchMode.like),
-                    crtSearchCtrl(m_tblInfo, "group_name"       , new Point(1, 1), new Size(1, 1), lSearchCtrl.SearchMode.match),
-                    crtSearchCtrl(m_tblInfo, "content"          , new Point(1, 2), new Size(1, 1), lSearchCtrl.SearchMode.like),
+                    CrtSearchCtrl(m_tblInfo, "date"             , new Point(0, 0), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "payment_number"   , new Point(0, 1), new Size(1, 1), SearchCtrl.SearchMode.match),
+                    CrtSearchCtrl(m_tblInfo, "name"             , new Point(1, 0), new Size(1, 1), SearchCtrl.SearchMode.like),
+                    CrtSearchCtrl(m_tblInfo, "group_name"       , new Point(1, 1), new Size(1, 1), SearchCtrl.SearchMode.match),
+                    CrtSearchCtrl(m_tblInfo, "content"          , new Point(1, 2), new Size(1, 1), SearchCtrl.SearchMode.like),
                 };
         }
     }
 
     [DataContract(Name = "TaskSearchPanel")]
-    public class lTaskSearchPanel : lSearchPanel
+    public class lTaskSearchPanel : SearchPanel
     {
         public lTaskSearchPanel(lDataPanel dataPanel)
         {
             m_dataPanel = dataPanel;
-            m_searchCtrls = new List<lSearchCtrl> {
-                    crtSearchCtrl(m_tblInfo, "start_date"    , new Point(0, 0), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "end_date"      , new Point(0, 1), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "task_number"   , new Point(0, 2), new Size(1, 1), lSearchCtrl.SearchMode.match),
-                    crtSearchCtrl(m_tblInfo, "task_name"     , new Point(1, 0), new Size(1, 1), lSearchCtrl.SearchMode.like),
-                    crtSearchCtrl(m_tblInfo, "group_name"    , new Point(1, 1), new Size(1, 1), lSearchCtrl.SearchMode.match),
-                    crtSearchCtrl(m_tblInfo, "note"          , new Point(1, 2), new Size(1, 1), lSearchCtrl.SearchMode.like),
+            m_searchCtrls = new List<SearchCtrl> {
+                    CrtSearchCtrl(m_tblInfo, "start_date"    , new Point(0, 0), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "end_date"      , new Point(0, 1), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "task_number"   , new Point(0, 2), new Size(1, 1), SearchCtrl.SearchMode.match),
+                    CrtSearchCtrl(m_tblInfo, "task_name"     , new Point(1, 0), new Size(1, 1), SearchCtrl.SearchMode.like),
+                    CrtSearchCtrl(m_tblInfo, "group_name"    , new Point(1, 1), new Size(1, 1), SearchCtrl.SearchMode.match),
+                    CrtSearchCtrl(m_tblInfo, "note"          , new Point(1, 2), new Size(1, 1), SearchCtrl.SearchMode.like),
                 };
         }
     }
     [DataContract(Name = "OrderSearchPanel")]
-    public class lOrderSearchPanel : lSearchPanel
+    public class OrderSearchPanel : SearchPanel
     {
-        public lOrderSearchPanel(lDataPanel dataPanel)
+        public OrderSearchPanel(lDataPanel dataPanel)
         {
             m_dataPanel = dataPanel;
-            m_searchCtrls = new List<lSearchCtrl> {
-                    crtSearchCtrl(m_tblInfo, "task_number"    , new Point(0, 0), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "order_number"   , new Point(0, 1), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "note"           , new Point(1, 1), new Size(1, 1), lSearchCtrl.SearchMode.like),
+            m_searchCtrls = new List<SearchCtrl> {
+                    CrtSearchCtrl(m_tblInfo, "task_number"    , new Point(0, 0), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "order_number"   , new Point(0, 1), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "order_type"     , new Point(1, 0), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "order_status"   , new Point(1, 1), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "note"           , new Point(1, 2), new Size(1, 1), SearchCtrl.SearchMode.like),
                 };
         }
     }
 
     [DataContract(Name = "HumanSearchPanel")]
-    public class lHumanSearchPanel : lSearchPanel
+    public class HumanSearchPanel : SearchPanel
     {
-        public lHumanSearchPanel(lDataPanel dataPanel)
+        public HumanSearchPanel(lDataPanel dataPanel)
         {
             m_dataPanel = dataPanel;
-            m_searchCtrls = new List<lSearchCtrl> {
-                    crtSearchCtrl(m_tblInfo, "human_number"    , new Point(0, 0), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "start_date"   , new Point(0, 1), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "end_date"   , new Point(0, 1), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "note"           , new Point(1, 1), new Size(1, 1), lSearchCtrl.SearchMode.like),
+            m_searchCtrls = new List<SearchCtrl> {
+                    CrtSearchCtrl(m_tblInfo, "human_number" , new Point(0, 0), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "start_date"   , new Point(0, 1), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "end_date"     , new Point(0, 2), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "gender"          , new Point(1, 0), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "note"         , new Point(1, 1), new Size(1, 1), SearchCtrl.SearchMode.like),
                 };
         }
     }
 
     [DataContract(Name = "EquipmentSearchPanel")]
-    public class lEquipmentSearchPanel : lSearchPanel
+    public class EquipmentSearchPanel : SearchPanel
     {
-        public lEquipmentSearchPanel(lDataPanel dataPanel)
+        public EquipmentSearchPanel(lDataPanel dataPanel)
         {
             m_dataPanel = dataPanel;
-            m_searchCtrls = new List<lSearchCtrl> {
-                    crtSearchCtrl(m_tblInfo, "equipment_number"    , new Point(0, 0), new Size(1, 1)),
-                    crtSearchCtrl(m_tblInfo, "note"           , new Point(1, 1), new Size(1, 1), lSearchCtrl.SearchMode.like),
+            m_searchCtrls = new List<SearchCtrl> {
+                    CrtSearchCtrl(m_tblInfo, "equipment_number" , new Point(0, 0), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, "note"             , new Point(0, 1), new Size(1, 1), SearchCtrl.SearchMode.like),
                 };
         }
     }

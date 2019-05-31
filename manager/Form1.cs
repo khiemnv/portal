@@ -366,12 +366,12 @@ namespace test_binding
     [DataContract(Name = "Panel")]
     public class lBasePanel : IDisposable
     {
-        public lTableInfo m_tblInfo { get { return m_dataPanel.m_tblInfo; } }
+        public TableInfo m_tblInfo { get { return m_dataPanel.m_tblInfo; } }
         //public lDataContent m_data;
         [DataMember(Name = "dataPanel")]
         public lDataPanel m_dataPanel;
         [DataMember(Name = "searchPanel")]
-        public lSearchPanel m_searchPanel;
+        public SearchPanel m_searchPanel;
         [DataMember(Name = "report")]
         public lBaseReport m_report;
 
@@ -382,7 +382,7 @@ namespace test_binding
         public static lBasePanel crtPanel(lBasePanel panel)
         {
             lDataPanel dataPanel = lDataPanel.crtDataPanel(panel.m_dataPanel);
-            lSearchPanel searchPanel = lSearchPanel.crtSearchPanel(dataPanel, panel.m_searchPanel.m_searchCtrls);
+            SearchPanel searchPanel = SearchPanel.crtSearchPanel(dataPanel, panel.m_searchPanel.m_searchCtrls);
             lBaseReport report = lBaseReport.crtReport(panel.m_report);
             lBasePanel newPanel = new lBasePanel()
             {
@@ -609,7 +609,7 @@ namespace test_binding
         public lOrderPanel()
         {
             m_dataPanel = new lOrderDataPanel();
-            m_searchPanel = new lOrderSearchPanel(m_dataPanel);
+            m_searchPanel = new OrderSearchPanel(m_dataPanel);
             m_report = new lOrderReport();
             base.init();
         }
@@ -621,7 +621,7 @@ namespace test_binding
         public lHumanPanel()
         {
             m_dataPanel = new lHumanDataPanel();
-            m_searchPanel = new lHumanSearchPanel(m_dataPanel);
+            m_searchPanel = new HumanSearchPanel(m_dataPanel);
             m_report = new lHumanReport();
             base.init();
         }
@@ -633,7 +633,7 @@ namespace test_binding
         public lEquipmentPanel()
         {
             m_dataPanel = new lEquipmentDataPanel();
-            m_searchPanel = new lEquipmentSearchPanel(m_dataPanel);
+            m_searchPanel = new EquipmentSearchPanel(m_dataPanel);
             m_report = new lEquipmentReport();
             base.init();
         }

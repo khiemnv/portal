@@ -18,11 +18,11 @@ using Microsoft.Reporting.WinForms;
 namespace test_binding
 {
     [DataContract(Name = "InputCtrl")]
-    public class lInputCtrl : lSearchCtrl
+    public class InputCtrl : SearchCtrl
     {
         protected new Label m_label;
-        public lInputCtrl() { }
-        public lInputCtrl(string fieldName, string alias, ctrlType type, Point pos, Size size)
+        public InputCtrl() { }
+        public InputCtrl(string fieldName, string alias, CtrlType type, Point pos, Size size)
             : base(fieldName, alias, type, pos, size)
         {
             m_label = lConfigMng.crtLabel();
@@ -58,7 +58,7 @@ namespace test_binding
     }
 
     [DataContract(Name = "InputCtrlText")]
-    public class lInputCtrlText : lInputCtrl
+    public class lInputCtrlText : InputCtrl
     {
         protected TextBox m_text;
         ComboBox m_combo;
@@ -70,7 +70,7 @@ namespace test_binding
                 else return m_combo.Text;
             }
         }
-        public lInputCtrlText(string fieldName, string alias, ctrlType type, Point pos, Size size)
+        public lInputCtrlText(string fieldName, string alias, CtrlType type, Point pos, Size size)
             : base(fieldName, alias, type, pos, size)
         {
             m_text = lConfigMng.crtTextBox();
@@ -78,11 +78,11 @@ namespace test_binding
 
             m_panel.Controls.AddRange(new Control[] { m_label, m_text });
         }
-        public override void updateInsertParams(List<string> exprs, List<lSearchParam> srchParams)
+        public override void UpdateInsertParams(List<string> exprs, List<SearchParam> srchParams)
         {
             exprs.Add(m_fieldName);
             srchParams.Add(
-                new lSearchParam()
+                new SearchParam()
                 {
                     key = string.Format("@{0}", m_fieldName),
                     val = m_value
@@ -217,10 +217,10 @@ namespace test_binding
 
     }
     [DataContract(Name = "InputCtrlDate")]
-    public class lInputCtrlDate : lInputCtrl
+    public class lInputCtrlDate : InputCtrl
     {
         private DateTimePicker m_date = new DateTimePicker();
-        public lInputCtrlDate(string fieldName, string alias, ctrlType type, Point pos, Size size)
+        public lInputCtrlDate(string fieldName, string alias, CtrlType type, Point pos, Size size)
             : base(fieldName, alias, type, pos, size)
         {
 #if fit_txt_size
@@ -236,12 +236,12 @@ namespace test_binding
             m_panel.Controls.AddRange(new Control[] { m_label, m_date });
         }
 
-        public override void updateInsertParams(List<string> exprs, List<lSearchParam> srchParams)
+        public override void UpdateInsertParams(List<string> exprs, List<SearchParam> srchParams)
         {
             string zStartDate = m_date.Value.ToString(lConfigMng.getDateFormat());
             exprs.Add(m_fieldName);
             srchParams.Add(
-                new lSearchParam()
+                new SearchParam()
                 {
                     key = string.Format("@{0}", m_fieldName),
                     val = string.Format("{0} 00:00:00", zStartDate),
@@ -253,7 +253,7 @@ namespace test_binding
     [DataContract(Name = "InputCtrlNum")]
     public class lInputCtrlNum : lInputCtrlText
     {
-        public lInputCtrlNum(string fieldName, string alias, ctrlType type, Point pos, Size size)
+        public lInputCtrlNum(string fieldName, string alias, CtrlType type, Point pos, Size size)
             : base(fieldName, alias, type, pos, size)
         {
             m_text.KeyPress += onKeyPress;
@@ -267,11 +267,11 @@ namespace test_binding
         }
     }
     [DataContract(Name = "InputCtrlCurrency")]
-    public class lInputCtrlCurrency : lInputCtrl
+    public class lInputCtrlCurrency : InputCtrl
     {
         private TextBox m_val = lConfigMng.crtTextBox();
         //private Label m_lab = lConfigMng.crtLabel();
-        public lInputCtrlCurrency(string fieldName, string alias, ctrlType type, Point pos, Size size)
+        public lInputCtrlCurrency(string fieldName, string alias, CtrlType type, Point pos, Size size)
             : base(fieldName, alias, type, pos, size)
         {
 #if fit_txt_size
@@ -439,12 +439,12 @@ namespace test_binding
                 m_val.Text = value;
             }
         }
-        public override void updateInsertParams(List<string> exprs, List<lSearchParam> srchParams)
+        public override void UpdateInsertParams(List<string> exprs, List<SearchParam> srchParams)
         {
             string val;
             getInputRange(out val);
             srchParams.Add(
-                new lSearchParam()
+                new SearchParam()
                 {
                     key = "@" + m_fieldName,
                     val = val,
@@ -455,10 +455,10 @@ namespace test_binding
         }
     }
     [DataContract(Name = "InputCtrlEnum")]
-    public class lInputCtrlEnum : lInputCtrl
+    public class lInputCtrlEnum : InputCtrl
     {
         ComboBox m_combo;
-        public lInputCtrlEnum(string fieldName, string alias, ctrlType type, Point pos, Size size)
+        public lInputCtrlEnum(string fieldName, string alias, CtrlType type, Point pos, Size size)
             : base(fieldName, alias, type, pos, size)
         {
             m_combo = lConfigMng.crtComboBox();
@@ -481,13 +481,13 @@ namespace test_binding
             onEditingCompleted();
         }
         
-        public class comboItem
+        public class ComboItem
         {
             public string name;
             public int val;
         }
         bool isInit = false;
-        public void init(Dictionary<string,int>dict)
+        public void Init(Dictionary<string,int>dict)
         {
             var dt = new DataTable();
             dt.Columns.Add("name");
@@ -508,12 +508,12 @@ namespace test_binding
             Debug.Assert(!isInit);
             isInit = true;
         }
-        public override void updateInsertParams(List<string> exprs, List<lSearchParam> srchParams)
+        public override void UpdateInsertParams(List<string> exprs, List<SearchParam> srchParams)
         {
             string zVal = m_combo.SelectedValue.ToString();
             exprs.Add(m_fieldName);
             srchParams.Add(
-                new lSearchParam()
+                new SearchParam()
                 {
                     key = string.Format("@{0}", m_fieldName),
                     val = zVal,
@@ -640,7 +640,7 @@ namespace test_binding
     }
 
     [DataContract(Name = "InputPanel")]
-    public class lInputPanel
+    public class InputPanel
     {
         public lDataContent m_dataContent;
 
@@ -653,7 +653,7 @@ namespace test_binding
         public virtual List<ReportParameter> billRptParams { get { return m_rptAsst.crtParams(); } }
 
         [DataMember(Name = "inputCtrls")]
-        public List<lInputCtrl> m_inputsCtrls;
+        public List<InputCtrl> m_inputsCtrls;
 
         public class PreviewEventArgs : EventArgs
         {
@@ -661,7 +661,7 @@ namespace test_binding
         }
         public event EventHandler<PreviewEventArgs> RefreshPreview;
         protected string m_tblName;
-        protected lTableInfo m_tblInfo { get { return appConfig.s_config.getTable(m_tblName); } }
+        protected TableInfo m_tblInfo { get { return appConfig.s_config.getTable(m_tblName); } }
 
         public TableLayoutPanel m_tbl;
         protected DataGridView m_dataGridView;
@@ -720,18 +720,19 @@ namespace test_binding
             m_tbl.Controls.Add(m_flow, 0, ++lastRow);
 
             // add data grid view
-            m_dataGridView = lConfigMng.crtDGV();
+            m_dataGridView = lConfigMng.crtDGV(m_tblInfo);
             m_dataGridView.EnableHeadersVisualStyles = false;
             m_dataGridView.Dock = DockStyle.Fill;
             m_dataGridView.CellClick += M_dataGridView_CellClick;
-            //fix date dd/MM/yyyy
-            m_dataGridView.CellParsing += M_dataGridView_CellParsing;
-            //enum ->string
-            m_dataGridView.CellFormatting += M_dataGridView_CellFormatting;
-            //check valid input
-            m_dataGridView.CellValidating += M_dataGridView_CellValidating;
-            //show tool tip
-            m_dataGridView.EditingControlShowing += M_dataGridView_EditingControlShowing; ;
+            
+            ////fix date dd/MM/yyyy
+            //m_dataGridView.CellParsing += M_dataGridView_CellParsing;
+            ////enum ->string
+            //m_dataGridView.CellFormatting += M_dataGridView_CellFormatting;
+            ////check valid input
+            //m_dataGridView.CellValidating += M_dataGridView_CellValidating;
+            ////show tool tip
+            //m_dataGridView.EditingControlShowing += M_dataGridView_EditingControlShowing; ;
 
             m_tbl.Controls.Add(m_dataGridView, 0, ++lastRow);
             m_tbl.Dock = DockStyle.Fill;
@@ -744,12 +745,14 @@ namespace test_binding
             var col = m_tblInfo.m_cols[m_dataGridView.CurrentCell.ColumnIndex];
             switch (col.m_type)
             {
-                case lTableInfo.lColInfo.lColType.map:
-                    ToolTip tt = new ToolTip();
-                    tt.IsBalloon = true;
-                    tt.InitialDelay = 0;
-                    tt.ShowAlways = true;
-                    tt.SetToolTip(e.Control, col.getHelp());
+                case TableInfo.ColInfo.ColType.map:
+                    ToolTip tt = new ToolTip
+                    {
+                        IsBalloon = true,
+                        InitialDelay = 0,
+                        ShowAlways = true
+                    };
+                    tt.SetToolTip(e.Control, col.GetHelp());
                     break;
             }
         }
@@ -759,21 +762,21 @@ namespace test_binding
             var col = m_tblInfo.m_cols[e.ColumnIndex];
             switch (col.m_type)
             {
-                case lTableInfo.lColInfo.lColType.map:
+                case TableInfo.ColInfo.ColType.map:
                     string txt = e.FormattedValue.ToString();
                     int n;
                     bool bChk;
                     if (int.TryParse(txt, out n))
                     {
-                        bChk = col.parseEnum(n, out txt);
+                        bChk = col.ParseEnum(n, out txt);
                     }
                     else
                     {
-                        bChk = col.parseEnum(txt, out n);
+                        bChk = col.ParseEnum(txt, out n);
                     }
                     if (bChk == false)
                     {
-                        string msg = string.Format("Invalid input for {0}\n{1}", col.m_alias, col.getHelp());
+                        string msg = string.Format("Invalid input for {0}\n{1}", col.m_alias, col.GetHelp());
                         lConfigMng.showInputError(msg);
                         e.Cancel = true;
                     }
@@ -787,12 +790,12 @@ namespace test_binding
             var col = m_tblInfo.m_cols[e.ColumnIndex];
             switch (col.m_type)
             {
-                case lTableInfo.lColInfo.lColType.map:
+                case TableInfo.ColInfo.ColType.map:
                     string txt;
                     int n;
                     if( int.TryParse(e.Value.ToString(), out n))
                     {
-                        if (col.parseEnum(n,out txt))
+                        if (col.ParseEnum(n,out txt))
                         {
                             e.Value = txt;
                             e.FormattingApplied = true;
@@ -807,7 +810,7 @@ namespace test_binding
             var col = m_tblInfo.m_cols[e.ColumnIndex];
             switch (col.m_type)
             {
-                case lTableInfo.lColInfo.lColType.dateTime:
+                case TableInfo.ColInfo.ColType.dateTime:
                     {
                         Debug.WriteLine("OnCellParsing parsing date");
                         if (lConfigMng.getDisplayDateFormat() == "dd/MM/yyyy")
@@ -822,12 +825,12 @@ namespace test_binding
                         }
                     }
                     break;
-                case lTableInfo.lColInfo.lColType.map:
+                case TableInfo.ColInfo.ColType.map:
                     {
                         Debug.WriteLine("OnCellParsing parsing enum");
                         string val = e.Value.ToString();
                         int n;
-                        if (col.parseEnum(val, out n))
+                        if (col.ParseEnum(val, out n))
                         {
                             e.ParsingApplied = true;
                             e.Value = n;
@@ -894,10 +897,10 @@ namespace test_binding
             bool bRet = false;
             DataRow newRow = null;
             List<string> exprs = new List<string>();
-            List<lSearchParam> srchParams = new List<lSearchParam>();
-            foreach (lSearchCtrl ctrl in m_inputsCtrls)
+            List<SearchParam> srchParams = new List<SearchParam>();
+            foreach (SearchCtrl ctrl in m_inputsCtrls)
             {
-                ctrl.updateInsertParams(exprs, srchParams);
+                ctrl.UpdateInsertParams(exprs, srchParams);
             }
             string key = m_keyCtrl.Text;
 
@@ -961,7 +964,7 @@ namespace test_binding
             }
         }
 
-        protected virtual lInputCtrl m_keyCtrl { get; }
+        protected virtual InputCtrl m_keyCtrl { get; }
 
         protected virtual keyMng m_keyMng { get; }
         protected virtual string InitKey()
@@ -998,10 +1001,10 @@ namespace test_binding
         protected virtual void InsertRec()
         {
             List<string> exprs = new List<string>();
-            List<lSearchParam> srchParams = new List<lSearchParam>();
-            foreach (lSearchCtrl ctrl in m_inputsCtrls)
+            List<SearchParam> srchParams = new List<SearchParam>();
+            foreach (SearchCtrl ctrl in m_inputsCtrls)
             {
-                ctrl.updateInsertParams(exprs, srchParams);
+                ctrl.UpdateInsertParams(exprs, srchParams);
             }
 
             m_dataContent.AddRec(exprs, srchParams);
@@ -1063,7 +1066,7 @@ namespace test_binding
 #endif
         }
 
-        protected void crtColumns(DataGridView dgv, lTableInfo tblInfo)
+        protected void crtColumns(DataGridView dgv, TableInfo tblInfo)
         {
             int i = 0;
             foreach (var field in tblInfo.m_cols)
@@ -1104,11 +1107,11 @@ namespace test_binding
                 switch (field.m_type)
                 {
 #if format_currency
-                    case lTableInfo.lColInfo.lColType.currency:
+                    case TableInfo.ColInfo.ColType.currency:
                         dgvcol.DefaultCellStyle.Format = lConfigMng.getCurrencyFormat();
                         break;
 #endif
-                    case lTableInfo.lColInfo.lColType.dateTime:
+                    case TableInfo.ColInfo.ColType.dateTime:
                         dgvcol.DefaultCellStyle.Format = lConfigMng.getDisplayDateFormat();
                         break;
                 }
@@ -1126,7 +1129,7 @@ namespace test_binding
 #endif
         }
 
-        protected void updateCols(DataGridView dgv, lTableInfo ti)
+        protected void updateCols(DataGridView dgv, TableInfo ti)
         {
             dgv.Columns[0].Visible = false;
             int i = 1;
@@ -1149,10 +1152,10 @@ namespace test_binding
 
                 switch (ti.m_cols[i].m_type)
                 {
-                    case lTableInfo.lColInfo.lColType.currency:
+                    case TableInfo.ColInfo.ColType.currency:
                         dgv.Columns[i].DefaultCellStyle.Format = lConfigMng.getCurrencyFormat();
                         break;
-                    case lTableInfo.lColInfo.lColType.dateTime:
+                    case TableInfo.ColInfo.ColType.dateTime:
                         dgv.Columns[i].DefaultCellStyle.Format = lConfigMng.getDisplayDateFormat();
                         break;
                 }
@@ -1169,11 +1172,11 @@ namespace test_binding
             dgv.Columns[i - 1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             dgv.Columns[i - 1].FillWeight = 1;
         }
-        public lInputCtrl crtInputCtrl(lTableInfo tblInfo, string colName, Point pos, Size size)
+        public InputCtrl crtInputCtrl(TableInfo tblInfo, string colName, Point pos, Size size)
         {
-            return crtInputCtrl(tblInfo, colName, pos, size, lSearchCtrl.SearchMode.match);
+            return crtInputCtrl(tblInfo, colName, pos, size, SearchCtrl.SearchMode.match);
         }
-        public lInputCtrl crtInputCtrl(lTableInfo tblInfo, string colName, Point pos, Size size, lSearchCtrl.SearchMode mode)
+        public InputCtrl crtInputCtrl(TableInfo tblInfo, string colName, Point pos, Size size, SearchCtrl.SearchMode mode)
         {
             int iCol = tblInfo.getColIndex(colName);
             if (iCol != -1)
@@ -1182,33 +1185,33 @@ namespace test_binding
             }
             return null;
         }
-        public lInputCtrl crtInputCtrl(lTableInfo tblInfo, int iCol, Point pos, Size size)
+        public InputCtrl crtInputCtrl(TableInfo tblInfo, int iCol, Point pos, Size size)
         {
-            return crtInputCtrl(tblInfo, iCol, pos, size, lSearchCtrl.SearchMode.match);
+            return crtInputCtrl(tblInfo, iCol, pos, size, SearchCtrl.SearchMode.match);
         }
-        public lInputCtrl crtInputCtrl(lTableInfo tblInfo, int iCol, Point pos, Size size, lSearchCtrl.SearchMode mode)
+        public InputCtrl crtInputCtrl(TableInfo tblInfo, int iCol, Point pos, Size size, SearchCtrl.SearchMode mode)
         {
-            lTableInfo.lColInfo col = tblInfo.m_cols[iCol];
+            TableInfo.ColInfo col = tblInfo.m_cols[iCol];
             switch (col.m_type)
             {
-                case lTableInfo.lColInfo.lColType.text:
-                case lTableInfo.lColInfo.lColType.uniqueText:
-                    lInputCtrlText textCtrl = new lInputCtrlText(col.m_field, col.m_alias, lSearchCtrl.ctrlType.text, pos, size);
+                case TableInfo.ColInfo.ColType.text:
+                case TableInfo.ColInfo.ColType.uniqueText:
+                    lInputCtrlText textCtrl = new lInputCtrlText(col.m_field, col.m_alias, SearchCtrl.CtrlType.text, pos, size);
                     textCtrl.m_mode = mode;
                     textCtrl.m_colInfo = col;
                     return textCtrl;
-                case lTableInfo.lColInfo.lColType.dateTime:
-                    lInputCtrlDate dateCtrl = new lInputCtrlDate(col.m_field, col.m_alias, lSearchCtrl.ctrlType.dateTime, pos, size);
+                case TableInfo.ColInfo.ColType.dateTime:
+                    lInputCtrlDate dateCtrl = new lInputCtrlDate(col.m_field, col.m_alias, SearchCtrl.CtrlType.dateTime, pos, size);
                     return dateCtrl;
-                case lTableInfo.lColInfo.lColType.num:
-                    lInputCtrlNum numCtrl = new lInputCtrlNum(col.m_field, col.m_alias, lSearchCtrl.ctrlType.num, pos, size);
+                case TableInfo.ColInfo.ColType.num:
+                    lInputCtrlNum numCtrl = new lInputCtrlNum(col.m_field, col.m_alias, SearchCtrl.CtrlType.num, pos, size);
                     return numCtrl;
-                case lTableInfo.lColInfo.lColType.currency:
-                    lInputCtrlCurrency currencyCtrl = new lInputCtrlCurrency(col.m_field, col.m_alias, lSearchCtrl.ctrlType.currency, pos, size);
+                case TableInfo.ColInfo.ColType.currency:
+                    lInputCtrlCurrency currencyCtrl = new lInputCtrlCurrency(col.m_field, col.m_alias, SearchCtrl.CtrlType.currency, pos, size);
                     return currencyCtrl;
-                case lTableInfo.lColInfo.lColType.map:
-                    lInputCtrlEnum enumCtrl = new lInputCtrlEnum(col.m_field, col.m_alias, lSearchCtrl.ctrlType.map, pos, size);
-                    enumCtrl.init(col.getDict());
+                case TableInfo.ColInfo.ColType.map:
+                    lInputCtrlEnum enumCtrl = new lInputCtrlEnum(col.m_field, col.m_alias, SearchCtrl.CtrlType.map, pos, size);
+                    enumCtrl.Init(col.GetDict());
                     return enumCtrl;
             }
             return null;
@@ -1339,16 +1342,16 @@ namespace test_binding
     }
 
     [DataContract(Name = "ReceiptsInputPanel")]
-    public class lReceiptsInputPanel : lInputPanel
+    public class lReceiptsInputPanel : InputPanel
     {
-        protected override lInputCtrl m_keyCtrl { get { return m_inputsCtrls[0]; } }
+        protected override InputCtrl m_keyCtrl { get { return m_inputsCtrls[0]; } }
         private keyMng m_key;
         protected override keyMng m_keyMng { get { return m_key; } }
         public lReceiptsInputPanel()
         {
             m_tblName = "receipts";
 
-            m_inputsCtrls = new List<lInputCtrl> {
+            m_inputsCtrls = new List<InputCtrl> {
                 crtInputCtrl(m_tblInfo, "receipt_number", new Point(0, 0), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, "date"          , new Point(0, 1), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, "name"          , new Point(0, 2), new Size(1, 1)),
@@ -1373,15 +1376,15 @@ namespace test_binding
         }
     }
     [DataContract(Name = "InterPayInputPanel")]
-    public class lInterPayInputPanel : lInputPanel
+    public class lInterPayInputPanel : InputPanel
     {
-        protected override lInputCtrl m_keyCtrl { get { return m_inputsCtrls[0]; } }
+        protected override InputCtrl m_keyCtrl { get { return m_inputsCtrls[0]; } }
         private keyMng m_key;
         protected override keyMng m_keyMng { get { return m_key; } }
-        lInputCtrl advance_payment;
+        InputCtrl advance_payment;
         lInputCtrlEnum status;
-        lInputCtrl actually_spent;
-        lInputCtrl note;
+        InputCtrl actually_spent;
+        InputCtrl note;
         public lInterPayInputPanel()
         {
             m_tblName = "internal_payment";
@@ -1392,7 +1395,7 @@ namespace test_binding
             note = crtInputCtrl(m_tblInfo, "note", new Point(0, 9), new Size(1, 1));
             //status.init(lAdvanceStatus.lst);
 
-            m_inputsCtrls = new List<lInputCtrl>
+            m_inputsCtrls = new List<InputCtrl>
             {
                 crtInputCtrl(m_tblInfo, "payment_number"    , new Point(0, 0), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, "date"              , new Point(0, 1), new Size(1, 1)),
@@ -1457,15 +1460,15 @@ namespace test_binding
         }
     }
     [DataContract(Name = "ExterPayInputPanel")]
-    public class lExterPayInputPanel : lInputPanel
+    public class lExterPayInputPanel : InputPanel
     {
-        protected override lInputCtrl m_keyCtrl { get { return m_inputsCtrls[0]; } }
+        protected override InputCtrl m_keyCtrl { get { return m_inputsCtrls[0]; } }
         private keyMng m_key;
         protected override keyMng m_keyMng { get { return m_key; } }
         public lExterPayInputPanel()
         {
             m_tblName = "external_payment";
-            m_inputsCtrls = new List<lInputCtrl>
+            m_inputsCtrls = new List<InputCtrl>
             {
                 crtInputCtrl(m_tblInfo, "payment_number", new Point(0, 0), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, "date"          , new Point(0, 1), new Size(1, 1)),
@@ -1493,21 +1496,21 @@ namespace test_binding
         }
     }
     [DataContract(Name = "SalaryInputPanel")]
-    public class lSalaryInputPanel : lInputPanel
+    public class lSalaryInputPanel : InputPanel
     {
-        protected override lInputCtrl m_keyCtrl { get { return m_inputsCtrls[0]; } }
+        protected override InputCtrl m_keyCtrl { get { return m_inputsCtrls[0]; } }
         private keyMng m_key;
         protected override keyMng m_keyMng { get { return m_key; } }
-        lInputCtrl bsalary;
-        lInputCtrl esalary;
-        lInputCtrl salary;
+        InputCtrl bsalary;
+        InputCtrl esalary;
+        InputCtrl salary;
         public lSalaryInputPanel()
         {
             m_tblName = "salary";
             bsalary = crtInputCtrl(m_tblInfo, "bsalary", new Point(0, 6), new Size(1, 1));
             esalary = crtInputCtrl(m_tblInfo, "esalary", new Point(0, 7), new Size(1, 1));
             salary = crtInputCtrl(m_tblInfo, "salary", new Point(0, 8), new Size(1, 1));
-            m_inputsCtrls = new List<lInputCtrl> {
+            m_inputsCtrls = new List<InputCtrl> {
                 crtInputCtrl(m_tblInfo, "payment_number", new Point(0, 0), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, "date"          , new Point(0, 1), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, "name"          , new Point(0, 2), new Size(1, 1)),
@@ -1629,16 +1632,16 @@ namespace test_binding
     }
 #endif
     [DataContract(Name = "TaskInputPanel")]
-    public class lTaskInputPanel : lInputPanel
+    public class lTaskInputPanel : InputPanel
     {
-        protected override lInputCtrl m_keyCtrl { get { return m_inputsCtrls[0]; } }
+        protected override InputCtrl m_keyCtrl { get { return m_inputsCtrls[0]; } }
         private keyMng m_key;
         protected override keyMng m_keyMng { get { return m_key; } }
         public lTaskInputPanel()
         {
             m_tblName = "task";
 
-            m_inputsCtrls = new List<lInputCtrl> {
+            m_inputsCtrls = new List<InputCtrl> {
                 crtInputCtrl(m_tblInfo, "task_number", new Point(0, 0), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, "group_name" , new Point(0, 1), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, "task_name"  , new Point(0, 2), new Size(1, 1)),
@@ -1669,9 +1672,9 @@ namespace test_binding
         }
     }
     [DataContract(Name = "OrderInputPanel")]
-    public class lOrderInputPanel : lInputPanel
+    public class OrderInputPanel : InputPanel
     {
-        protected override lInputCtrl m_keyCtrl { get { return m_inputsCtrls[1]; } }
+        protected override InputCtrl m_keyCtrl { get { return m_inputsCtrls[1]; } }
         private keyMng m_key;
         protected override keyMng m_keyMng { get { return m_key; } }
 
@@ -1686,11 +1689,11 @@ namespace test_binding
         Button saveResBtn = lConfigMng.crtButton();
         DataGridView orderResDGV = lConfigMng.crtDGV();
 
-        public lOrderInputPanel()
+        public OrderInputPanel()
         {
             m_tblName = "order_tbl";
 
-            m_inputsCtrls = new List<lInputCtrl> {
+            m_inputsCtrls = new List<InputCtrl> {
                 crtInputCtrl(m_tblInfo, "task_number" , new Point(0, 0), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, "order_number", new Point(0, 1), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, "order_type"  , new Point(0, 2), new Size(1, 1)),
@@ -1771,7 +1774,7 @@ namespace test_binding
             }
         }
 
-        private lInputCtrl taskCmb;
+        private InputCtrl taskCmb;
         public override void LoadData()
         {
             base.LoadData();    //init combo box & data
@@ -1788,16 +1791,15 @@ namespace test_binding
             updateOrderDGV(taskCmb.Text);
 
         }
-
-        lSearchBuilder m_taskSB;
-        lSearchBuilder m_orderSB;
+        
+        SearchBuilder m_orderSB;
         private void taskCmb_EditingCompleted(object sender, string e)
         {
             if (sender == taskCmb) { 
                 if ( e != "")
                 {
                     string taskNumber = e;
-                    if (m_orderSB == null) { m_orderSB = new lSearchBuilder(appConfig.s_config.getTable("order_tbl")); }
+                    if (m_orderSB == null) { m_orderSB = new SearchBuilder(appConfig.s_config.getTable("order_tbl")); }
                     m_orderSB.clear();
                     m_orderSB.add("task_number", taskNumber);
                     m_orderSB.search();
@@ -1819,7 +1821,7 @@ namespace test_binding
 
         protected void updateOrderDGV(string taskNumber)
         {
-            if (m_orderSB == null) { m_orderSB = new lSearchBuilder(appConfig.s_config.getTable("order_tbl")); }
+            if (m_orderSB == null) { m_orderSB = new SearchBuilder(appConfig.s_config.getTable("order_tbl")); }
             m_orderSB.clear();
             m_orderSB.add("task_number", taskNumber);
             m_orderSB.search();
@@ -1845,8 +1847,8 @@ namespace test_binding
             }
         }
 
-        lSearchBuilder m_humanSB;
-        lSearchBuilder m_equipSB;
+        SearchBuilder m_humanSB;
+        SearchBuilder m_equipSB;
         private void LOrderInputPanel_EditingCompleted(object sender, string e)
         {
             //update res?
@@ -2038,7 +2040,7 @@ namespace test_binding
         }
 
         private string m_curOrder;
-        private int m_curOrderType;
+        private OrderType m_curOrderType;
         private string m_curResTbl;
         private string m_curOrderResTbl;
         protected override void onDGV_CellClick()
@@ -2053,17 +2055,17 @@ namespace test_binding
                 //get type
                 //get date
                 var cell = rows[0].Cells["order_type"];
-                int orderType = int.Parse(cell.Value.ToString());
+                OrderType orderType = (OrderType)int.Parse(cell.Value.ToString());
                 updateRightPanel(orderId, orderType);
             }
         }
-        protected void updateRightPanel(string orderId, int orderType)
+        protected void updateRightPanel(string orderId, OrderType orderType)
         {
             m_curOrder = orderId;
             m_curOrderType = orderType;
             switch (orderType)
             {
-                case 0: //human
+                case OrderType.Worker: //human
                     {
                         m_curResTbl = "human";
                         m_curOrderResTbl = "order_human";
@@ -2076,7 +2078,7 @@ namespace test_binding
                         DateTime endDate = DateTime.Now; ;
                         getTaskInfo(ref startDate, ref endDate);
                         var tblInfo = appConfig.s_config.getTable("human");
-                        if (m_humanSB == null) { m_humanSB = new lSearchBuilder(tblInfo); }
+                        if (m_humanSB == null) { m_humanSB = new SearchBuilder(tblInfo); }
                         m_humanSB.clear();
                         m_humanSB.add("start_date", startDate, "<=");
                         m_humanSB.add("end_date", endDate, ">=");
@@ -2089,7 +2091,7 @@ namespace test_binding
                         updateResLabel(tblInfo.m_tblAlias, startDate, endDate);
                     }
                     break;
-                case 1: //equipment
+                case OrderType.Equip: //equipment
                     {
                         m_curResTbl = "equipment";
                         m_curOrderResTbl = "order_equipment";
@@ -2099,7 +2101,7 @@ namespace test_binding
 
                         //update res list
                         var tblInfo = appConfig.s_config.getTable("equipment");
-                        if (m_equipSB == null) { m_equipSB = new lSearchBuilder(tblInfo); }
+                        if (m_equipSB == null) { m_equipSB = new SearchBuilder(tblInfo); }
                         m_equipSB.clear();
                         m_equipSB.search();
                         resDGV.DataSource = m_equipSB.dc.m_bindingSource;
@@ -2109,6 +2111,10 @@ namespace test_binding
                         //update lable
                         updateResLabel(tblInfo.m_tblAlias);
                     }
+                    break;
+                case OrderType.Expense:
+                    resDGV.DataSource = null;
+                    orderResDGV.DataSource = null;
                     break;
             }
         }
@@ -2123,8 +2129,8 @@ namespace test_binding
                 startDate.ToString(datef), endDate.ToString(datef));
         }
 
-        lSearchBuilder m_orderHumanSB;
-        lSearchBuilder m_orderEquipmentSB;
+        SearchBuilder m_orderHumanSB;
+        SearchBuilder m_orderEquipmentSB;
         protected void updateOrderRes()
         {
             switch (m_curResTbl)
@@ -2140,7 +2146,7 @@ namespace test_binding
         protected void updateOrderEquipmentRes()
         {
             var tblInfo = appConfig.s_config.getTable("order_equipment");
-            if (m_orderEquipmentSB == null) { m_orderEquipmentSB = new lSearchBuilder(tblInfo); }
+            if (m_orderEquipmentSB == null) { m_orderEquipmentSB = new SearchBuilder(tblInfo); }
             m_orderEquipmentSB.clear();
             m_orderEquipmentSB.add("order_number", m_curOrder);
             m_orderEquipmentSB.search();
@@ -2161,7 +2167,7 @@ namespace test_binding
         protected void updateOrderHumanRes()
         {
             var tblInfo = appConfig.s_config.getTable("order_human");
-            if (m_orderHumanSB == null) { m_orderHumanSB = new lSearchBuilder(tblInfo); }
+            if (m_orderHumanSB == null) { m_orderHumanSB = new SearchBuilder(tblInfo); }
             m_orderHumanSB.clear();
             m_orderHumanSB.add("order_number", m_curOrder);
             m_orderHumanSB.search();
@@ -2187,7 +2193,7 @@ namespace test_binding
         }
     }
     [DataContract(Name = "ApproveInputPanel")]
-    public class lApproveInputPanel: lOrderInputPanel
+    public class lApproveInputPanel: OrderInputPanel
     {
         DataGridView taskDGV;
         DataGridView orderDGV;
@@ -2265,7 +2271,7 @@ namespace test_binding
         {
             //base.LoadData();
             //task
-            lTableInfo taskTI = appConfig.s_config.getTable("task");
+            TableInfo taskTI = appConfig.s_config.getTable("task");
             taskTI.LoadData();
             lDataContent taskDC = appConfig.s_contentProvider.CreateDataContent(taskTI.m_tblName);
             taskDGV.DataSource = taskDC.m_bindingSource;

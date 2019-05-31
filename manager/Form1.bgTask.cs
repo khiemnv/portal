@@ -210,8 +210,8 @@ namespace test_binding
     public class srchTsk : FgTask
     {
         public List<string> m_exprs;
-        public List<lSearchParam> m_srchParams;
-        public srchTsk(List<string> exprs, List<lSearchParam> srchParams)
+        public List<SearchParam> m_srchParams;
+        public srchTsk(List<string> exprs, List<SearchParam> srchParams)
         {
             eType = fgTaskType.DP_FG_SEARCH;
             m_exprs = exprs;

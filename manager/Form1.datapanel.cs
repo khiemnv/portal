@@ -45,7 +45,7 @@ namespace test_binding
 
         public lDataContent m_dataContent;
 
-        public lTableInfo m_tblInfo { get { return appConfig.s_config.getTable(m_tblName); } }
+        public TableInfo m_tblInfo { get { return appConfig.s_config.getTable(m_tblName); } }
 
         [DataMember(Name = "tblName")]
         public string m_tblName;
@@ -214,11 +214,11 @@ namespace test_binding
                 switch (field.m_type)
                 {
 #if format_currency
-                    case lTableInfo.lColInfo.lColType.currency:
+                    case TableInfo.ColInfo.ColType.currency:
                         dgvcol.DefaultCellStyle.Format = lConfigMng.getCurrencyFormat();
                         break;
 #endif
-                    case lTableInfo.lColInfo.lColType.dateTime:
+                    case TableInfo.ColInfo.ColType.dateTime:
                         dgvcol.DefaultCellStyle.Format = lConfigMng.getDisplayDateFormat();
                         break;
                 }
@@ -234,7 +234,7 @@ namespace test_binding
         private void updateCols()
         {
             m_dataGridView.Columns[0].Visible = false;
-            lTableInfo tblInfo = m_tblInfo;
+            TableInfo tblInfo = m_tblInfo;
             int i = 1;
             for (; i < m_dataGridView.ColumnCount; i++)
             {
@@ -255,10 +255,10 @@ namespace test_binding
 
                 switch (tblInfo.m_cols[i].m_type)
                 {
-                    case lTableInfo.lColInfo.lColType.currency:
+                    case TableInfo.ColInfo.ColType.currency:
                         m_dataGridView.Columns[i].DefaultCellStyle.Format = lConfigMng.getCurrencyFormat();
                         break;
-                    case lTableInfo.lColInfo.lColType.dateTime:
+                    case TableInfo.ColInfo.ColType.dateTime:
                         m_dataGridView.Columns[i].DefaultCellStyle.Format = lConfigMng.getDisplayDateFormat();
                         break;
                 }
@@ -341,7 +341,7 @@ namespace test_binding
             }
 #endif
 #if use_cmd_params
-        public void search(List<string> exprs, List<lSearchParam> srchParams)
+        public void search(List<string> exprs, List<SearchParam> srchParams)
         {
 #if use_bg_work
             //move code to lower - search panel

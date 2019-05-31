@@ -61,7 +61,7 @@ namespace test_binding
                     typeof(lReceiptsContentTblInfo),
                     typeof(lConstrorgTblInfo),
                     typeof(lTaskTblInfo),
-                    typeof(lOrderTblInfo),
+                    typeof(OrderTblInfo),
 
                     typeof(lReceiptsViewInfo),
                     typeof(lInterPaymentViewInfo),
@@ -85,7 +85,7 @@ namespace test_binding
                     typeof(lSalaryReport),
                     typeof(lCurSalaryReport),
 
-                    typeof(lSearchCtrlText),
+                    typeof(SearchCtrlText),
                     typeof(lSearchCtrlDate),
                     typeof(lSearchCtrlNum),
                     typeof(lSearchCtrlCurrency),
@@ -237,12 +237,12 @@ namespace test_binding
             xwriter.WriteEndElement();
             xwriter.Close();
         }
-        public lTableInfo getTable(string tblName)
+        public TableInfo getTable(string tblName)
         {
-            List<lTableInfo> tbls = new List<lTableInfo>();
+            List<TableInfo> tbls = new List<TableInfo>();
             tbls.AddRange(m_dbSchema.m_tables);
             tbls.AddRange(m_dbSchema.m_views);
-            foreach (lTableInfo tbl in tbls)
+            foreach (TableInfo tbl in tbls)
             {
                 if (tbl.m_tblName == tblName)
                     return tbl;
@@ -279,7 +279,7 @@ namespace test_binding
                     typeof(lReceiptsTblInfo),
                     typeof(lReceiptsDataPanel),
                     typeof(lReceiptsReport),
-                    typeof(lSearchCtrlText),
+                    typeof(SearchCtrlText),
                     typeof(lSearchCtrlDate),
                     typeof(lSearchCtrlNum),
                     typeof(lSearchCtrlCurrency),
@@ -322,6 +322,12 @@ namespace test_binding
         public static DataGridView crtDGV()
         {
             var ctrl = new DataGridView();
+            ctrl.Font = getFont();
+            return ctrl;
+        }
+        public static DataGridView crtDGV(TableInfo tblInfo)
+        {
+            var ctrl = new lCustomDGV(tblInfo);
             ctrl.Font = getFont();
             return ctrl;
         }

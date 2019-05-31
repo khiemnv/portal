@@ -148,12 +148,12 @@ namespace test_binding
 
     public class lCustomDGV : DataGridView
     {
-        protected lTableInfo m_tblInfo;
+        protected TableInfo m_tblInfo;
         myCustomCtrl m_customCtrl;
         DataRow m_newRow;
         DataTable m_dataTable;
 
-        public lCustomDGV(lTableInfo tblInfo)
+        public lCustomDGV(TableInfo tblInfo)
         {
             m_tblInfo = tblInfo;
             DataTable dt = appConfig.s_contentProvider.CreateDataContent(m_tblInfo.m_tblName).m_dataTable;
@@ -215,7 +215,7 @@ namespace test_binding
                     switch (m_tblInfo.m_cols[iCol].m_type)
                     {
 #if format_currency
-                        case lTableInfo.lColInfo.lColType.currency:
+                        case TableInfo.ColInfo.ColType.currency:
                             row[iCol] = field.Replace(",", "");
                             break;
 #endif
@@ -256,16 +256,16 @@ namespace test_binding
             Debug.WriteLine("OnCellValidating");
             base.OnCellValidating(e);
             //check unique value
-            var colInfo = m_tblInfo.m_cols[e.ColumnIndex];
+            var col = m_tblInfo.m_cols[e.ColumnIndex];
             string val = e.FormattedValue.ToString();
-            switch (colInfo.m_type)
+            switch (col.m_type)
             {
-                case lTableInfo.lColInfo.lColType.uniqueText:
+                case TableInfo.ColInfo.ColType.uniqueText:
                     {
                         string rowid = Rows[e.RowIndex].Cells[0].Value.ToString();
 #if use_sqlite
                         string sql = string.Format("select rowid, {0} from {1} where {0} = '{2}'",
-                            colInfo.m_field, m_tblInfo.m_tblName, val);
+                            col.m_field, m_tblInfo.m_tblName, val);
 #else
                         string sql = string.Format("select id, {0} from {1} where {0} = '{2}'",
                             colInfo.m_field, m_tblInfo.m_tblName, val);
@@ -277,6 +277,25 @@ namespace test_binding
                             showInputError("Mã này đã tồn tại!");
                             e.Cancel = true;
                         }
+                    }
+                    break;
+                case TableInfo.ColInfo.ColType.map:
+                    string txt = e.FormattedValue.ToString();
+                    int n;
+                    bool bChk;
+                    if (int.TryParse(txt, out n))
+                    {
+                        bChk = col.ParseEnum(n, out txt);
+                    }
+                    else
+                    {
+                        bChk = col.ParseEnum(txt, out n);
+                    }
+                    if (bChk == false)
+                    {
+                        string msg = string.Format("Invalid input for {0}\n{1}", col.m_alias, col.GetHelp());
+                        lConfigMng.showInputError(msg);
+                        e.Cancel = true;
                     }
                     break;
 #if check_number_input
@@ -338,21 +357,36 @@ namespace test_binding
         {
             base.OnEditingControlShowing(e);
             Debug.WriteLine("OnEditingControlShowing");
-            do
+            var col = m_tblInfo.m_cols[CurrentCell.ColumnIndex];
+            switch (col.m_type)
             {
-                if (m_customCtrl != null) break;
+                case TableInfo.ColInfo.ColType.map:
+                    ToolTip tt = new ToolTip
+                    {
+                        IsBalloon = true,
+                        InitialDelay = 0,
+                        ShowAlways = true
+                    };
+                    tt.SetToolTip(e.Control, col.GetHelp());
+                    break;
+                default:
+                    do
+                    {
+                        if (m_customCtrl != null) break;
 
-                m_autoCompleteData = m_tblInfo.m_cols[CurrentCell.ColumnIndex].m_lookupData;
-                if (m_autoCompleteData == null) break;
+                        m_autoCompleteData = m_tblInfo.m_cols[CurrentCell.ColumnIndex].m_lookupData;
+                        if (m_autoCompleteData == null) break;
 
-                AutoCompleteStringCollection col = m_autoCompleteData.m_colls;
-                DataGridViewTextBoxEditingControl edt = (DataGridViewTextBoxEditingControl)e.Control;
-                edt.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
-                edt.AutoCompleteSource = AutoCompleteSource.CustomSource;
-                edt.AutoCompleteCustomSource = col;
+                        AutoCompleteStringCollection coll = m_autoCompleteData.m_colls;
+                        DataGridViewTextBoxEditingControl edt = (DataGridViewTextBoxEditingControl)e.Control;
+                        edt.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+                        edt.AutoCompleteSource = AutoCompleteSource.CustomSource;
+                        edt.AutoCompleteCustomSource = coll;
 
-                edt.Validated += Edt_Validated;
-            } while (false);
+                        edt.Validated += Edt_Validated;
+                    } while (false);
+                    break;
+            }
         }
 
         private void Edt_Validated(object sender, EventArgs e)
@@ -382,7 +416,7 @@ namespace test_binding
                 return;
             }
 
-            if (m_tblInfo.m_cols[col].m_type == lTableInfo.lColInfo.lColType.dateTime)
+            if (m_tblInfo.m_cols[col].m_type == TableInfo.ColInfo.ColType.dateTime)
             {
                 m_customCtrl = new myDateTimePicker(this);
             }
@@ -428,11 +462,13 @@ namespace test_binding
         {
             bool bRet = false;
             val = "";
-            if (m_customCtrl != null)
+            do
             {
+                if (m_customCtrl == null) break;
                 Debug.WriteLine("hideDtp");
                 m_customCtrl.hide();
 
+                if (m_customCtrl == null) break;
                 if (m_customCtrl.isChanged())
                 {
                     bRet = true;
@@ -442,7 +478,7 @@ namespace test_binding
                 this.Controls.Remove(m_customCtrl.getControl());
                 m_customCtrl.Dispose();
                 m_customCtrl = null;
-            }
+            } while (false);
             return bRet;
         }
 #endif  //use_custom_cols
@@ -451,11 +487,25 @@ namespace test_binding
         {
             //Debug.WriteLine("OnCellFormatting");
             base.OnCellFormatting(e);
+
+            if (e.Value == null) return;
             var col = m_tblInfo.m_cols[e.ColumnIndex];
             switch (col.m_type)
             {
-                case lTableInfo.lColInfo.lColType.dateTime:
+                case TableInfo.ColInfo.ColType.dateTime:
 
+                    break;
+                case TableInfo.ColInfo.ColType.map:
+                    string txt;
+                    int n;
+                    if (int.TryParse(e.Value.ToString(), out n))
+                    {
+                        if (col.ParseEnum(n, out txt))
+                        {
+                            e.Value = txt;
+                            e.FormattingApplied = true;
+                        }
+                    }
                     break;
             }
         }
@@ -474,7 +524,7 @@ namespace test_binding
             var col = m_tblInfo.m_cols[e.ColumnIndex];
             switch (col.m_type)
             {
-                case lTableInfo.lColInfo.lColType.dateTime:
+                case TableInfo.ColInfo.ColType.dateTime:
                     Debug.WriteLine("OnCellParsing parsing date");
 
                     if (lConfigMng.getDisplayDateFormat() == "dd/MM/yyyy")
@@ -494,6 +544,18 @@ namespace test_binding
                     }
                     
                     break;
+                case TableInfo.ColInfo.ColType.map:
+                    {
+                        Debug.WriteLine("OnCellParsing parsing enum");
+                        string val = e.Value.ToString();
+                        int n;
+                        if (col.ParseEnum(val, out n))
+                        {
+                            e.ParsingApplied = true;
+                            e.Value = n;
+                        }
+                    }
+                    break;
             }
         }
 
@@ -510,7 +572,7 @@ namespace test_binding
     }
     public class lInterPaymentDGV : lCustomDGV
     {
-        public lInterPaymentDGV(lTableInfo tblInfo) : base(tblInfo)
+        public lInterPaymentDGV(TableInfo tblInfo) : base(tblInfo)
         {
         }
         protected override void OnCellEndEdit(DataGridViewCellEventArgs e)
@@ -534,7 +596,7 @@ namespace test_binding
     }
     public class lSalaryDGV : lCustomDGV
     {
-        public lSalaryDGV(lTableInfo tblInfo) : base(tblInfo)
+        public lSalaryDGV(TableInfo tblInfo) : base(tblInfo)
         {
         }
         protected override void OnCellEndEdit(DataGridViewCellEventArgs e)

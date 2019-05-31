@@ -27,7 +27,7 @@ namespace test_binding
             LoadData();
         }
 
-        protected virtual lInputPanel CrtInputPanel()
+        protected virtual InputPanel CrtInputPanel()
         {
             return new lReceiptsInputPanel();
         }
@@ -70,12 +70,12 @@ namespace test_binding
             
         }
 
-        private void refreshPreview(object sender, lInputPanel.PreviewEventArgs e)
+        private void refreshPreview(object sender, InputPanel.PreviewEventArgs e)
         {
             showSingleBill();
         }
 
-        protected lInputPanel m_inputPanel;
+        protected InputPanel m_inputPanel;
         protected virtual string GetBill()
         {
             return @"..\..\bill_general.rdlc";
@@ -103,7 +103,7 @@ namespace test_binding
             return @"..\..\bill_receipts.rdlc";
         }
 #endif
-        protected override lInputPanel CrtInputPanel()
+        protected override InputPanel CrtInputPanel()
         {
             return new lReceiptsInputPanel();
         }
@@ -121,7 +121,7 @@ namespace test_binding
             return @"..\..\bill_exterpay.rdlc";
         }
 #endif
-        protected override lInputPanel CrtInputPanel()
+        protected override InputPanel CrtInputPanel()
         {
             return new lExterPayInputPanel();
         }
@@ -139,7 +139,7 @@ namespace test_binding
             return @"..\..\bill_interpay.rdlc";
         }
 #endif
-        protected override lInputPanel CrtInputPanel()
+        protected override InputPanel CrtInputPanel()
         {
             return new lInterPayInputPanel();
         }
@@ -157,7 +157,7 @@ namespace test_binding
             return @"..\..\bill_salary.rdlc";
         }
 #endif
-        protected override lInputPanel CrtInputPanel()
+        protected override InputPanel CrtInputPanel()
         {
             return new lSalaryInputPanel();
         }
@@ -188,8 +188,12 @@ namespace test_binding
         {
             this.Text = "Công Việc";
             base.initCtrls();
+
+            splitContainer1.Panel2Collapsed = true;
+            splitContainer1.Panel2.Hide();
+            splitContainer1.Panel1.Anchor = AnchorStyles.Right;
         }
-        protected override lInputPanel CrtInputPanel()
+        protected override InputPanel CrtInputPanel()
         {
             return new lTaskInputPanel();
         }
@@ -201,17 +205,13 @@ namespace test_binding
             this.Text = "Yêu Cầu";
             base.initCtrls();
 
-            //splitContainer1.Panel2Collapsed = true;
-            //splitContainer1.Panel2.Hide();
-            //splitContainer1.Panel1.Anchor = AnchorStyles.Right;
-            //splitContainer1.Panel2.Controls.Add(rightTbl);
             splitContainer1.Panel2.Controls.Clear();
             splitContainer1.Panel2.Controls.Add(m_panel.rightSC);
         }
-        public lOrderInputPanel m_panel;
-        protected override lInputPanel CrtInputPanel()
+        public OrderInputPanel m_panel;
+        protected override InputPanel CrtInputPanel()
         {
-            m_panel = new lOrderInputPanel();
+            m_panel = new OrderInputPanel();
             return m_panel;
         }
     }
@@ -228,7 +228,7 @@ namespace test_binding
             splitContainer1.Panel2.Controls.Add(m_panel.rightSC);
         }
         public lApproveInputPanel m_panel;
-        protected override lInputPanel CrtInputPanel()
+        protected override InputPanel CrtInputPanel()
         {
             m_panel = new lApproveInputPanel();
             return m_panel;
