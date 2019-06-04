@@ -335,7 +335,7 @@ namespace test_binding
 
         private bool chkTaskDGV()
         {
-            lDataContent taskDC = appConfig.s_contentProvider.CreateDataContent("task");
+            DataContent taskDC = appConfig.s_contentProvider.CreateDataContent("task");
             bool bChk = taskDC.m_dataTable.Rows.Count > 0;
             return bChk;
         }

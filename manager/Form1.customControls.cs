@@ -319,7 +319,7 @@ namespace test_binding
         {
             base.OnCellEndEdit(e);
             Debug.WriteLine("OnCellEndEdit");
-            hideCustomCtrl();
+            HideCustomCtrl();
             //update selected value
             lDataSync data = m_tblInfo.m_cols[e.ColumnIndex].m_lookupData;
             if (data != null && CurrentCell.Value != null)
@@ -440,7 +440,7 @@ namespace test_binding
                 this.BeginEdit(true);
             }
         }
-        public virtual void hideCustomCtrl()
+        public virtual void HideCustomCtrl()
         {
             if (m_customCtrl != null)
             {
@@ -458,7 +458,7 @@ namespace test_binding
                 m_customCtrl = null;
             }
         }
-        public virtual bool hideCustomCtrl(out string val)
+        public virtual bool HideCustomCtrl(out string val)
         {
             bool bRet = false;
             val = "";
@@ -533,7 +533,7 @@ namespace test_binding
                         string val = e.Value.ToString();
                         if (m_customCtrl != null)
                         {
-                            bChg = hideCustomCtrl(out val);
+                            bChg = HideCustomCtrl(out val);
                         }
                         DateTime dt;
                         if (lConfigMng.parseDisplayDate(val, out dt))

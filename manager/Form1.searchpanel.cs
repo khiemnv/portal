@@ -117,7 +117,7 @@ namespace test_binding
         Dictionary<string, TableInfo.ColInfo> m_dict;
         public List<string> exprs = new List<string>();
         public List<SearchParam> srchParams = new List<SearchParam>();
-        public lDataContent dc;
+        public DataContent dc;
         public SearchBuilder(TableInfo tblInfo)
         {
             m_tblInfo = tblInfo;

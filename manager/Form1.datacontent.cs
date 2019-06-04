@@ -759,27 +759,27 @@ namespace test_binding
         protected lContentProvider()
         {
             m_dataSyncs = new Dictionary<string, lDataSync>();
-            m_dataContents = new Dictionary<string, lDataContent>();
+            m_dataContents = new Dictionary<string, DataContent>();
         }
 
         protected Form1 m_form;
         private Dictionary<string, lDataSync> m_dataSyncs;
-        private Dictionary<string, lDataContent> m_dataContents;
+        private Dictionary<string, DataContent> m_dataContents;
 
-        protected virtual lDataContent newDataContent(string tblName) { return null; }
+        protected virtual DataContent newDataContent(string tblName) { return null; }
         protected virtual lDataSync newDataSync(string tblName)
         {
-            lDataContent dataContent = CreateDataContent(tblName);
+            DataContent dataContent = CreateDataContent(tblName);
             lDataSync dataSync = new lDataSync(dataContent);
             return dataSync;
         }
 
         public virtual DataTable GetData(string qry) { return null; }
-        public lDataContent CreateDataContent(string tblName)
+        public DataContent CreateDataContent(string tblName)
         {
             if (!m_dataContents.ContainsKey(tblName))
             {
-                lDataContent data = newDataContent(tblName);
+                DataContent data = newDataContent(tblName);
                 m_dataContents.Add(tblName, data);
                 return data;
             }
@@ -796,7 +796,7 @@ namespace test_binding
             }
             else
             {
-                lDataContent data = m_dataContents[tblName];
+                DataContent data = m_dataContents[tblName];
                 m_dataContents.Remove(tblName);
                 data.Dispose();
                 return true;
@@ -806,7 +806,7 @@ namespace test_binding
         {
             if (!m_dataSyncs.ContainsKey(tblName))
             {
-                lDataContent dataContent = CreateDataContent(tblName);
+                DataContent dataContent = CreateDataContent(tblName);
                 lDataSync dataSync = new lDataSync(dataContent);
                 m_dataSyncs.Add(tblName, dataSync);
                 return dataSync;
@@ -843,7 +843,7 @@ namespace test_binding
                 {
                     ds.Dispose();
                 }
-                foreach (lDataContent dc in m_dataContents.Values)
+                foreach (DataContent dc in m_dataContents.Values)
                 {
                     dc.Dispose();
                 }
@@ -876,7 +876,7 @@ namespace test_binding
 
         private SqlConnection m_cnn;
 
-        protected override lDataContent newDataContent(string tblName)
+        protected override DataContent newDataContent(string tblName)
         {
             lSqlDataContent data = new lSqlDataContent(tblName, m_cnn);
 #if !use_bg_work
@@ -924,10 +924,10 @@ namespace test_binding
         public const string zAdvance = "Tạm ứng";
         public const string zRemain = "Hoàn ứng";
         public const string zActual = "Thực chi";
-        public static List<lInputCtrlEnum.ComboItem> lst = new List<lInputCtrlEnum.ComboItem> {
-                new lInputCtrlEnum.ComboItem { name = zAdvance, val = nAdvance },
-                new lInputCtrlEnum.ComboItem { name = zRemain, val = nRemain },
-                new lInputCtrlEnum.ComboItem { name = zActual, val = nActual },
+        public static List<InputCtrlEnum.ComboItem> lst = new List<InputCtrlEnum.ComboItem> {
+                new InputCtrlEnum.ComboItem { name = zAdvance, val = nAdvance },
+                new InputCtrlEnum.ComboItem { name = zRemain, val = nRemain },
+                new InputCtrlEnum.ComboItem { name = zActual, val = nActual },
             };
     }
 
@@ -1038,7 +1038,7 @@ namespace test_binding
             return table;
         }
 
-        protected override lDataContent newDataContent(string tblName)
+        protected override DataContent newDataContent(string tblName)
         {
             lSQLiteDataContent data = new lSQLiteDataContent(tblName, m_cnn);
 #if !use_bg_work
@@ -1280,7 +1280,7 @@ namespace test_binding
     /// + reload()
     /// + submit()
     /// </summary>
-    public class lDataContent : ICursor, IDisposable
+    public class DataContent : ICursor, IDisposable
     {
 #region fetch_data
 #if use_bg_work
@@ -1477,7 +1477,7 @@ namespace test_binding
         public BindingSource m_bindingSource { get; private set; }
         protected string m_table;
         public IRefresher m_refresher;
-        public lDataContent()
+        public DataContent()
         {
             m_dataTable = new DataTable();
             m_bindingSource = new BindingSource();
@@ -1562,7 +1562,7 @@ namespace test_binding
         // NOTE: Leave out the finalizer altogether if this class doesn't   
         // own unmanaged resources itself, but leave the other methods  
         // exactly as they are.   
-        ~lDataContent()
+        ~DataContent()
         {
             // Finalizer calls Dispose(false)  
             Dispose(false);
@@ -1580,7 +1580,7 @@ namespace test_binding
 #endregion
     }
 #if use_sqlite
-    public class lSQLiteDataContent : lDataContent
+    public class lSQLiteDataContent : DataContent
     {
         private readonly SQLiteConnection m_cnn;
         private SQLiteDataAdapter m_dataAdapter;
@@ -1764,7 +1764,7 @@ namespace test_binding
 #endregion
     }
 #endif //use_sqlite
-    public class lSqlDataContent : lDataContent
+    public class lSqlDataContent : DataContent
     {
         private SqlConnection m_cnn;
         private SqlDataAdapter m_dataAdapter;
@@ -1868,11 +1868,11 @@ namespace test_binding
     }
     public class lDataSync : IRefresher, IDisposable
     {
-        private lDataContent m_data;
+        private DataContent m_data;
         public AutoCompleteStringCollection m_colls;
         public Dictionary<string, string> m_maps;
         public int m_col = 1;
-        public lDataSync(lDataContent data)
+        public lDataSync(DataContent data)
         {
             m_data = data;
             m_data.m_refresher = this;

@@ -1228,7 +1228,7 @@ namespace test_binding
         }
         protected override DataTable loadData()
         {
-            lDataContent dc = appConfig.s_contentProvider.CreateDataContent(m_viewName);
+            DataContent dc = appConfig.s_contentProvider.CreateDataContent(m_viewName);
             //dc.Load();    //if current is no data
             return dc.m_dataTable;
         }

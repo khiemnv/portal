@@ -43,7 +43,7 @@ namespace test_binding
 
         public DataGridView m_dataGridView;
 
-        public lDataContent m_dataContent;
+        public DataContent m_dataContent;
 
         public TableInfo m_tblInfo { get { return appConfig.s_config.getTable(m_tblName); } }
 
@@ -542,7 +542,7 @@ namespace test_binding
         }
 #endif
 
-        private void M_dataContent_FillTableCompleted(object sender, lDataContent.FillTableCompletedEventArgs e)
+        private void M_dataContent_FillTableCompleted(object sender, DataContent.FillTableCompletedEventArgs e)
         {
             update();
             m_stsMng.onTaskEnd(e.TimeComplete);

@@ -172,6 +172,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Form1.resPanel.cs" />
     <Compile Include="Form1.searchpanel.cs" />
     <Compile Include="inputF.cs">
       <SubType>Form</SubType>

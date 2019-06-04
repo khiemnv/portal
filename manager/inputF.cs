@@ -227,10 +227,10 @@ namespace test_binding
             splitContainer1.Panel1.Controls.Add(m_panel.leftSC);
             splitContainer1.Panel2.Controls.Add(m_panel.rightSC);
         }
-        public lApproveInputPanel m_panel;
+        public ApproveInputPanel m_panel;
         protected override InputPanel CrtInputPanel()
         {
-            m_panel = new lApproveInputPanel();
+            m_panel = new ApproveInputPanel();
             return m_panel;
         }
     }

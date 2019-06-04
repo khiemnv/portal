@@ -353,7 +353,7 @@ namespace test_binding
             {
                 //load data for building combo box
                 BindingSource bs = new BindingSource();
-                lDataContent dc = appConfig.s_contentProvider.CreateDataContent("building");
+                DataContent dc = appConfig.s_contentProvider.CreateDataContent("building");
                 bs.DataSource = dc.m_dataTable;
                 buildingCmb.DataSource = bs;
                 buildingCmb.DisplayMember = dc.m_dataTable.Columns[1].ColumnName;
@@ -361,7 +361,7 @@ namespace test_binding
             //load data for constr org cmb
             {
                 BindingSource bs = new BindingSource();
-                lDataContent dc = appConfig.s_contentProvider.CreateDataContent("constr_org");
+                DataContent dc = appConfig.s_contentProvider.CreateDataContent("constr_org");
                 bs.DataSource = dc.m_dataTable;
                 constrorgCmb.DataSource = bs;
                 constrorgCmb.DisplayMember = dc.m_dataTable.Columns[1].ColumnName;

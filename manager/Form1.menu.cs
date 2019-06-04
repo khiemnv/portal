@@ -67,21 +67,21 @@ namespace test_binding
             miEditGroupName.Click += MiEditGroupName_Click;
             addChild(miEdit, miEditGroupName);
 
-            var miEditReceiptsContent = crtMenuItem("Nguồn Thu");
-            miEditReceiptsContent.Click += MiEditReceiptsContent_Click;
-            addChild(miEdit, miEditReceiptsContent);
+            //var miEditReceiptsContent = crtMenuItem("Nguồn Thu");
+            //miEditReceiptsContent.Click += MiEditReceiptsContent_Click;
+            //addChild(miEdit, miEditReceiptsContent);
 
-            var miBuilding = crtMenuItem("Công Trình");
-            miBuilding.Click += MiBuilding_Click;
-            addChild(miEdit, miBuilding);
+            //var miBuilding = crtMenuItem("Công Trình");
+            //miBuilding.Click += MiBuilding_Click;
+            //addChild(miEdit, miBuilding);
 
-            var miConstrorg = crtMenuItem("Đơn vị TC");
-            miConstrorg.Click += MiConstrorg_Click;
-            addChild(miEdit, miConstrorg);
+            //var miConstrorg = crtMenuItem("Đơn vị TC");
+            //miConstrorg.Click += MiConstrorg_Click;
+            //addChild(miEdit, miConstrorg);
 
             //Report
-            var miReport = crtMenuItem("&Report");
-            miReport.Click += MiReport_Click;
+            //var miReport = crtMenuItem("&Report");
+            //miReport.Click += MiReport_Click;
 
             //Config
             var miConfig = crtMenuItem("&Config");
@@ -121,7 +121,7 @@ namespace test_binding
             this.Menu = mainMenu;
             return null;
 #else
-            mainMenu.Items.AddRange(new ToolStripMenuItem[] { miFile, miInput, miEdit, miReport, miConfig, miHelp });
+            mainMenu.Items.AddRange(new ToolStripMenuItem[] { miFile, miInput, miEdit, miConfig, miHelp });
             return mainMenu;
 #endif
         }
