@@ -559,6 +559,64 @@ namespace test_binding
             }
         }
 
+        protected override void OnDataBindingComplete(DataGridViewBindingCompleteEventArgs e)
+        {
+            base.OnDataBindingComplete(e);
+
+
+#if !manual_crt_dgv_columns
+            if (AutoGenerateColumns == true)
+            {
+                updateCols();
+                AutoGenerateColumns = false;
+            }
+#endif
+            //fix col["ID"] not hide
+            if (Columns[0].Visible)
+            {
+                Columns[0].Visible = false;
+            }
+        }
+        private void updateCols()
+        {
+            Columns[0].Visible = false;
+            TableInfo tblInfo = m_tblInfo;
+            int i = 1;
+            for (; i < ColumnCount; i++)
+            {
+                //show hide columns
+                if (tblInfo.m_cols[i].m_visible == false)
+                {
+                    Columns[i].Visible = false;
+                    continue;
+                }
+
+                Columns[i].HeaderText = tblInfo.m_cols[i].m_alias;
+
+#if header_blue
+                //header color blue
+                m_dataGridView.Columns[i].HeaderCell.Style.BackColor = Color.Blue;
+                m_dataGridView.Columns[i].HeaderCell.Style.ForeColor = Color.White;
+#endif
+
+                switch (tblInfo.m_cols[i].m_type)
+                {
+                    case TableInfo.ColInfo.ColType.currency:
+                        Columns[i].DefaultCellStyle.Format = lConfigMng.getCurrencyFormat();
+                        break;
+                    case TableInfo.ColInfo.ColType.dateTime:
+                        Columns[i].DefaultCellStyle.Format = lConfigMng.getDisplayDateFormat();
+                        break;
+                }
+#if false
+                    m_dataGridView.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    m_dataGridView.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                    m_dataGridView.Columns[i].FillWeight = 1;
+#endif
+            }
+            Columns[i - 1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Columns[i - 1].FillWeight = 1;
+        }
         protected override void Dispose(bool disposing)
         {
             if (disposing)

@@ -128,13 +128,13 @@ namespace test_binding
             }
             dc = appConfig.s_contentProvider.CreateDataContent(m_tblInfo.m_tblName);
         }
-        public void clear()
+        public void Clear()
         {
             exprs.Clear();
             srchParams.Clear();
         }
 
-        public void add(string col, DateTime start, string oper="=")
+        public void Add(string col, DateTime start, string oper="=")
         {
             Debug.Assert(m_dict.ContainsKey(col));
 
@@ -152,7 +152,7 @@ namespace test_binding
                     }
                 );
         }
-        public void add(string col, DateTime startDate, DateTime endDate)
+        public void Add(string col, DateTime startDate, DateTime endDate)
         {
             Debug.Assert (m_dict.ContainsKey(col));
 
@@ -180,7 +180,7 @@ namespace test_binding
             );
         }
 
-        public void add(string col, string arg1, SearchCtrl.SearchMode mode = SearchCtrl.SearchMode.match)
+        public void Add(string col, string arg1, SearchCtrl.SearchMode mode = SearchCtrl.SearchMode.match)
         {
             Debug.Assert(m_dict.ContainsKey(col));
 
@@ -235,7 +235,7 @@ namespace test_binding
                     //srchParams.Add(string.Format("@{0}", m_fieldName), string.Format("%{0}%", m_value));
 #endif
         }
-        public void search()
+        public void Search()
         {
             dc.Search(exprs, srchParams);
         }

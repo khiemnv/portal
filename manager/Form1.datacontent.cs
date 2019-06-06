@@ -459,6 +459,7 @@ namespace test_binding
             string OrderTypeLst = string.Join(";", new string[]{
                 OrderType.Worker.ToName(),
                 OrderType.Equip.ToName(),
+                OrderType.Car.ToName(),
                 OrderType.Expense.ToName()});
             m_cols = new ColInfo[] {
                    new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
@@ -481,6 +482,7 @@ namespace test_binding
             m_crtQry = "CREATE TABLE if not exists human("
                 + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + "human_number char(31),"
+                + "name char(31),"
                 + "start_date datetime,"
                 + "end_date datetime,"
                 + "gender INTEGER,"
@@ -490,6 +492,7 @@ namespace test_binding
             m_cols = new ColInfo[] {
                    new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
                    new ColInfo( "human_number" ,"Mã NS", ColInfo.ColType.uniqueText),
+                   new ColInfo( "name"         ,"Họ tên", ColInfo.ColType.text),
                    new ColInfo( "start_date"   ,"Ngày vào", ColInfo.ColType.dateTime),
                    new ColInfo( "end_date"     ,"Ngày ra" , ColInfo.ColType.dateTime),
                    new ColInfo( "gender"       ,"Giới tính", ColInfo.ColType.map, GenderLst),
@@ -515,6 +518,28 @@ namespace test_binding
                    new ColInfo( "equipment_number" ,"Mã TB", ColInfo.ColType.uniqueText),
                    new ColInfo( "equipment_type"   ,"Loại TB", ColInfo.ColType.text),
                    new ColInfo( "note"         ,"Ghi Chú", ColInfo.ColType.text),
+                };
+        }
+    };
+    [DataContract(Name = "CarTblInfo")]
+    public class CarTblInfo : TableInfo
+    {
+        public CarTblInfo()
+        {
+            m_tblName = "car";
+            m_tblAlias = "Phương Tiện";
+            m_crtQry = "CREATE TABLE if not exists car("
+                + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "car_number char(31),"
+                + "car_type char(31),"
+                + "brand char(31),"
+                + "note text)";
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
+                   new ColInfo( "car_number" ,"Biển Số", ColInfo.ColType.uniqueText),
+                   new ColInfo( "car_type"   ,"Loại", ColInfo.ColType.text),
+                   new ColInfo( "brand"      ,"Hãng SX", ColInfo.ColType.text),
+                   new ColInfo( "note"       ,"Ghi Chú", ColInfo.ColType.text),
                 };
         }
     };
@@ -554,6 +579,26 @@ namespace test_binding
                    new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
                    new ColInfo( "order_number","Mã YC", ColInfo.ColType.uniqueText),
                    new ColInfo( "human_number","Mã NS", ColInfo.ColType.uniqueText),
+                   new ColInfo( "note"        ,"Ghi Chú", ColInfo.ColType.text),
+                };
+        }
+    };
+    [DataContract(Name = "OrderCarTblInfo")]
+    public class OrderCarTblInfo : TableInfo
+    {
+        public OrderCarTblInfo()
+        {
+            m_tblName = "order_car";
+            m_tblAlias = "Yêu Cầu - Phương Tiện";
+            m_crtQry = "CREATE TABLE if not exists order_car("
+                + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "order_number char(31),"
+                + "car_number char(31),"
+                + "note text)";
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
+                   new ColInfo( "order_number","Mã YC", ColInfo.ColType.uniqueText),
+                   new ColInfo( "car_number"  ,"Mã PT", ColInfo.ColType.uniqueText),
                    new ColInfo( "note"        ,"Ghi Chú", ColInfo.ColType.text),
                 };
         }
@@ -965,6 +1010,7 @@ namespace test_binding
     {
         [Description("Nhân công")] Worker,
         [Description("Thiết bị")] Equip,
+        [Description("Phương tiện")] Car,
         [Description("Kinh phí")] Expense
     }
 
@@ -1100,6 +1146,8 @@ namespace test_binding
                     new EquipmentTblInfo(),
                     new OrderEquipmentTblInfo(),
                     new OrderHumanTblInfo(),
+                    new CarTblInfo(),
+                    new OrderCarTblInfo(),
                 };
             m_views = new List<TableInfo>() {
                     new lReceiptsViewInfo(),

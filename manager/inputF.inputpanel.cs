@@ -1710,6 +1710,10 @@ namespace test_binding
         {
             base.LoadData();    //init combo box & data
 
+            m_humanRes.LoadData();
+            m_equipmentRes.LoadData();
+            m_carRes.LoadData();
+
             taskCmb = m_inputsCtrls[0];
             taskCmb.ReadOnly = true;
             taskCmb.EditingCompleted += taskCmb_EditingCompleted;
@@ -1731,9 +1735,9 @@ namespace test_binding
                 {
                     string taskNumber = e;
                     if (m_orderSB == null) { m_orderSB = new SearchBuilder(appConfig.s_config.getTable("order_tbl")); }
-                    m_orderSB.clear();
-                    m_orderSB.add("task_number", taskNumber);
-                    m_orderSB.search();
+                    m_orderSB.Clear();
+                    m_orderSB.Add("task_number", taskNumber);
+                    m_orderSB.Search();
 
                     //clear lbl, resLst, orderResLst
                     ClearRightPanel();
@@ -1754,9 +1758,9 @@ namespace test_binding
         protected void updateOrderDGV(string taskNumber)
         {
             if (m_orderSB == null) { m_orderSB = new SearchBuilder(appConfig.s_config.getTable("order_tbl")); }
-            m_orderSB.clear();
-            m_orderSB.add("task_number", taskNumber);
-            m_orderSB.search();
+            m_orderSB.Clear();
+            m_orderSB.Add("task_number", taskNumber);
+            m_orderSB.Search();
 
             updateTaskInfo(taskNumber);
         }
@@ -1824,6 +1828,11 @@ namespace test_binding
             m_orderEquipment.InitCtrl();
             m_equipmentRes.m_orderResPanel = m_orderEquipment;
             m_orderEquipment.m_resPanel = m_equipmentRes;
+
+            m_carRes.InitCtrl();
+            m_orderCar.InitCtrl();
+            m_carRes.m_orderResPanel = m_orderCar;
+            m_orderCar.m_resPanel = m_carRes;
         }
 
         private OrderResPanel curOrderResPanel;
@@ -1957,6 +1966,20 @@ namespace test_binding
                         m_equipmentRes.UpdateResDGV(m_curOrder, startDate, endDate);
                     }
                     break;
+                case OrderType.Car: //car
+                    {
+                        m_curResTbl = "car";
+                        m_curOrderResTbl = "order_car";
+
+                        //update order-car
+                        UpdateOrderResDGV();
+                        
+                        DateTime startDate = DateTime.Now; ;
+                        DateTime endDate = DateTime.Now; ;
+                        getTaskInfo(ref startDate, ref endDate);
+                        m_equipmentRes.UpdateResDGV(m_curOrder, startDate, endDate);
+                    }
+                    break;
                 case OrderType.Expense:
                     CleanRightPanel();
                     break;
@@ -1969,8 +1992,10 @@ namespace test_binding
 
         private HumanResPanel m_humanRes = new HumanResPanel();
         private EquipmentResPanel m_equipmentRes = new EquipmentResPanel();
+        private ResPanel m_carRes = new CarResPanel();
         private OrderHumanPanel m_orderHuman = new OrderHumanPanel();
         private OrderEquipmentPanel m_orderEquipment = new OrderEquipmentPanel();
+        private OrderResPanel m_orderCar = new OrderCarPanel();
         protected void UpdateOrderResDGV()
         {
             switch (m_curResTbl)
@@ -1991,6 +2016,15 @@ namespace test_binding
                     rightSC.Panel1.Controls.Add(m_equipmentRes.toprightTLP);
                     rightSC.Panel2.Controls.Clear();
                     rightSC.Panel2.Controls.Add(m_orderEquipment.botRightTLP);
+                    curOrderResPanel.UpdateDGV(m_curOrder);
+                    break;
+                case "car":
+                    curOrderResPanel = m_orderCar;
+                    curResPanel = m_carRes;
+                    rightSC.Panel1.Controls.Clear();
+                    rightSC.Panel1.Controls.Add(curResPanel.toprightTLP);
+                    rightSC.Panel2.Controls.Clear();
+                    rightSC.Panel2.Controls.Add(curOrderResPanel.botRightTLP);
                     curOrderResPanel.UpdateDGV(m_curOrder);
                     break;
             }
