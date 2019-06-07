@@ -14,26 +14,20 @@ namespace test_binding
     [DataContract(Name = "ResPanel")]
     public class ResPanel
     {
-        protected TableInfo resTblInfo;
         protected Label resLbl;
         protected Button srchBtn;
-        private TableInfo m_tblInfo;
-        protected TableInfo tblInfo { get{
-                if (m_tblInfo == null) { m_tblInfo = appConfig.s_config.getTable(m_tbl); }
-                return m_tblInfo; } }
-        private SearchBuilder m_srchBld;
-        protected SearchBuilder srchBld { get {
-                if (m_srchBld == null) { m_srchBld = new SearchBuilder(tblInfo); }
-                return m_srchBld; } }
+        protected TableInfo m_tblInfo;
+        protected SearchBuilder m_srchBld;
 
-        public string m_tbl;
+        public string m_tbl { get { return m_tblInfo.m_tblName; } }
         public TableLayoutPanel toprightTLP;
         public DataGridView resDGV;
         public OrderResPanel m_orderResPanel;
         public List<SearchCtrl> m_srchCtrls;
-        public ResPanel()
+        public ResPanel(string tblName)
         {
-
+            m_tblInfo = appConfig.s_config.getTable(tblName);
+            m_srchBld = new SearchBuilder(m_tblInfo);
         }
         public virtual void LoadData()
         {
@@ -50,12 +44,12 @@ namespace test_binding
             toprightTLP = new TableLayoutPanel();
             toprightTLP.Dock = DockStyle.Fill;
 
-            resDGV = lConfigMng.crtDGV(tblInfo);
+            resDGV = lConfigMng.crtDGV(m_tblInfo);
             resDGV.EnableHeadersVisualStyles = false;
             resDGV.Dock = DockStyle.Fill;
             //hide ID
             //resDGV.ColumnAdded += ResGV_ColumnAdded;
-            //resDGV.DataBindingComplete += ResGV_DataBindingComplete;
+            resDGV.DataBindingComplete += ResGV_DataBindingComplete;
             //resDGV.CellFormatting += ResDGV_CellFormatting;
             //resDGV.CellParsing += ResDGV_CellParsing;
             //resGV.AutoGenerateColumns = false;
@@ -89,17 +83,37 @@ namespace test_binding
         {
             SearchRes();
         }
-        protected virtual void SearchRes() { }
+        protected virtual void SearchRes()
+        {
+            int n = m_srchBld.exprs.Count;
+
+            for (int i = 0; i < m_srchCtrls.Count; i++)
+            {
+                m_srchCtrls[i].UpdateSearchParams(m_srchBld.exprs, m_srchBld.srchParams);
+            }
+            m_srchBld.Search();
+
+            for (int i = m_srchBld.exprs.Count - 1; i >= n; i--)
+            {
+                m_srchBld.exprs.RemoveAt(i);
+                m_srchBld.srchParams.RemoveAt(i);
+            }
+        }
         public virtual void UpdateResDGV(string taskId, DateTime startDate, DateTime endDate)
         {
-
+            //update res list
+            m_srchBld.Clear();
+            m_srchBld.Search();
+            resDGV.DataSource = m_srchBld.dc.m_bindingSource;
+            resLbl.Text = m_tblInfo.m_tblAlias;
         }
+
         public void UnmarkResRow(int i) { resDGV.Rows[i].DefaultCellStyle.BackColor = Color.White; }
         public void MarkResRow(int i) { resDGV.Rows[i].DefaultCellStyle.BackColor = Color.Gray; }
 
         private void ResDGV_CellParsing(object sender, DataGridViewCellParsingEventArgs e)
         {
-            var col = resTblInfo.m_cols[e.ColumnIndex];
+            var col = m_tblInfo.m_cols[e.ColumnIndex];
             switch (col.m_type)
             {
                 case TableInfo.ColInfo.ColType.map:
@@ -118,7 +132,7 @@ namespace test_binding
         private void ResDGV_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (e.Value == null) return;
-            var col = resTblInfo.m_cols[e.ColumnIndex];
+            var col = m_tblInfo.m_cols[e.ColumnIndex];
             switch (col.m_type)
             {
                 case TableInfo.ColInfo.ColType.map:
@@ -137,27 +151,14 @@ namespace test_binding
         }
         private void ResGV_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
-            //for (int i = 0; i < resDGV.Rows.Count; i++)
-            //{
-            //    var key = resDGV.Rows[i].Cells[1].Value.ToString();
-            //    if (m_orderResPanel.m_usedResDict.ContainsKey(key))
-            //    {
-            //        m_orderResPanel.m_usedResDict[key] = i;
-            //        MarkResRow(i);
-            //    }
-            //}
-
-#if !manual_crt_dgv_columns
-            if (resDGV.AutoGenerateColumns == true)
+            for (int i = 0; i < resDGV.Rows.Count; i++)
             {
-                UpdateCols();
-                resDGV.AutoGenerateColumns = false;
-            }
-#endif
-            //fix col["ID"] not hide
-            if (resDGV.Columns[0].Visible)
-            {
-                resDGV.Columns[0].Visible = false;
+                var key = resDGV.Rows[i].Cells[1].Value.ToString();
+                if (m_orderResPanel.m_usedResDict.ContainsKey(key))
+                {
+                    m_orderResPanel.m_usedResDict[key] = i;
+                    MarkResRow(i);
+                }
             }
         }
         private void UpdateCols()
@@ -242,14 +243,11 @@ namespace test_binding
     [DataContract(Name = "HumanResPanel")]
     public class HumanResPanel : ResPanel
     {
-        public HumanResPanel()
+        public HumanResPanel():base("human")
         {
-            m_tbl = "human";
             m_srchCtrls = new List<SearchCtrl> {
-                CrtSearchCtrl(tblInfo, "human_number" , new Point(0, 0), new Size(1, 1),SearchCtrl.SearchMode.match),
-                CrtSearchCtrl(tblInfo, "name"   , new Point(0, 1), new Size(1, 1),SearchCtrl.SearchMode.like),
-                CrtSearchCtrl(tblInfo, "gender" , new Point(0, 2), new Size(1, 1),SearchCtrl.SearchMode.match),
-                CrtSearchCtrl(tblInfo, "age"    , new Point(0, 3), new Size(1, 1),SearchCtrl.SearchMode.match),
+                CrtSearchCtrl(m_tblInfo, "name"   , new Point(0, 0), new Size(1, 1),SearchCtrl.SearchMode.like),
+                CrtSearchCtrl(m_tblInfo, "gender" , new Point(0, 1), new Size(1, 1),SearchCtrl.SearchMode.match),
             };
         }
         public override void InitCtrl()
@@ -262,147 +260,50 @@ namespace test_binding
         protected override void SearchRes()
         {
             base.SearchRes();
-            int n = srchBld.exprs.Count;
-
-            for (int i = 0;i<m_srchCtrls.Count;i++)
-            {
-                m_srchCtrls[i].UpdateSearchParams(srchBld.exprs, srchBld.srchParams);
-            }
-            srchBld.Search();
-            
-            for (int i = srchBld.exprs.Count -1; i >= n; i--)
-            {
-                srchBld.exprs.RemoveAt(i);
-                srchBld.srchParams.RemoveAt(i);
-            }
         }
         public override void UpdateResDGV(string taskId, DateTime startDate, DateTime endDate)
         {
-            base.UpdateResDGV(taskId, startDate, endDate);
-            srchBld.Clear();
-            srchBld.Add("start_date", startDate, "<=");
-            srchBld.Add("end_date", endDate, ">=");
-            srchBld.Search();
-            UpdateResDGV(tblInfo, srchBld.dc);
-        }
-        private void UpdateResDGV(TableInfo tblInfo, DataContent dc)
-        {
-            resTblInfo = tblInfo;
-            resDGV.DataSource = dc.m_bindingSource;
-
-            //hide col["ID"]
-            //UpdateDGVCols(resDGV, tblInfo);
-
-            //update lable
-            //UpdateResLabel(tblInfo.m_tblAlias);
-        }
-        private void UpdateResLabel(string resTblAlias, DateTime startDate, DateTime endDate)
-        {
+            m_srchBld.Clear();
+            m_srchBld.Add("start_date", startDate, "<=");
+            m_srchBld.Add("end_date", endDate, ">=");
+            m_srchBld.Search();
+            resDGV.DataSource=m_srchBld.dc.m_bindingSource;
             string datef = lConfigMng.getDisplayDateFormat();
-            resLbl.Text = string.Format("{0} {1}-{2}",resTblAlias,
+            resLbl.Text = string.Format("{0} {1}-{2}", m_tblInfo.m_tblAlias,
                 startDate.ToString(datef), endDate.ToString(datef));
         }
      }
     [DataContract(Name = "EquipmentResPanel")]
     public class EquipmentResPanel : ResPanel
     {
-        SearchBuilder m_equipSB;
-
-        public EquipmentResPanel()
+        public EquipmentResPanel():base( "equipment")
         {
-            m_tbl = "equipment";
+            m_srchCtrls = new List<SearchCtrl> {
+                CrtSearchCtrl(m_tblInfo, "note"   , new Point(0, 0), new Size(1, 1),SearchCtrl.SearchMode.like),
+            };
         }
         public override void InitCtrl()
         {
             base.InitCtrl();
 
-            int iRow = 0;
-            resLbl = lConfigMng.crtLabel();
-            toprightTLP.Controls.Add(resLbl, 0, ++iRow);
-            //  lable <human dd/mm/yy - dd/mm/yy>
             resLbl.Text = "Chọn tài nguyên cho Yêu Cầu";
-            //lable |<res table >       |
-            resLbl.AutoSize = true;
-            //resLbl.Anchor = (AnchorStyles.Left | AnchorStyles.Right);
-            //resLbl.BorderStyle = BorderStyle.None;
-            toprightTLP.Controls.Add(resDGV, 0, ++iRow);
-        }
-        public override void UpdateResDGV(string taskId, DateTime startDate, DateTime endDate)
-        {
-            base.UpdateResDGV(taskId, startDate, endDate);
-
-            //update res list
-            var tblInfo = appConfig.s_config.getTable("equipment");
-            if (m_equipSB == null) { m_equipSB = new SearchBuilder(tblInfo); }
-            m_equipSB.Clear();
-            m_equipSB.Search();
-            UpdateResDGV(tblInfo, m_equipSB.dc);
-        }
-        private void UpdateResDGV(TableInfo tblInfo, DataContent dc)
-        {
-            resTblInfo = tblInfo;
-            resDGV.DataSource = dc.m_bindingSource;
-
-            //hide col["ID"]
-            //UpdateDGVCols(resDGV, tblInfo);
-
-            //update lable
-            UpdateResLabel(tblInfo.m_tblAlias);
-        }
-        private void UpdateResLabel(string resTblAlias)
-        {
-            resLbl.Text = resTblAlias;
         }
     }
     [DataContract(Name = "CarResPanel")]
     public class CarResPanel : ResPanel
     {
-        SearchBuilder m_resSB;
-
-        public CarResPanel()
+        public CarResPanel():base("car")
         {
-            m_tbl = "car";
+            m_srchCtrls = new List<SearchCtrl> {
+                CrtSearchCtrl(m_tblInfo, "car_type", new Point(0, 0), new Size(1, 1),SearchCtrl.SearchMode.like),
+                CrtSearchCtrl(m_tblInfo, "brand"   , new Point(0, 1), new Size(1, 1),SearchCtrl.SearchMode.like),
+            };
         }
         public override void InitCtrl()
         {
             base.InitCtrl();
-
-            int iRow = 0;
-            resLbl = lConfigMng.crtLabel();
-            toprightTLP.Controls.Add(resLbl, 0, ++iRow);
-            //  lable <human dd/mm/yy - dd/mm/yy>
+            
             resLbl.Text = "Chọn phương tiện cho Yêu Cầu";
-            //lable |<res table >       |
-            resLbl.AutoSize = true;
-            //resLbl.Anchor = (AnchorStyles.Left | AnchorStyles.Right);
-            //resLbl.BorderStyle = BorderStyle.None;
-            toprightTLP.Controls.Add(resDGV, 0, ++iRow);
-        }
-        public override void UpdateResDGV(string taskId, DateTime startDate, DateTime endDate)
-        {
-            base.UpdateResDGV(taskId, startDate, endDate);
-
-            //update res list
-            var tblInfo = appConfig.s_config.getTable(m_tbl);
-            if (m_resSB == null) { m_resSB = new SearchBuilder(tblInfo); }
-            m_resSB.Clear();
-            m_resSB.Search();
-            UpdateResDGV(tblInfo, m_resSB.dc);
-        }
-        private void UpdateResDGV(TableInfo tblInfo, DataContent dc)
-        {
-            resTblInfo = tblInfo;
-            resDGV.DataSource = dc.m_bindingSource;
-
-            //hide col["ID"]
-            //UpdateDGVCols(resDGV, tblInfo);
-
-            //update lable
-            UpdateResLabel(tblInfo.m_tblAlias);
-        }
-        private void UpdateResLabel(string resTblAlias)
-        {
-            resLbl.Text = resTblAlias;
         }
     }
     [DataContract(Name = "OrderResPanel")]
@@ -410,6 +311,7 @@ namespace test_binding
     {
         public TableLayoutPanel botRightTLP;
         protected DataGridView orderResDGV;
+        protected SearchBuilder orderResSB;
         Button downBtn;
         Button upBtn;
         Button saveResBtn;
@@ -426,6 +328,7 @@ namespace test_binding
         public OrderResPanel(string tblName)
         {
             m_tblInfo = appConfig.s_config.getTable(tblName);
+            orderResSB = new SearchBuilder(m_tblInfo);
         }
         public virtual void InitCtrl()
         {
@@ -462,6 +365,24 @@ namespace test_binding
         public virtual void UpdateDGV(string orderId)
         {
             m_curOrder = orderId;
+        }
+        protected void UpdateOrderResDGV(string orderIdCol, string resIdCol)
+        {
+            var tblInfo = appConfig.s_config.getTable(m_tbl);
+            orderResSB.Clear();
+            orderResSB.Add(orderIdCol, m_curOrder);
+            orderResSB.Search();
+            orderResDGV.DataSource = orderResSB.dc.m_bindingSource;
+            
+            //build dict
+            m_usedResDict.Clear();
+            var rows = orderResSB.dc.m_dataTable.Rows;
+            int i;
+            for (i = 0; i < rows.Count; i++)
+            {
+                var key = rows[i][resIdCol].ToString();
+                m_usedResDict.Add(key, -1); //not yet set res row index
+            }
         }
         private void OrderResGV_ColumnAdded(object sender, DataGridViewColumnEventArgs e)
         {
@@ -538,43 +459,18 @@ namespace test_binding
     [DataContract(Name = "OrderHumanPanel")]
     public class OrderHumanPanel:OrderResPanel
     {
-        SearchBuilder m_orderHumanSB;
-
         public OrderHumanPanel() : base("order_human")
         {
         }
         public override void UpdateDGV(string orderId)
         {
             base.UpdateDGV(orderId);
-            UpdateOrderHumanResDGV();
-        }
-        protected void UpdateOrderHumanResDGV()
-        {
-            var tblInfo = appConfig.s_config.getTable("order_human");
-            if (m_orderHumanSB == null) { m_orderHumanSB = new SearchBuilder(tblInfo); }
-            m_orderHumanSB.Clear();
-            m_orderHumanSB.Add("order_number", m_curOrder);
-            m_orderHumanSB.Search();
-            orderResDGV.DataSource = m_orderHumanSB.dc.m_dataTable;
-
-            //UpdateDGVCols(orderResDGV, tblInfo);
-
-            //build dict
-            m_usedResDict.Clear();
-            var rows = m_orderHumanSB.dc.m_dataTable.Rows;
-            int i;
-            for (i = 0;i< rows.Count;i++)
-            {
-                var key = rows[i]["human_number"].ToString();
-                m_usedResDict.Add(key, -1); //not set res row index
-            }
+            UpdateOrderResDGV("order_number", "human_number");
         }
     }
     [DataContract(Name = "OrderEquipmentPanel")]
     public class OrderEquipmentPanel:OrderResPanel
     {
-        SearchBuilder m_orderEquipmentSB;
-
         public OrderEquipmentPanel() : base("order_equipment")
         {
         }
@@ -582,64 +478,20 @@ namespace test_binding
         public override void UpdateDGV(string orderId)
         {
             base.UpdateDGV(orderId);
-            UpdateOrderEquipmentResDGV();
-        }
-        protected void UpdateOrderEquipmentResDGV()
-        {
-            if (m_orderEquipmentSB == null) { m_orderEquipmentSB = new SearchBuilder(m_tblInfo); }
-            m_orderEquipmentSB.Clear();
-            m_orderEquipmentSB.Add("order_number", m_curOrder);
-            m_orderEquipmentSB.Search();
-            orderResDGV.DataSource = m_orderEquipmentSB.dc.m_dataTable;
-
-            //UpdateDGVCols(orderResDGV, tblInfo);
-
-            //build dict
-            m_usedResDict.Clear();
-            var rows = m_orderEquipmentSB.dc.m_dataTable.Rows;
-            int i;
-            for (i = 0; i < rows.Count; i++)
-            {
-                var key = rows[i]["equipment_number"].ToString();
-                m_usedResDict.Add(key, -1); //not set res row index
-            }
+            UpdateOrderResDGV("order_number", "equipment_number");
         }
     }
     [DataContract(Name = "OrderCarPanel")]
     public class OrderCarPanel : OrderResPanel
     {
-        SearchBuilder m_orderResSB;
-        string m_resNumberCol;
-        public OrderCarPanel():base("car")
+        public OrderCarPanel():base("order_car")
         {
-            m_resNumberCol = "car_number";
         }
 
         public override void UpdateDGV(string orderId)
         {
             base.UpdateDGV(orderId);
-            UpdateOrderCarResDGV();
-        }
-        protected void UpdateOrderCarResDGV()
-        {
-            var tblInfo = appConfig.s_config.getTable(m_tbl);
-            if (m_orderResSB == null) { m_orderResSB = new SearchBuilder(tblInfo); }
-            m_orderResSB.Clear();
-            m_orderResSB.Add("order_number", m_curOrder);
-            m_orderResSB.Search();
-            orderResDGV.DataSource = m_orderResSB.dc.m_dataTable;
-
-            //UpdateDGVCols(orderResDGV, tblInfo);
-
-            //build dict
-            m_usedResDict.Clear();
-            var rows = m_orderResSB.dc.m_dataTable.Rows;
-            int i;
-            for (i = 0; i < rows.Count; i++)
-            {
-                var key = rows[i][m_resNumberCol].ToString();
-                m_usedResDict.Add(key, -1); //not set res row index
-            }
+            UpdateOrderResDGV("order_number", "car_number");
         }
     }
 }

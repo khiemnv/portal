@@ -511,12 +511,14 @@ namespace test_binding
             m_crtQry = "CREATE TABLE if not exists equipment("
                 + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + "equipment_number char(31),"
-                + "equipment_type INTEGER,"
+                + "equipment_type char(31),"
+                + "inuse INTEGER,"
                 + "note text)";
             m_cols = new ColInfo[] {
                    new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
                    new ColInfo( "equipment_number" ,"Mã TB", ColInfo.ColType.uniqueText),
                    new ColInfo( "equipment_type"   ,"Loại TB", ColInfo.ColType.text),
+                   new ColInfo( "inuse"     ,"Đang sử dụng", ColInfo.ColType.num),
                    new ColInfo( "note"         ,"Ghi Chú", ColInfo.ColType.text),
                 };
         }
