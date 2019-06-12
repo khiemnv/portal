@@ -34,7 +34,7 @@ namespace test_binding
         public string m_xmlPath;    //xml path
 #endif
         public string m_pdfPath = "lastReport.pdf";    //print to pdf file
-        public static string s_dateFormat = lConfigMng.getDisplayDateFormat();
+        public static string s_dateFormat = lConfigMng.GetDisplayDateFormat();
 
         protected lBaseReport()
         {
@@ -594,13 +594,13 @@ namespace test_binding
             m_endDate = endDate;
             m_rptParams = new List<ReportParameter>()
             {
-                new ReportParameter("startDate", startDate.ToString(lConfigMng.getDisplayDateFormat())),
-                new ReportParameter("endDate", endDate.ToString(lConfigMng.getDisplayDateFormat())),
+                new ReportParameter("startDate", startDate.ToString(lConfigMng.GetDisplayDateFormat())),
+                new ReportParameter("endDate", endDate.ToString(lConfigMng.GetDisplayDateFormat())),
                 new ReportParameter( "type", getType())
             };
 
-            string zStartDate = startDate.ToString(lConfigMng.getDateFormat());
-            string zEndDate = endDate.ToString(lConfigMng.getDateFormat());
+            string zStartDate = startDate.ToString(lConfigMng.GetDateFormat());
+            string zEndDate = endDate.ToString(lConfigMng.GetDateFormat());
             m_sqls = new Dictionary<string, string>
             {
                 { "DataSet1", getDateQry(zStartDate, zEndDate)},
@@ -878,8 +878,8 @@ namespace test_binding
             m_startDate = startDate;
             m_endDate = endDate;
 
-            string zStartDate = startDate.ToString(lConfigMng.getDisplayDateFormat());
-            string zEndDate = endDate.ToString(lConfigMng.getDisplayDateFormat());
+            string zStartDate = startDate.ToString(lConfigMng.GetDisplayDateFormat());
+            string zEndDate = endDate.ToString(lConfigMng.GetDisplayDateFormat());
             m_buildingName = building;
             m_rptParams = new List<ReportParameter>()
             {
@@ -887,8 +887,8 @@ namespace test_binding
                 new ReportParameter("endDate",zEndDate),
                 new ReportParameter("buildingName", m_buildingName)
             };
-            zStartDate = startDate.ToString(lConfigMng.getDateFormat());
-            zEndDate = endDate.ToString(lConfigMng.getDateFormat());
+            zStartDate = startDate.ToString(lConfigMng.GetDateFormat());
+            zEndDate = endDate.ToString(lConfigMng.GetDateFormat());
 #if use_sqlite
             string qry = string.Format("select * from external_payment"
                 + " where building like '%{0}%' and date between '{1} 00:00:00' and '{2} 00:00:00'"
@@ -943,8 +943,8 @@ namespace test_binding
             m_startDate = startDate;
             m_endDate = endDate;
 
-            string zStartDate = startDate.ToString(lConfigMng.getDisplayDateFormat());
-            string zEndDate = endDate.ToString(lConfigMng.getDisplayDateFormat());
+            string zStartDate = startDate.ToString(lConfigMng.GetDisplayDateFormat());
+            string zEndDate = endDate.ToString(lConfigMng.GetDisplayDateFormat());
             m_constrorg = constrorg;
             m_rptParams = new List<ReportParameter>()
             {
@@ -952,8 +952,8 @@ namespace test_binding
                 new ReportParameter("endDate",zEndDate),
                 new ReportParameter("constrorg", m_constrorg)
             };
-            zStartDate = startDate.ToString(lConfigMng.getDateFormat());
-            zEndDate = endDate.ToString(lConfigMng.getDateFormat());
+            zStartDate = startDate.ToString(lConfigMng.GetDateFormat());
+            zEndDate = endDate.ToString(lConfigMng.GetDateFormat());
 #if use_sqlite
             string qry = string.Format("select * from external_payment"
                 + " where constr_org like '%{0}%' and date between '{1} 00:00:00' and '{2} 00:00:00'"
@@ -1008,16 +1008,16 @@ namespace test_binding
             m_startDate = startDate;
             m_endDate = endDate;
 
-            string zStartDate = startDate.ToString(lConfigMng.getDisplayDateFormat());
-            string zEndDate = endDate.ToString(lConfigMng.getDisplayDateFormat());
+            string zStartDate = startDate.ToString(lConfigMng.GetDisplayDateFormat());
+            string zEndDate = endDate.ToString(lConfigMng.GetDisplayDateFormat());
             m_rptParams = new List<ReportParameter>()
             {
                 new ReportParameter("startDate",zStartDate),
                 new ReportParameter("endDate",zEndDate),
             };
 
-            zStartDate = startDate.ToString(lConfigMng.getDateFormat());
-            zEndDate = endDate.ToString(lConfigMng.getDateFormat());
+            zStartDate = startDate.ToString(lConfigMng.GetDateFormat());
+            zEndDate = endDate.ToString(lConfigMng.GetDateFormat());
 #if use_sqlite
             string qry = string.Format("SELECT date,"
                 + "       sum(receipt) AS receipt,"
@@ -1111,16 +1111,16 @@ namespace test_binding
             m_startDate = startDate;
             m_endDate = endDate;
 
-            string zStartDate = startDate.ToString(lConfigMng.getDisplayDateFormat());
-            string zEndDate = endDate.ToString(lConfigMng.getDisplayDateFormat());
+            string zStartDate = startDate.ToString(lConfigMng.GetDisplayDateFormat());
+            string zEndDate = endDate.ToString(lConfigMng.GetDisplayDateFormat());
             m_rptParams = new List<ReportParameter>()
             {
                 new ReportParameter("startDate",zStartDate),
                 new ReportParameter("endDate",zEndDate),
             };
 
-            zStartDate = startDate.ToString(lConfigMng.getDateFormat());
-            zEndDate = endDate.ToString(lConfigMng.getDateFormat());
+            zStartDate = startDate.ToString(lConfigMng.GetDateFormat());
+            zEndDate = endDate.ToString(lConfigMng.GetDateFormat());
             string qry = string.Format("select * from receipts"
                 + " where date between '{0} 00:00:00' and '{1} 00:00:00'"
                 + " order by date",
@@ -1146,8 +1146,8 @@ namespace test_binding
             m_startDate = startDate;
             m_endDate = endDate;
 
-            string zStartDate = startDate.ToString(lConfigMng.getDisplayDateFormat());
-            string zEndDate = endDate.ToString(lConfigMng.getDisplayDateFormat());
+            string zStartDate = startDate.ToString(lConfigMng.GetDisplayDateFormat());
+            string zEndDate = endDate.ToString(lConfigMng.GetDisplayDateFormat());
             m_rptParams = new List<ReportParameter>()
             {
                 new ReportParameter("startDate",zStartDate),
@@ -1155,8 +1155,8 @@ namespace test_binding
                 new ReportParameter("type","Ngày"),
             };
 
-            zStartDate = startDate.ToString(lConfigMng.getDateFormat());
-            zEndDate = endDate.ToString(lConfigMng.getDateFormat());
+            zStartDate = startDate.ToString(lConfigMng.GetDateFormat());
+            zEndDate = endDate.ToString(lConfigMng.GetDateFormat());
             string qry1 = string.Format(
                 " select * from advance where  date between '{0} 00:00:00' and '{1} 00:00:00' ",
                 zStartDate, zEndDate

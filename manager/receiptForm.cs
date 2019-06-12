@@ -20,7 +20,7 @@ namespace test_binding
         {
             InitializeComponent();
 
-            crtDate.CustomFormat = lConfigMng.getDisplayDateFormat();
+            crtDate.CustomFormat = lConfigMng.GetDisplayDateFormat();
             
             pcNoTxt.Validating += PcNoTxt_Validating;
             printBtn.Click += PrintBtn_Click;
@@ -43,7 +43,7 @@ namespace test_binding
             //add report params
             List<ReportParameter> rpParams = new List<ReportParameter>()
             {
-                new ReportParameter("crtDate", crtDate.Value.ToString(lConfigMng.getDateFormat())),
+                new ReportParameter("crtDate", crtDate.Value.ToString(lConfigMng.GetDateFormat())),
                 new ReportParameter("bookNo", bookNumTxt.Text),
                 new ReportParameter("pcNo", pcNoTxt.Text),
                 new ReportParameter("name", nameTxt.Text),
@@ -65,7 +65,7 @@ namespace test_binding
             if (!checkUniqKey(rcptNo))
             {
                 //show error msg
-                lConfigMng.showInputError("Mã này đã tồn tại!");
+                lConfigMng.ShowInputError("Mã này đã tồn tại!");
                 e.Cancel = true;
             }
         }
@@ -97,7 +97,7 @@ namespace test_binding
                 + " note = @note ";
             SQLiteCommand cmd;
             cmd = new SQLiteCommand(sql, m_cnn);
-            cmd.Parameters.AddWithValue("@date", crtDate.Value.ToString(lConfigMng.getDateFormat()));
+            cmd.Parameters.AddWithValue("@date", crtDate.Value.ToString(lConfigMng.GetDateFormat()));
             string rcptNo = pcNoTxt.Text;
             cmd.Parameters.AddWithValue("@rcptno", rcptNo);
             cmd.Parameters.AddWithValue("@name", nameTxt.Text);

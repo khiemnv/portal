@@ -12,6 +12,7 @@ using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.ComponentModel;
 
 namespace test_binding
 {
@@ -60,7 +61,7 @@ namespace test_binding
                     typeof(lBuildingTblInfo),
                     typeof(lReceiptsContentTblInfo),
                     typeof(lConstrorgTblInfo),
-                    typeof(lTaskTblInfo),
+                    typeof(TaskTblInfo),
                     typeof(OrderTblInfo),
                     typeof(CarTblInfo),
 
@@ -190,9 +191,9 @@ namespace test_binding
             return reg.IsMatch(zDate);
         }
 #if true
-        public static string getDateFormat() { return "yyyy-MM-dd"; }
-        public static string getDisplayDateFormat() { return "dd/MM/yyyy"; }
-        public static bool parseDisplayDate(string txt, out DateTime dt) {
+        public static string GetDateFormat() { return "yyyy-MM-dd"; }
+        public static string GetDisplayDateFormat() { return "dd/MM/yyyy"; }
+        public static bool ParseDisplayDate(string txt, out DateTime dt) {
             //txt = "dd/MM/yyyy"
             bool ret = false;
             dt = DateTime.Now;
@@ -238,17 +239,33 @@ namespace test_binding
             xwriter.WriteEndElement();
             xwriter.Close();
         }
-        public TableInfo getTable(string tblName)
+        private Dictionary<string, TableInfo> m_tblInfoDict;
+        private TableInfo[] m_tblInfoArr;
+        public TableInfo GetTable(TableIdx tblType)
         {
-            List<TableInfo> tbls = new List<TableInfo>();
-            tbls.AddRange(m_dbSchema.m_tables);
-            tbls.AddRange(m_dbSchema.m_views);
-            foreach (TableInfo tbl in tbls)
+            if (m_tblInfoArr == null)
             {
-                if (tbl.m_tblName == tblName)
-                    return tbl;
+                m_tblInfoArr = new TableInfo[(int)TableIdx.Count];
+                for (int i = 0; i< (int)TableIdx.Count;i++)
+                m_tblInfoArr[i] = GetTable(((TableIdx)i).ToName());
             }
-            return null;
+            return m_tblInfoArr[(int)tblType];
+        }
+        public TableInfo GetTable(string tblName)
+        {
+            if (m_tblInfoDict == null)
+            {
+                m_tblInfoDict = new Dictionary<string, TableInfo>();
+                foreach (TableInfo tbl in m_dbSchema.m_tables)
+                {
+                    m_tblInfoDict.Add(tbl.m_tblName, tbl);
+                }
+                foreach (TableInfo tbl in m_dbSchema.m_views)
+                {
+                    m_tblInfoDict.Add(tbl.m_tblName, tbl);
+                }
+            }
+            return m_tblInfoDict[tblName];
         }
         public void test(lReceiptsPanel receiptsPanel)
         {
@@ -362,7 +379,7 @@ namespace test_binding
         }
 
         //msg box
-        public static void showInputError(string msg)
+        public static void ShowInputError(string msg)
         {
             MessageBox.Show(msg, "Input error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }

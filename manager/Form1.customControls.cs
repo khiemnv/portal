@@ -117,7 +117,7 @@ namespace test_binding
         {
             m_dtp = new DateTimePicker();
             m_dtp.Format = DateTimePickerFormat.Custom;
-            m_dtp.CustomFormat = lConfigMng.getDisplayDateFormat();
+            m_dtp.CustomFormat = lConfigMng.GetDisplayDateFormat();
             m_dtp.ValueChanged += ctrl_ValueChanged;
         }
         public override Control getControl()
@@ -126,7 +126,7 @@ namespace test_binding
         }
         public override string getValue()
         {
-            return m_dtp.Value.ToString(lConfigMng.getDisplayDateFormat());
+            return m_dtp.Value.ToString(lConfigMng.GetDisplayDateFormat());
         }
         public override void setValue(string text)
         {
@@ -260,7 +260,7 @@ namespace test_binding
             string val = e.FormattedValue.ToString();
             switch (col.m_type)
             {
-                case TableInfo.ColInfo.ColType.uniqueText:
+                case TableInfo.ColInfo.ColType.uniq:
                     {
                         string rowid = Rows[e.RowIndex].Cells[0].Value.ToString();
 #if use_sqlite
@@ -294,7 +294,7 @@ namespace test_binding
                     if (bChk == false)
                     {
                         string msg = string.Format("Invalid input for {0}\n{1}", col.m_alias, col.GetHelp());
-                        lConfigMng.showInputError(msg);
+                        lConfigMng.ShowInputError(msg);
                         e.Cancel = true;
                     }
                     break;
@@ -514,7 +514,7 @@ namespace test_binding
         {
             public object GetFormat(Type formatType)
             {
-                return lConfigMng.getDisplayDateFormat();
+                return lConfigMng.GetDisplayDateFormat();
             }
         }
 
@@ -527,7 +527,7 @@ namespace test_binding
                 case TableInfo.ColInfo.ColType.dateTime:
                     Debug.WriteLine("OnCellParsing parsing date");
 
-                    if (lConfigMng.getDisplayDateFormat() == "dd/MM/yyyy")
+                    if (lConfigMng.GetDisplayDateFormat() == "dd/MM/yyyy")
                     {
                         bool bChg = false;
                         string val = e.Value.ToString();
@@ -536,7 +536,7 @@ namespace test_binding
                             bChg = HideCustomCtrl(out val);
                         }
                         DateTime dt;
-                        if (lConfigMng.parseDisplayDate(val, out dt))
+                        if (lConfigMng.ParseDisplayDate(val, out dt))
                         {
                             e.ParsingApplied = true;
                             e.Value = dt;
@@ -605,7 +605,7 @@ namespace test_binding
                         Columns[i].DefaultCellStyle.Format = lConfigMng.getCurrencyFormat();
                         break;
                     case TableInfo.ColInfo.ColType.dateTime:
-                        Columns[i].DefaultCellStyle.Format = lConfigMng.getDisplayDateFormat();
+                        Columns[i].DefaultCellStyle.Format = lConfigMng.GetDisplayDateFormat();
                         break;
                 }
 #if false

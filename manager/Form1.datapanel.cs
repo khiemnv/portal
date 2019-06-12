@@ -45,7 +45,7 @@ namespace test_binding
 
         public DataContent m_dataContent;
 
-        public TableInfo m_tblInfo { get { return appConfig.s_config.getTable(m_tblName); } }
+        public TableInfo m_tblInfo { get { return appConfig.s_config.GetTable(m_tblName); } }
 
         [DataMember(Name = "tblName")]
         public string m_tblName;
@@ -219,7 +219,7 @@ namespace test_binding
                         break;
 #endif
                     case TableInfo.ColInfo.ColType.dateTime:
-                        dgvcol.DefaultCellStyle.Format = lConfigMng.getDisplayDateFormat();
+                        dgvcol.DefaultCellStyle.Format = lConfigMng.GetDisplayDateFormat();
                         break;
                 }
                 //show hide col
@@ -259,7 +259,7 @@ namespace test_binding
                         m_dataGridView.Columns[i].DefaultCellStyle.Format = lConfigMng.getCurrencyFormat();
                         break;
                     case TableInfo.ColInfo.ColType.dateTime:
-                        m_dataGridView.Columns[i].DefaultCellStyle.Format = lConfigMng.getDisplayDateFormat();
+                        m_dataGridView.Columns[i].DefaultCellStyle.Format = lConfigMng.GetDisplayDateFormat();
                         break;
                 }
 #if false

@@ -195,7 +195,7 @@ namespace test_binding
         }
         protected override InputPanel CrtInputPanel()
         {
-            return new lTaskInputPanel();
+            return new TaskInputPanel();
         }
     }
     public class lOrderInputF : inputF

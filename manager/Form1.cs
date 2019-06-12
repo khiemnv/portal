@@ -314,7 +314,7 @@ namespace test_binding
                     }
                     else
                     {
-                        lConfigMng.showInputError("Không có CV nào trong bảng");
+                        lConfigMng.ShowInputError("Không có CV nào trong bảng");
                     }
                     break;
                 case inputFormType.approveIF:
@@ -322,7 +322,7 @@ namespace test_binding
                     if (chkTaskDGV())
                         inputDlg = new lApproveInputF();
                     else
-                        lConfigMng.showInputError("Không có CV nào trong bảng");
+                        lConfigMng.ShowInputError("Không có CV nào trong bảng");
                     break;
             }
 

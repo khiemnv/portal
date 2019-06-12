@@ -26,6 +26,7 @@ using System.Threading;
 using System.Linq;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace test_binding
 {
@@ -55,7 +56,7 @@ namespace test_binding
                 [EnumMember]
                 currency,
                 [EnumMember]
-                uniqueText,
+                uniq,
                 [EnumMember]
                 map,
             };
@@ -197,6 +198,21 @@ namespace test_binding
             }
             return -1;
         }
+
+        protected void CrtCols(object[][] map, int n)
+        {
+            m_cols = new ColInfo[n];
+            for (int i = 0; i < map.Length; i++)
+            {
+                int iCol = (int)map[i][0];
+                string field = (string)map[i][1];
+                string alias = (string)map[i][2];
+                ColInfo.ColType type = (ColInfo.ColType)map[i][3];
+                string lookupTbl = (string)map[i][4];
+                bool visible = (bool)map[i][5];
+                m_cols[iCol] = new ColInfo(field, alias, type, lookupTbl, visible);
+            }
+        }
     }
 
     [DataContract(Name = "ReceiptsTblInfo")]
@@ -219,7 +235,7 @@ namespace test_binding
             + ")";
             m_cols = new ColInfo[] {
                    new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "receipt_number","Mã PT", ColInfo.ColType.uniqueText),
+                   new ColInfo( "receipt_number","Mã PT", ColInfo.ColType.uniq),
                    new ColInfo( "date","Ngày Tháng", ColInfo.ColType.dateTime),
                    new ColInfo( "name","Họ tên", ColInfo.ColType.text),
                    new ColInfo( "addr","Địa chỉ", ColInfo.ColType.text),
@@ -262,7 +278,7 @@ namespace test_binding
             + ")";
             m_cols = new ColInfo[] {
                    new ColInfo( "ID"               ,"ID"           , ColInfo.ColType.num, null, false),
-                   new ColInfo( "payment_number"   ,"Mã Phiếu Chi" , ColInfo.ColType.uniqueText),
+                   new ColInfo( "payment_number"   ,"Mã Phiếu Chi" , ColInfo.ColType.uniq),
                    new ColInfo( "date"             ,"Ngày Tháng"   , ColInfo.ColType.dateTime),
                    new ColInfo( "name"             ,"Họ Tên"       , ColInfo.ColType.text),
                    new ColInfo( "addr"             ,"Địa chỉ"      , ColInfo.ColType.text),
@@ -298,7 +314,7 @@ namespace test_binding
             + ")";
             m_cols = new ColInfo[] {
                    new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "payment_number"   ,"Mã Phiếu Chi", ColInfo.ColType.uniqueText),
+                   new ColInfo( "payment_number"   ,"Mã Phiếu Chi", ColInfo.ColType.uniq),
                    new ColInfo( "date"             ,"Ngày Tháng", ColInfo.ColType.dateTime),
                    new ColInfo( "name"             ,"Họ Tên", ColInfo.ColType.text),
                    new ColInfo( "addr"             ,"Địa chỉ", ColInfo.ColType.text),
@@ -334,7 +350,7 @@ namespace test_binding
             + ")";
             m_cols = new ColInfo[] {
                    new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "payment_number"   ,"Mã Phiếu Chi", ColInfo.ColType.uniqueText),
+                   new ColInfo( "payment_number"   ,"Mã Phiếu Chi", ColInfo.ColType.uniq),
                    new ColInfo( "month"            ,"Tháng(1...12)", ColInfo.ColType.num, null, false),
                    new ColInfo( "date"             ,"Ngày Tháng", ColInfo.ColType.dateTime),
                    new ColInfo( "name"             ,"Họ Tên", ColInfo.ColType.text),
@@ -412,10 +428,38 @@ namespace test_binding
                 };
         }
     };
-    [DataContract(Name = "lTaskTblInfo")]
-    public class lTaskTblInfo : TableInfo
+
+    public enum TableIdx
     {
-        public lTaskTblInfo()
+        [Description("task")]        Task,
+        [Description("order_tbl")]   Order,
+        [Description("human")]       Human,
+        [Description("equipment")]   Equipment,
+        [Description("car")]         Car,
+        [Description("order_human")] OrderHuman,
+        [Description("order_equipment")] OrderEquipment,
+        [Description("order_car")]   OrderCar,
+
+        Count
+    }
+
+    [DataContract(Name = "lTaskTblInfo")]
+    public class TaskTblInfo : TableInfo
+    {
+        public enum ColIdx
+        {
+            [Description("ID")] ID,
+            [Description("task_number")] TskNum,
+            [Description("group_name")] Group,
+            [Description("task_name")]  Name,
+            [Description("start_date")] Start,
+            [Description("end_date")]   End,
+            [Description("note")]       Note,
+
+            Count
+        }
+
+        public TaskTblInfo()
         {
             m_tblName = "task";
             m_tblAlias = "Công việc";
@@ -427,20 +471,36 @@ namespace test_binding
                 + "start_date datetime,"
                 + "end_date datetime,"
                 + "note text)";
-            m_cols = new ColInfo[] {
-                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "task_number","Mã CV", ColInfo.ColType.uniqueText),
-                   new ColInfo( "group_name" ,"Thuộc ban", ColInfo.ColType.text, "group_name"),
-                   new ColInfo( "task_name"  ,"Tên CV", ColInfo.ColType.text),
-                   new ColInfo( "start_date" ,"Ngày bắt đầu", ColInfo.ColType.dateTime),
-                   new ColInfo( "end_date"   ,"Ngày kết thúc", ColInfo.ColType.dateTime),
-                   new ColInfo( "note"       ,"Ghi Chú", ColInfo.ColType.text),
-                };
+
+            var map = new object[][] {
+                //              [0]col         , [1]field               , [2]alias      , [3]type                    , [4]lookup tbl, [5]visible
+                new object[]{   ColIdx.ID     , ColIdx.ID.ToName()    , "ID"          , ColInfo.ColType.num        , null         , false },
+                new object[]{   ColIdx.TskNum , ColIdx.TskNum.ToName(), "Mã CV"       , ColInfo.ColType.uniq , null         , true },
+                new object[]{   ColIdx.Group  , ColIdx.Group.ToName() , "Thuộc ban"   , ColInfo.ColType.text       , "group_name" , true },
+                new object[]{   ColIdx.Name   , ColIdx.Name.ToName()  , "Tên CV"      , ColInfo.ColType.text       , null         , true },
+                new object[]{   ColIdx.Start  , ColIdx.Start.ToName() , "Ngày bắt đầu", ColInfo.ColType.dateTime   , null         , true },
+                new object[]{   ColIdx.End    , ColIdx.End.ToName()   , "Ngày kết thúc", ColInfo.ColType.dateTime  , null         , true },
+                new object[]{   ColIdx.Note   , ColIdx.Note.ToName()  , "Ghi Chú"     , ColInfo.ColType.text       , null         , true },
+            };
+            CrtCols(map, (int)ColIdx.Count);
         }
     };
     [DataContract(Name = "lOrderTblInfo")]
     public class OrderTblInfo : TableInfo
     {
+        public enum ColIdx
+        {
+            [Description("ID")]           ID,
+            [Description("task_number")]  TskNum,
+            [Description("order_number")] OrdNum,
+            [Description("order_type")]   Type,
+            [Description("number")]       Number,
+            [Description("order_status")] Status,
+            [Description("note")]         Note,
+
+            Count
+        }
+
         public OrderTblInfo()
         {
             m_tblName = "order_tbl";
@@ -461,15 +521,14 @@ namespace test_binding
                 OrderType.Equip.ToName(),
                 OrderType.Car.ToName(),
                 OrderType.Expense.ToName()});
-            m_cols = new ColInfo[] {
-                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "order_number" ,"Mã YC", ColInfo.ColType.uniqueText),
-                   new ColInfo( "task_number"  ,"Mã CV", ColInfo.ColType.text, "task"),  //columns[1]
-                   new ColInfo( "order_type"   ,"Loại YC", ColInfo.ColType.map, OrderTypeLst),
-                   new ColInfo( "number"       ,"Số lượng", ColInfo.ColType.num),
-                   new ColInfo( "order_status" ,"Trạng thái", ColInfo.ColType.map, OrderStatusLst),
-                   new ColInfo( "note"         ,"Ghi Chú", ColInfo.ColType.text),
-                };
+            m_cols = new ColInfo[(int)ColIdx.Count];  
+            m_cols[(int)ColIdx.ID     ] = new ColInfo(ColIdx.ID.ToName()    , "ID"      , ColInfo.ColType.num , null, false);
+            m_cols[(int)ColIdx.OrdNum] = new ColInfo(ColIdx.OrdNum.ToName(), "Mã YC"  , ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.TskNum ] = new ColInfo(ColIdx.TskNum.ToName(), "Mã CV"   , ColInfo.ColType.text, "task");  //columns[1]
+            m_cols[(int)ColIdx.Type   ] = new ColInfo(ColIdx.Type.ToName()  , "Loại YC" , ColInfo.ColType.map, OrderTypeLst);
+            m_cols[(int)ColIdx.Number ] = new ColInfo(ColIdx.Number.ToName(), "Số lượng", ColInfo.ColType.num);
+            m_cols[(int)ColIdx.Status ] = new ColInfo(ColIdx.Status.ToName(), "Trạng thái", ColInfo.ColType.map, OrderStatusLst);
+            m_cols[(int)ColIdx.Note   ] = new ColInfo(ColIdx.Note.ToName()  , "Ghi Chú" , ColInfo.ColType.text);
         }
     };
     [DataContract(Name = "lHumanTblInfo")]
@@ -491,7 +550,7 @@ namespace test_binding
             string GenderLst = string.Join(";",new string[] { Gender.Male.ToName(), Gender.Female.ToName() });
             m_cols = new ColInfo[] {
                    new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "human_number" ,"Mã NS", ColInfo.ColType.uniqueText),
+                   new ColInfo( "human_number" ,"Mã NS", ColInfo.ColType.uniq),
                    new ColInfo( "name"         ,"Họ tên", ColInfo.ColType.text),
                    new ColInfo( "start_date"   ,"Ngày vào", ColInfo.ColType.dateTime),
                    new ColInfo( "end_date"     ,"Ngày ra" , ColInfo.ColType.dateTime),
@@ -516,7 +575,7 @@ namespace test_binding
                 + "note text)";
             m_cols = new ColInfo[] {
                    new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "equipment_number" ,"Mã TB", ColInfo.ColType.uniqueText),
+                   new ColInfo( "equipment_number" ,"Mã TB", ColInfo.ColType.uniq),
                    new ColInfo( "equipment_type"   ,"Loại TB", ColInfo.ColType.text),
                    new ColInfo( "inuse"     ,"Đang sử dụng", ColInfo.ColType.num),
                    new ColInfo( "note"         ,"Ghi Chú", ColInfo.ColType.text),
@@ -538,7 +597,7 @@ namespace test_binding
                 + "note text)";
             m_cols = new ColInfo[] {
                    new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "car_number" ,"Biển Số", ColInfo.ColType.uniqueText),
+                   new ColInfo( "car_number" ,"Biển Số", ColInfo.ColType.uniq),
                    new ColInfo( "car_type"   ,"Loại", ColInfo.ColType.text),
                    new ColInfo( "brand"      ,"Hãng SX", ColInfo.ColType.text),
                    new ColInfo( "note"       ,"Ghi Chú", ColInfo.ColType.text),
@@ -559,8 +618,8 @@ namespace test_binding
                 + "note text)";
             m_cols = new ColInfo[] {
                    new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "order_number"    ,"Mã YC", ColInfo.ColType.uniqueText),
-                   new ColInfo( "equipment_number","Mã TB", ColInfo.ColType.uniqueText),
+                   new ColInfo( "order_number"    ,"Mã YC", ColInfo.ColType.uniq),
+                   new ColInfo( "equipment_number","Mã TB", ColInfo.ColType.uniq),
                    new ColInfo( "note"            ,"Ghi Chú", ColInfo.ColType.text),
                 };
         }
@@ -579,8 +638,8 @@ namespace test_binding
                 + "note text)";
             m_cols = new ColInfo[] {
                    new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "order_number","Mã YC", ColInfo.ColType.uniqueText),
-                   new ColInfo( "human_number","Mã NS", ColInfo.ColType.uniqueText),
+                   new ColInfo( "order_number","Mã YC", ColInfo.ColType.uniq),
+                   new ColInfo( "human_number","Mã NS", ColInfo.ColType.uniq),
                    new ColInfo( "note"        ,"Ghi Chú", ColInfo.ColType.text),
                 };
         }
@@ -599,8 +658,8 @@ namespace test_binding
                 + "note text)";
             m_cols = new ColInfo[] {
                    new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "order_number","Mã YC", ColInfo.ColType.uniqueText),
-                   new ColInfo( "car_number"  ,"Mã PT", ColInfo.ColType.uniqueText),
+                   new ColInfo( "order_number","Mã YC", ColInfo.ColType.uniq),
+                   new ColInfo( "car_number"  ,"Mã PT", ColInfo.ColType.uniq),
                    new ColInfo( "note"        ,"Ghi Chú", ColInfo.ColType.text),
                 };
         }
@@ -822,6 +881,10 @@ namespace test_binding
         }
 
         public virtual DataTable GetData(string qry) { return null; }
+        public DataContent CreateDataContent(TableIdx tblIdx)
+        {
+            return CreateDataContent(tblIdx.ToName());
+        }
         public DataContent CreateDataContent(string tblName)
         {
             if (!m_dataContents.ContainsKey(tblName))
@@ -1142,7 +1205,7 @@ namespace test_binding
                     new lGroupNameTblInfo(),
                     new lBuildingTblInfo(),
                     new lConstrorgTblInfo(),
-                    new lTaskTblInfo(),
+                    new TaskTblInfo(),
                     new OrderTblInfo(),
                     new HumanTblInfo(),
                     new EquipmentTblInfo(),
@@ -1537,7 +1600,7 @@ namespace test_binding
         {
             if (m_dataTable.Columns.Count == 0)
             {
-                TableInfo tbl = appConfig.s_config.getTable(m_table);
+                TableInfo tbl = appConfig.s_config.GetTable(m_table);
                 if (tbl == null) return;
 
                 //not need to init cols for views

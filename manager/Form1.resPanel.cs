@@ -26,7 +26,7 @@ namespace test_binding
         public List<SearchCtrl> m_srchCtrls;
         public ResPanel(string tblName)
         {
-            m_tblInfo = appConfig.s_config.getTable(tblName);
+            m_tblInfo = appConfig.s_config.GetTable(tblName);
             m_srchBld = new SearchBuilder(m_tblInfo);
         }
         public virtual void LoadData()
@@ -189,7 +189,7 @@ namespace test_binding
                         resDGV.Columns[i].DefaultCellStyle.Format = lConfigMng.getCurrencyFormat();
                         break;
                     case TableInfo.ColInfo.ColType.dateTime:
-                        resDGV.Columns[i].DefaultCellStyle.Format = lConfigMng.getDisplayDateFormat();
+                        resDGV.Columns[i].DefaultCellStyle.Format = lConfigMng.GetDisplayDateFormat();
                         break;
                 }
 #if false
@@ -217,7 +217,7 @@ namespace test_binding
             switch (col.m_type)
             {
                 case TableInfo.ColInfo.ColType.text:
-                case TableInfo.ColInfo.ColType.uniqueText:
+                case TableInfo.ColInfo.ColType.uniq:
                     SearchCtrlText textCtrl = new SearchCtrlText(col.m_field, col.m_alias, SearchCtrl.CtrlType.text, pos, size);
                     textCtrl.m_mode = mode;
                     textCtrl.m_colInfo = col;
@@ -268,7 +268,7 @@ namespace test_binding
             m_srchBld.Add("end_date", endDate, ">=");
             m_srchBld.Search();
             resDGV.DataSource=m_srchBld.dc.m_bindingSource;
-            string datef = lConfigMng.getDisplayDateFormat();
+            string datef = lConfigMng.GetDisplayDateFormat();
             resLbl.Text = string.Format("{0} {1}-{2}", m_tblInfo.m_tblAlias,
                 startDate.ToString(datef), endDate.ToString(datef));
         }
@@ -327,7 +327,7 @@ namespace test_binding
         public ResPanel m_resPanel;
         public OrderResPanel(string tblName)
         {
-            m_tblInfo = appConfig.s_config.getTable(tblName);
+            m_tblInfo = appConfig.s_config.GetTable(tblName);
             orderResSB = new SearchBuilder(m_tblInfo);
         }
         public virtual void InitCtrl()
@@ -368,7 +368,7 @@ namespace test_binding
         }
         protected void UpdateOrderResDGV(string orderIdCol, string resIdCol)
         {
-            var tblInfo = appConfig.s_config.getTable(m_tbl);
+            var tblInfo = appConfig.s_config.GetTable(m_tbl);
             orderResSB.Clear();
             orderResSB.Add(orderIdCol, m_curOrder);
             orderResSB.Search();

@@ -262,8 +262,8 @@ namespace test_binding
         {
             InitializeComponent();
 
-            startDate.CustomFormat = lConfigMng.getDisplayDateFormat();
-            endDate.CustomFormat = lConfigMng.getDisplayDateFormat();
+            startDate.CustomFormat = lConfigMng.GetDisplayDateFormat();
+            endDate.CustomFormat = lConfigMng.GetDisplayDateFormat();
 
             m_receiptRptTypes = new Dictionary<receiptsRptType, string> {
                 {receiptsRptType.byDays, "Báo cáo theo ngày" },

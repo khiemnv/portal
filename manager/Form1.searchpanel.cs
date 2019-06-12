@@ -142,7 +142,7 @@ namespace test_binding
             Debug.Assert(colInfo.m_type == TableInfo.ColInfo.ColType.dateTime);
 
             exprs.Add(string.Format("({0}{1}@startDate)",colInfo.m_field, oper));
-            string zStartDate = start.ToString(lConfigMng.getDateFormat());
+            string zStartDate = start.ToString(lConfigMng.GetDateFormat());
             srchParams.Add(
                     new SearchParam()
                     {
@@ -160,8 +160,8 @@ namespace test_binding
             Debug.Assert(colInfo.m_type == TableInfo.ColInfo.ColType.dateTime);
 
             exprs.Add(string.Format("({0} between @startDate and @endDate)",colInfo.m_field));
-            string zStartDate = startDate.ToString(lConfigMng.getDateFormat());
-            string zEndDate = endDate.ToString(lConfigMng.getDateFormat());
+            string zStartDate = startDate.ToString(lConfigMng.GetDateFormat());
+            string zEndDate = endDate.ToString(lConfigMng.GetDateFormat());
             srchParams.Add(
                 new SearchParam()
                 {
@@ -191,7 +191,7 @@ namespace test_binding
                     break;
                 case TableInfo.ColInfo.ColType.num:
                     break;
-                case TableInfo.ColInfo.ColType.uniqueText:
+                case TableInfo.ColInfo.ColType.uniq:
                     break;
                 default:
                     Debug.Assert(false);
@@ -448,10 +448,10 @@ namespace test_binding
             m_to.AutoSize = true;
             m_startdate.Width = w;
             m_startdate.Format = DateTimePickerFormat.Custom;
-            m_startdate.CustomFormat = lConfigMng.getDisplayDateFormat();
+            m_startdate.CustomFormat = lConfigMng.GetDisplayDateFormat();
             m_enddate.Width = w;
             m_enddate.Format = DateTimePickerFormat.Custom;
-            m_enddate.CustomFormat = lConfigMng.getDisplayDateFormat();
+            m_enddate.CustomFormat = lConfigMng.GetDisplayDateFormat();
             FlowLayoutPanel datePanel = new FlowLayoutPanel();
             datePanel.BorderStyle = BorderStyle.FixedSingle;
             datePanel.Dock = DockStyle.Top;
@@ -479,8 +479,8 @@ namespace test_binding
             string srchParams = null;
             if (m_label.Checked)
             {
-                string zStartDate = m_startdate.Value.ToString(lConfigMng.getDateFormat());
-                string zEndDate = m_enddate.Value.ToString(lConfigMng.getDateFormat());
+                string zStartDate = m_startdate.Value.ToString(lConfigMng.GetDateFormat());
+                string zEndDate = m_enddate.Value.ToString(lConfigMng.GetDateFormat());
                 if (m_to.Checked)
                     srchParams = string.Format("({0} between '{1}  00:00:00' and '{2} 00:00:00')", m_fieldName, zStartDate, zEndDate);
                 else
@@ -490,7 +490,7 @@ namespace test_binding
         }
         public override void UpdateInsertParams(List<string> exprs, List<SearchParam> srchParams)
         {
-            string zStartDate = m_startdate.Value.ToString(lConfigMng.getDateFormat());
+            string zStartDate = m_startdate.Value.ToString(lConfigMng.GetDateFormat());
             exprs.Add(m_fieldName);
             srchParams.Add(
                 new SearchParam()
@@ -505,7 +505,7 @@ namespace test_binding
         {
             if (m_label.Checked)
             {
-                string zStartDate = m_startdate.Value.ToString(lConfigMng.getDateFormat());
+                string zStartDate = m_startdate.Value.ToString(lConfigMng.GetDateFormat());
                 srchParams.Add(
                     new SearchParam()
                     {
@@ -517,7 +517,7 @@ namespace test_binding
                 if (m_to.Checked)
                 {
                     exprs.Add(string.Format("({0} between @startDate and @endDate)", m_fieldName));
-                    string zEndDate = m_enddate.Value.ToString(lConfigMng.getDateFormat());
+                    string zEndDate = m_enddate.Value.ToString(lConfigMng.GetDateFormat());
                     srchParams.Add(
                         new SearchParam()
                         {
@@ -834,7 +834,7 @@ namespace test_binding
             switch (col.m_type)
             {
                 case TableInfo.ColInfo.ColType.text:
-                case TableInfo.ColInfo.ColType.uniqueText:
+                case TableInfo.ColInfo.ColType.uniq:
                     SearchCtrlText textCtrl = new SearchCtrlText(col.m_field, col.m_alias, SearchCtrl.CtrlType.text, pos, size);
                     textCtrl.m_mode = mode;
                     textCtrl.m_colInfo = col;

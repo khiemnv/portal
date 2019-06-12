@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
@@ -230,7 +231,7 @@ namespace test_binding
 #endif
             m_date.Width = w;
             m_date.Format = DateTimePickerFormat.Custom;
-            m_date.CustomFormat = lConfigMng.getDisplayDateFormat();
+            m_date.CustomFormat = lConfigMng.GetDisplayDateFormat();
             m_date.Font = lConfigMng.getFont();
 
             m_panel.Controls.AddRange(new Control[] { m_label, m_date });
@@ -238,7 +239,7 @@ namespace test_binding
 
         public override void UpdateInsertParams(List<string> exprs, List<SearchParam> srchParams)
         {
-            string zStartDate = m_date.Value.ToString(lConfigMng.getDateFormat());
+            string zStartDate = m_date.Value.ToString(lConfigMng.GetDateFormat());
             exprs.Add(m_fieldName);
             srchParams.Add(
                 new SearchParam()
@@ -662,7 +663,7 @@ namespace test_binding
         }
         public event EventHandler<PreviewEventArgs> RefreshPreview;
         protected string m_tblName;
-        protected TableInfo m_tblInfo { get { return appConfig.s_config.getTable(m_tblName); } }
+        protected TableInfo m_tblInfo { get { return appConfig.s_config.GetTable(m_tblName); } }
 
         public TableLayoutPanel m_tbl;
         protected DataGridView m_dataGridView;
@@ -778,7 +779,7 @@ namespace test_binding
                     if (bChk == false)
                     {
                         string msg = string.Format("Invalid input for {0}\n{1}", col.m_alias, col.GetHelp());
-                        lConfigMng.showInputError(msg);
+                        lConfigMng.ShowInputError(msg);
                         e.Cancel = true;
                     }
                     break;
@@ -814,11 +815,11 @@ namespace test_binding
                 case TableInfo.ColInfo.ColType.dateTime:
                     {
                         Debug.WriteLine("OnCellParsing parsing date");
-                        if (lConfigMng.getDisplayDateFormat() == "dd/MM/yyyy")
+                        if (lConfigMng.GetDisplayDateFormat() == "dd/MM/yyyy")
                         {
                             string val = e.Value.ToString();
                             DateTime dt;
-                            if (lConfigMng.parseDisplayDate(val, out dt))
+                            if (lConfigMng.ParseDisplayDate(val, out dt))
                             {
                                 e.ParsingApplied = true;
                                 e.Value = dt;
@@ -913,7 +914,7 @@ namespace test_binding
                 {
                     //case: multi users
                     Debug.Assert(false, "other user inputting");
-                    lConfigMng.showInputError("Mã này đã tồn tại");
+                    lConfigMng.ShowInputError("Mã này đã tồn tại");
                     m_keyCtrl.Text = m_keyMng.IncKey();
                     break;
                 }
@@ -1113,7 +1114,7 @@ namespace test_binding
                         break;
 #endif
                     case TableInfo.ColInfo.ColType.dateTime:
-                        dgvcol.DefaultCellStyle.Format = lConfigMng.getDisplayDateFormat();
+                        dgvcol.DefaultCellStyle.Format = lConfigMng.GetDisplayDateFormat();
                         break;
                 }
             }
@@ -1157,7 +1158,7 @@ namespace test_binding
                         dgv.Columns[i].DefaultCellStyle.Format = lConfigMng.getCurrencyFormat();
                         break;
                     case TableInfo.ColInfo.ColType.dateTime:
-                        dgv.Columns[i].DefaultCellStyle.Format = lConfigMng.getDisplayDateFormat();
+                        dgv.Columns[i].DefaultCellStyle.Format = lConfigMng.GetDisplayDateFormat();
                         break;
                 }
 #if false
@@ -1196,7 +1197,7 @@ namespace test_binding
             switch (col.m_type)
             {
                 case TableInfo.ColInfo.ColType.text:
-                case TableInfo.ColInfo.ColType.uniqueText:
+                case TableInfo.ColInfo.ColType.uniq:
                     lInputCtrlText textCtrl = new lInputCtrlText(col.m_field, col.m_alias, SearchCtrl.CtrlType.text, pos, size);
                     textCtrl.m_mode = mode;
                     textCtrl.m_colInfo = col;
@@ -1248,7 +1249,7 @@ namespace test_binding
             DateTime curDate = DateTime.Now.Date;
             //PTyyyy001
             string zKey = genKey(curDate, 1);
-            string zDate = curDate.ToString(lConfigMng.getDateFormat());
+            string zDate = curDate.ToString(lConfigMng.GetDateFormat());
 #if use_sqlite
             string sql = string.Format("SELECT * FROM {0} ORDER BY ID DESC LIMIT 1", m_tblName);
 #else
@@ -1633,25 +1634,25 @@ namespace test_binding
     }
 #endif
     [DataContract(Name = "TaskInputPanel")]
-    public class lTaskInputPanel : InputPanel
+    public class TaskInputPanel : InputPanel
     {
         protected override InputCtrl m_keyCtrl { get { return m_inputsCtrls[0]; } }
         private keyMng m_key;
         protected override keyMng m_keyMng { get { return m_key; } }
-        public lTaskInputPanel()
+        public TaskInputPanel()
         {
-            m_tblName = "task";
+            m_tblName = TableIdx.Task.ToName();
 
             m_inputsCtrls = new List<InputCtrl> {
-                crtInputCtrl(m_tblInfo, "task_number", new Point(0, 0), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, "group_name" , new Point(0, 1), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, "task_name"  , new Point(0, 2), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, "start_date" , new Point(0, 3), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, "end_date"   , new Point(0, 4), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, "note"       , new Point(0, 5), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.TskNum, new Point(0, 0), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.Group , new Point(0, 1), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.Name  , new Point(0, 2), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.Start , new Point(0, 3), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.End   , new Point(0, 4), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.Note  , new Point(0, 5), new Size(1, 1)),
             };
             m_inputsCtrls[0].ReadOnly = true;
-            m_key = new keyMng("CV", m_tblName, "task_number");
+            m_key = new keyMng("CV", m_tblName, TaskTblInfo.ColIdx.TskNum.ToName());
         }
 
         protected override void onDGV_CellClick()
@@ -1685,22 +1686,30 @@ namespace test_binding
         //right panel
         public SplitContainer rightSC;
 
+        public enum ErrMsgType
+        {
+            [Description("Hãy xóa tất cả các liên kết của yêu cầu với tài nguyên")]
+            OrderResExist,
+            [Description("Không có dòng nào được chọn")]
+            OrderNone,
+        }
+
         public OrderInputPanel()
         {
-            m_tblName = "order_tbl";
+            m_tblName = TableIdx.Order.ToName();
 
             m_inputsCtrls = new List<InputCtrl> {
-                crtInputCtrl(m_tblInfo, "task_number" , new Point(0, 0), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, "order_number", new Point(0, 1), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, "order_type"  , new Point(0, 2), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, "number"      , new Point(0, 3), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, "order_status", new Point(0, 4), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, "note"        , new Point(0, 5), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)OrderTblInfo.ColIdx.TskNum, new Point(0, 0), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)OrderTblInfo.ColIdx.OrdNum, new Point(0, 1), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)OrderTblInfo.ColIdx.Type  , new Point(0, 2), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)OrderTblInfo.ColIdx.Number, new Point(0, 3), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)OrderTblInfo.ColIdx.Status, new Point(0, 4), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)OrderTblInfo.ColIdx.Note  , new Point(0, 5), new Size(1, 1)),
             };
 
             m_inputsCtrls[1].ReadOnly = true;
             m_inputsCtrls[4].ReadOnly = true;
-            m_key = new keyMng("YC", m_tblName, "order_number");
+            m_key = new keyMng("YC", m_tblName, OrderTblInfo.ColIdx.TskNum.ToName());
             //oder type change ->update resource
             //m_inputsCtrls[2].EditingCompleted += LOrderInputPanel_EditingCompleted;
         }
@@ -1734,9 +1743,9 @@ namespace test_binding
                 if ( e != "")
                 {
                     string taskNumber = e;
-                    if (m_orderSB == null) { m_orderSB = new SearchBuilder(appConfig.s_config.getTable("order_tbl")); }
+                    if (m_orderSB == null) { m_orderSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.Order.ToName())); }
                     m_orderSB.Clear();
-                    m_orderSB.Add("task_number", taskNumber);
+                    m_orderSB.Add(OrderTblInfo.ColIdx.TskNum.ToString(), taskNumber);
                     m_orderSB.Search();
 
                     //clear lbl, resLst, orderResLst
@@ -1757,9 +1766,9 @@ namespace test_binding
 
         protected void UpdateOrderDGV(string taskNumber)
         {
-            if (m_orderSB == null) { m_orderSB = new SearchBuilder(appConfig.s_config.getTable("order_tbl")); }
+            if (m_orderSB == null) { m_orderSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.Order)); }
             m_orderSB.Clear();
-            m_orderSB.Add("task_number", taskNumber);
+            m_orderSB.Add(OrderTblInfo.ColIdx.TskNum.ToName(), taskNumber);
             m_orderSB.Search();
 
             UpdateTaskInfo(taskNumber);
@@ -1769,15 +1778,15 @@ namespace test_binding
         {
             m_taskNumber = taskNumber;
             //access task data - singleton
-            DataContent dc = appConfig.s_contentProvider.CreateDataContent("task");
+            DataContent dc = appConfig.s_contentProvider.CreateDataContent(TableIdx.Task.ToName());
             var rows = dc.m_dataTable.Rows;
             for (int i = 0; i < rows.Count; i++)
             {
-                string tskNum = rows[i]["task_number"].ToString();
+                string tskNum = rows[i][TaskTblInfo.ColIdx.TskNum.ToName()].ToString();
                 if (tskNum == taskNumber)
                 {
-                    m_taskStartDate = (DateTime)rows[i]["start_date"];
-                    m_taskEndDate = (DateTime)rows[i]["end_date"];
+                    m_taskStartDate = (DateTime)rows[i][TaskTblInfo.ColIdx.Start.ToName()];
+                    m_taskEndDate = (DateTime)rows[i][TaskTblInfo.ColIdx.End.ToName()];
                     break;
                 }
             }
@@ -1857,12 +1866,12 @@ namespace test_binding
                 }
                 else
                 {
-                    lConfigMng.showInputError("Hãy xóa tất cả các liên kết của yêu cầu với tài nguyên");
+                    lConfigMng.ShowInputError(ErrMsgType.OrderResExist.ToName());
                 }
             }
             else
             {
-                lConfigMng.showInputError("Không có dòng nào được chọn");
+                lConfigMng.ShowInputError(ErrMsgType.OrderNone.ToName());
             }
         }
 
@@ -1899,11 +1908,11 @@ namespace test_binding
             if (rows.Count > 0)
             {
                 //save cur order
-                string orderId = rows[0].Cells["order_number"].Value.ToString();
+                string orderId = rows[0].Cells[OrderTblInfo.ColIdx.OrdNum.ToName()].Value.ToString();
 
                 //get type
                 //get date
-                var cell = rows[0].Cells["order_type"];
+                var cell = rows[0].Cells[OrderTblInfo.ColIdx.Type.ToName()];
                 OrderType orderType = (OrderType)int.Parse(cell.Value.ToString());
                 UpdateRightPanel(orderId, orderType);
             }
@@ -1974,8 +1983,8 @@ namespace test_binding
         public SplitContainer leftSC;
         public ApproveInputPanel()
         {
-            m_tblName = "order_tbl";
-            taskTI = appConfig.s_config.getTable("task");
+            m_tblName = TableIdx.Order.ToName();
+            taskTI = appConfig.s_config.GetTable(TableIdx.Task);
 
             //create public ctrl
             leftSC = new SplitContainer();
@@ -2035,7 +2044,7 @@ namespace test_binding
             DataGridViewSelectedRowCollection rows = taskDGV.SelectedRows;
             if (rows.Count > 0)
             {
-                string taskId = (string)rows[0].Cells["task_number"].Value;
+                string taskId = (string)rows[0].Cells[TaskTblInfo.ColIdx.TskNum.ToName()].Value;
                 if (taskId == null) return;
                 //get task info
 
