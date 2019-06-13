@@ -71,7 +71,7 @@ namespace test_binding
             [DataMember(Name = "visible", EmitDefaultValue = false)]
             public bool m_visible;
             [DataMember(Name = "lst", EmitDefaultValue = false)]
-            public string m_lst;        //";"
+            public string m_lst;        //"idx,val;" ???
 
             public lDataSync m_lookupData;
             public void Init(string field, string alias, ColType type, string lookupTbl = null, bool visible = true, string lst = null)
@@ -87,6 +87,7 @@ namespace test_binding
             {
                 Init(field, alias, type, lookupTbl, visible);
             }
+
             public ColInfo(string field, string alias, ColType type, string param)
             {
                 switch (type)
@@ -100,9 +101,9 @@ namespace test_binding
                         break;
                 }
             }
-            public ColInfo(string field, string alias, ColType type)
+            public ColInfo(string field, string alias, ColType type, bool visible = true)
             {
-                Init(field, alias, type, null, true);
+                Init(field, alias, type, null, visible);
             }
 
             public string GetHelp()
@@ -212,6 +213,24 @@ namespace test_binding
                 bool visible = (bool)map[i][5];
                 m_cols[iCol] = new ColInfo(field, alias, type, lookupTbl, visible);
             }
+        }
+
+        public static string GetDescLst<Tenum>()
+        {
+            string txt = "";
+            var type = typeof(Tenum);
+            var arr = Enum.GetValues(type);
+
+            foreach (var v in arr)
+            {
+                var memberInfo = type.GetMember(v.ToString());
+                var attributes = memberInfo[0].GetCustomAttributes(typeof(DescriptionAttribute), false);
+                var attr = attributes.Length > 0
+                  ? (DescriptionAttribute)attributes[0]
+                  : null;
+                txt += attr.Description + ";";
+            }
+            return txt;
         }
     }
 
@@ -365,9 +384,9 @@ namespace test_binding
         }
     };
     [DataContract(Name = "lGroupNameTblInfo")]
-    public class lGroupNameTblInfo : TableInfo
+    public class GroupNameTblInfo : TableInfo
     {
-        public lGroupNameTblInfo()
+        public GroupNameTblInfo()
         {
             m_tblName = "group_name";
             m_tblAlias = "Các ban";
@@ -431,14 +450,14 @@ namespace test_binding
 
     public enum TableIdx
     {
-        [Description("task")]        Task,
-        [Description("order_tbl")]   Order,
-        [Description("human")]       Human,
-        [Description("equipment")]   Equipment,
-        [Description("car")]         Car,
-        [Description("order_human")] OrderHuman,
-        [Description("order_equipment")] OrderEquipment,
-        [Description("order_car")]   OrderCar,
+        [Description("task")        ] Task,
+        [Description("order_tbl")   ] Order,
+        [Description("human")       ] Human,
+        [Description("equipment")   ] Equip,
+        [Description("car")         ] Car,
+        [Description("order_human") ] HumanOR,
+        [Description("order_equipment")] EquipOR,
+        [Description("order_car")   ] CarOR,
 
         Count
     }
@@ -448,13 +467,13 @@ namespace test_binding
     {
         public enum ColIdx
         {
-            [Description("ID")] ID,
-            [Description("task_number")] TskNum,
-            [Description("group_name")] Group,
-            [Description("task_name")]  Name,
-            [Description("start_date")] Start,
-            [Description("end_date")]   End,
-            [Description("note")]       Note,
+            [Field("ID")            ,Alias("ID"           )] ID,
+            [Field("task_number")   ,Alias("Mã CV"        )] Task,
+            [Field("group_name")    ,Alias("Thuộc ban"    )] Group,
+            [Field("task_name")     ,Alias("Tên CV"       )] Name,
+            [Field("start_date")    ,Alias("Ngày bắt đầu" )] Start,
+            [Field("end_date")      ,Alias("Ngày kết thúc")] End,
+            [Field("note")          ,Alias("Ghi Chú")      ] Note,
 
             Count
         }
@@ -471,18 +490,14 @@ namespace test_binding
                 + "start_date datetime,"
                 + "end_date datetime,"
                 + "note text)";
-
-            var map = new object[][] {
-                //              [0]col         , [1]field               , [2]alias      , [3]type                    , [4]lookup tbl, [5]visible
-                new object[]{   ColIdx.ID     , ColIdx.ID.ToName()    , "ID"          , ColInfo.ColType.num        , null         , false },
-                new object[]{   ColIdx.TskNum , ColIdx.TskNum.ToName(), "Mã CV"       , ColInfo.ColType.uniq , null         , true },
-                new object[]{   ColIdx.Group  , ColIdx.Group.ToName() , "Thuộc ban"   , ColInfo.ColType.text       , "group_name" , true },
-                new object[]{   ColIdx.Name   , ColIdx.Name.ToName()  , "Tên CV"      , ColInfo.ColType.text       , null         , true },
-                new object[]{   ColIdx.Start  , ColIdx.Start.ToName() , "Ngày bắt đầu", ColInfo.ColType.dateTime   , null         , true },
-                new object[]{   ColIdx.End    , ColIdx.End.ToName()   , "Ngày kết thúc", ColInfo.ColType.dateTime  , null         , true },
-                new object[]{   ColIdx.Note   , ColIdx.Note.ToName()  , "Ghi Chú"     , ColInfo.ColType.text       , null         , true },
-            };
-            CrtCols(map, (int)ColIdx.Count);
+            m_cols = new ColInfo[(int)ColIdx.Count];
+            m_cols[(int)ColIdx.ID   ] = new ColInfo(ColIdx.ID.ToField()    , ColIdx.ID.ToAlias()    , ColInfo.ColType.num, false);
+            m_cols[(int)ColIdx.Task ] = new ColInfo(ColIdx.Task.ToField()  , ColIdx.Task.ToAlias()  , ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.Group] = new ColInfo(ColIdx.Group.ToField() , ColIdx.Group.ToAlias() , ColInfo.ColType.text, "group_name" );
+            m_cols[(int)ColIdx.Name ] = new ColInfo(ColIdx.Name.ToField()  , ColIdx.Name.ToAlias()  , ColInfo.ColType.text);
+            m_cols[(int)ColIdx.Start] = new ColInfo(ColIdx.Start.ToField() , ColIdx.Start.ToAlias() , ColInfo.ColType.dateTime);
+            m_cols[(int)ColIdx.End  ] = new ColInfo(ColIdx.End.ToField()   , ColIdx.End.ToAlias()   , ColInfo.ColType.dateTime);
+            m_cols[(int)ColIdx.Note ] = new ColInfo(ColIdx.Note.ToField()  , ColIdx.Note.ToAlias()  , ColInfo.ColType.text);
         }
     };
     [DataContract(Name = "lOrderTblInfo")]
@@ -490,13 +505,13 @@ namespace test_binding
     {
         public enum ColIdx
         {
-            [Description("ID")]           ID,
-            [Description("task_number")]  TskNum,
-            [Description("order_number")] OrdNum,
-            [Description("order_type")]   Type,
-            [Description("number")]       Number,
-            [Description("order_status")] Status,
-            [Description("note")]         Note,
+            [Field("ID")           , Alias( "ID"        ) ] ID,
+            [Field("task_number")  , Alias( "Mã YC"     ) ] Task,
+            [Field("order_number") , Alias( "Mã CV"     ) ] Order,
+            [Field("order_type")   , Alias( "Loại YC"   ) ] Type,
+            [Field("number")       , Alias( "Số lượng"  ) ] Amnt,
+            [Field("order_status") , Alias( "Trạng thái") ] Stat,
+            [Field("note")         , Alias("Ghi Chú"    ) ] Note,
 
             Count
         }
@@ -513,27 +528,34 @@ namespace test_binding
                 + "number INTEGER,"
                 + "order_status INTEGER,"
                 + "note text)";
-            string OrderStatusLst = string.Join(";", new string[] {
-                OrderStatus.Request.ToName(),
-                OrderStatus.Approve.ToName()});
-            string OrderTypeLst = string.Join(";", new string[]{
-                OrderType.Worker.ToName(),
-                OrderType.Equip.ToName(),
-                OrderType.Car.ToName(),
-                OrderType.Expense.ToName()});
             m_cols = new ColInfo[(int)ColIdx.Count];  
-            m_cols[(int)ColIdx.ID     ] = new ColInfo(ColIdx.ID.ToName()    , "ID"      , ColInfo.ColType.num , null, false);
-            m_cols[(int)ColIdx.OrdNum] = new ColInfo(ColIdx.OrdNum.ToName(), "Mã YC"  , ColInfo.ColType.uniq);
-            m_cols[(int)ColIdx.TskNum ] = new ColInfo(ColIdx.TskNum.ToName(), "Mã CV"   , ColInfo.ColType.text, "task");  //columns[1]
-            m_cols[(int)ColIdx.Type   ] = new ColInfo(ColIdx.Type.ToName()  , "Loại YC" , ColInfo.ColType.map, OrderTypeLst);
-            m_cols[(int)ColIdx.Number ] = new ColInfo(ColIdx.Number.ToName(), "Số lượng", ColInfo.ColType.num);
-            m_cols[(int)ColIdx.Status ] = new ColInfo(ColIdx.Status.ToName(), "Trạng thái", ColInfo.ColType.map, OrderStatusLst);
-            m_cols[(int)ColIdx.Note   ] = new ColInfo(ColIdx.Note.ToName()  , "Ghi Chú" , ColInfo.ColType.text);
+            m_cols[(int)ColIdx.ID   ] = new ColInfo(ColIdx.ID.ToField()    , ColIdx.ID.ToAlias()    , ColInfo.ColType.num , false);
+            m_cols[(int)ColIdx.Order] = new ColInfo(ColIdx.Order.ToField() , ColIdx.Order.ToAlias() , ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.Task ] = new ColInfo(ColIdx.Task.ToField()  , ColIdx.Task.ToAlias()  , ColInfo.ColType.text, "task");  //columns[1]
+            m_cols[(int)ColIdx.Type ] = new ColInfo(ColIdx.Type.ToField()  , ColIdx.Type.ToAlias()  , ColInfo.ColType.map, GetDescLst<OrderType>());
+            m_cols[(int)ColIdx.Amnt ] = new ColInfo(ColIdx.Amnt.ToField(), ColIdx.Amnt.ToAlias(), ColInfo.ColType.num);
+            m_cols[(int)ColIdx.Stat ] = new ColInfo(ColIdx.Stat.ToField()  , ColIdx.Stat.ToAlias()  , ColInfo.ColType.map, GetDescLst<OrderStatus>());
+            m_cols[(int)ColIdx.Note ] = new ColInfo(ColIdx.Note.ToField()  , ColIdx.Note.ToAlias()  , ColInfo.ColType.text);
         }
     };
     [DataContract(Name = "lHumanTblInfo")]
     public class HumanTblInfo : TableInfo
     {
+        public enum ColIdx
+        {
+            [Field("ID")            , Alias("ID")]          ID,
+            [Field("human_number")  , Alias("Mã NS")]       Human,
+            [Field("name")          , Alias("Họ tên")]      Name,
+            [Field("start_date")    , Alias("Ngày vào")]    Enter,
+            [Field("end_date")      , Alias("Ngày ra")]     Leave,
+            [Field("gender")        , Alias("Giới tính")]   Gndr,
+            [Field("age")           , Alias("Tuổi")]        Age,
+            [Field("status")        , Alias("Đang bận")]    Busy,
+            [Field("note")          , Alias("Ghi Chú")]     Note,
+
+            Count
+        }
+
         public HumanTblInfo()
         {
             m_tblName = "human";
@@ -546,23 +568,33 @@ namespace test_binding
                 + "end_date datetime,"
                 + "gender INTEGER,"
                 + "age INTEGER,"
+                + "status INTEGER,"
                 + "note text)";
-            string GenderLst = string.Join(";",new string[] { Gender.Male.ToName(), Gender.Female.ToName() });
-            m_cols = new ColInfo[] {
-                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "human_number" ,"Mã NS", ColInfo.ColType.uniq),
-                   new ColInfo( "name"         ,"Họ tên", ColInfo.ColType.text),
-                   new ColInfo( "start_date"   ,"Ngày vào", ColInfo.ColType.dateTime),
-                   new ColInfo( "end_date"     ,"Ngày ra" , ColInfo.ColType.dateTime),
-                   new ColInfo( "gender"       ,"Giới tính", ColInfo.ColType.map, GenderLst),
-                   new ColInfo( "age"          ,"Tuổi"   , ColInfo.ColType.num),
-                   new ColInfo( "note"         ,"Ghi Chú", ColInfo.ColType.text),
-                };
+            m_cols = new ColInfo[(int)ColIdx.Count];
+            m_cols[(int)ColIdx.ID]      = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
+            m_cols[(int)ColIdx.Human]   = new ColInfo(ColIdx.Human.ToField(), ColIdx.Human.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.Name]    = new ColInfo(ColIdx.Name.ToField(), ColIdx.Name.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.Enter]   = new ColInfo(ColIdx.Enter.ToField(), ColIdx.Enter.ToAlias(), ColInfo.ColType.dateTime);
+            m_cols[(int)ColIdx.Leave]   = new ColInfo(ColIdx.Leave.ToField() ,ColIdx.Leave.ToAlias(), ColInfo.ColType.dateTime);
+            m_cols[(int)ColIdx.Gndr]    = new ColInfo(ColIdx.Gndr.ToField() ,ColIdx.Gndr.ToAlias(), ColInfo.ColType.map, GetDescLst<Gender>());
+            m_cols[(int)ColIdx.Age]     = new ColInfo(ColIdx.Age.ToField() ,ColIdx.Age.ToAlias(), ColInfo.ColType.num);
+            m_cols[(int)ColIdx.Busy]    = new ColInfo(ColIdx.Busy.ToField() ,ColIdx.Busy.ToAlias(), ColInfo.ColType.map, GetDescLst<ResStatus>());
+            m_cols[(int)ColIdx.Note]    = new ColInfo(ColIdx.Note.ToField(), ColIdx.Note.ToAlias(), ColInfo.ColType.text);
         }
     };
     [DataContract(Name = "lEquipmentTblInfo")]
     public class EquipmentTblInfo : TableInfo
     {
+        public enum ColIdx
+        {
+            [Field("ID")                , Alias("ID")]              ID,
+            [Field("equipment_number")  , Alias("Mã TB")]           Eqpt,
+            [Field("equipment_type")    , Alias("Loại TB")]         Type,
+            [Field("inuse")             , Alias("Đang sử dụng")]    Used,
+            [Field("note")              , Alias("Ghi chú")]         Note,
+
+            Count
+        }
         public EquipmentTblInfo()
         {
             m_tblName = "equipment";
@@ -573,18 +605,28 @@ namespace test_binding
                 + "equipment_type char(31),"
                 + "inuse INTEGER,"
                 + "note text)";
-            m_cols = new ColInfo[] {
-                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "equipment_number" ,"Mã TB", ColInfo.ColType.uniq),
-                   new ColInfo( "equipment_type"   ,"Loại TB", ColInfo.ColType.text),
-                   new ColInfo( "inuse"     ,"Đang sử dụng", ColInfo.ColType.num),
-                   new ColInfo( "note"         ,"Ghi Chú", ColInfo.ColType.text),
-                };
+            m_cols = new ColInfo[(int)ColIdx.Count];
+            m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
+            m_cols[(int)ColIdx.Eqpt] = new ColInfo(ColIdx.Eqpt.ToField(), ColIdx.Eqpt.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.Type] = new ColInfo(ColIdx.Type.ToField() ,ColIdx.Type.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.Used] = new ColInfo(ColIdx.Used.ToField(), ColIdx.Used.ToAlias(), ColInfo.ColType.map, GetDescLst<ResStatus>());
+            m_cols[(int)ColIdx.Note] = new ColInfo(ColIdx.Note.ToField(), ColIdx.Note.ToAlias(), ColInfo.ColType.text);
         }
     };
     [DataContract(Name = "CarTblInfo")]
     public class CarTblInfo : TableInfo
     {
+        public enum ColIdx
+        {
+            [Field("ID")        , Alias("ID")       ] ID,
+            [Field("car_number"), Alias("Biển số")  ] Car,
+            [Field("car_type")  , Alias("Loại xe")  ] Type,
+            [Field("brand")     , Alias("Hãng SX")  ] Brand,
+            [Field("inuse")     , Alias("Đang sử dụng")] Used,
+            [Field("note")      , Alias("Ghi chú")  ] Note,
+
+            Count
+        }
         public CarTblInfo()
         {
             m_tblName = "car";
@@ -594,19 +636,30 @@ namespace test_binding
                 + "car_number char(31),"
                 + "car_type char(31),"
                 + "brand char(31),"
+                + "inuse INTEGER,"
                 + "note text)";
-            m_cols = new ColInfo[] {
-                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "car_number" ,"Biển Số", ColInfo.ColType.uniq),
-                   new ColInfo( "car_type"   ,"Loại", ColInfo.ColType.text),
-                   new ColInfo( "brand"      ,"Hãng SX", ColInfo.ColType.text),
-                   new ColInfo( "note"       ,"Ghi Chú", ColInfo.ColType.text),
-                };
+            m_cols = new ColInfo[(int)ColIdx.Count];
+            m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
+            m_cols[(int)ColIdx.Car] = new ColInfo(ColIdx.Car.ToField(), ColIdx.Car.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.Type] = new ColInfo(ColIdx.Type.ToField(), ColIdx.Type.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.Brand] = new ColInfo(ColIdx.Brand.ToField(), ColIdx.Brand.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.Used] = new ColInfo(ColIdx.Used.ToField(), ColIdx.Used.ToAlias(), ColInfo.ColType.map, GetDescLst<ResStatus>());
+            m_cols[(int)ColIdx.Note] = new ColInfo(ColIdx.Note.ToField(), ColIdx.Note.ToAlias(), ColInfo.ColType.text);
         }
     };
     [DataContract(Name = "lOrderEquipmentTblInfo")]
     public class OrderEquipmentTblInfo : TableInfo
     {
+        public enum ColIdx
+        {
+            [Field("ID")            , Alias("ID")       ] ID,
+            [Field("order_number")  , Alias("Mã YC")    ] Order,
+            [Field("equipment_number"), Alias("Mã TB")  ] Equip,
+            [Field("task_number")   , Alias("Mã CV")    ] Task,
+            [Field("note")          , Alias("Ghi Chú")  ] Note,
+
+            Count
+        }
         public OrderEquipmentTblInfo()
         {
             m_tblName = "order_equipment";
@@ -615,18 +668,29 @@ namespace test_binding
                 + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + "order_number char(31),"
                 + "equipment_number char(31),"
+                + "task_number char(31),"
                 + "note text)";
-            m_cols = new ColInfo[] {
-                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "order_number"    ,"Mã YC", ColInfo.ColType.uniq),
-                   new ColInfo( "equipment_number","Mã TB", ColInfo.ColType.uniq),
-                   new ColInfo( "note"            ,"Ghi Chú", ColInfo.ColType.text),
-                };
+            m_cols = new ColInfo[(int)ColIdx.Count];
+            m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
+            m_cols[(int)ColIdx.Order] = new ColInfo(ColIdx.Order.ToField(), ColIdx.Order.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.Equip] = new ColInfo(ColIdx.Equip.ToField(), ColIdx.Equip.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.Task] = new ColInfo(ColIdx.Task.ToField(), ColIdx.Task.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.Note] = new ColInfo(ColIdx.Note.ToField(), ColIdx.Note.ToAlias(), ColInfo.ColType.text);
         }
     }
     [DataContract(Name = "lOrderHumanTblInfo")]
     public class OrderHumanTblInfo : TableInfo
     {
+        public enum ColIdx
+        {
+            [Field("ID"), Alias("ID")] ID,
+            [Field("order_number"), Alias("Mã YC")] Order,
+            [Field("human_number"), Alias("Mã NS")] Human,
+            [Field("task_number"), Alias("Mã CV")] Task,
+            [Field("note"), Alias("Ghi Chú")] Note,
+
+            Count
+        }
         public OrderHumanTblInfo()
         {
             m_tblName = "order_human";
@@ -635,18 +699,29 @@ namespace test_binding
                 + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + "order_number char(31),"
                 + "human_number char(31),"
+                + "task_number char(31),"
                 + "note text)";
-            m_cols = new ColInfo[] {
-                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "order_number","Mã YC", ColInfo.ColType.uniq),
-                   new ColInfo( "human_number","Mã NS", ColInfo.ColType.uniq),
-                   new ColInfo( "note"        ,"Ghi Chú", ColInfo.ColType.text),
-                };
+            m_cols = new ColInfo[(int)ColIdx.Count];
+            m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
+            m_cols[(int)ColIdx.Order] = new ColInfo(ColIdx.Order.ToField(), ColIdx.Order.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.Human] = new ColInfo(ColIdx.Human.ToField(), ColIdx.Human.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.Task] = new ColInfo(ColIdx.Task.ToField(), ColIdx.Task.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.Note] = new ColInfo(ColIdx.Note.ToField(), ColIdx.Note.ToAlias(), ColInfo.ColType.text);
         }
     };
     [DataContract(Name = "OrderCarTblInfo")]
     public class OrderCarTblInfo : TableInfo
     {
+        public enum ColIdx
+        {
+            [Field("ID"), Alias("ID")] ID,
+            [Field("order_number"), Alias("Mã YC")] Order,
+            [Field("car_number"), Alias("Biển số")] Car,
+            [Field("task_number"), Alias("Mã CV")] Task,
+            [Field("note"), Alias("Ghi chú")] Note,
+
+            Count
+        }
         public OrderCarTblInfo()
         {
             m_tblName = "order_car";
@@ -656,51 +731,14 @@ namespace test_binding
                 + "order_number char(31),"
                 + "car_number char(31),"
                 + "note text)";
-            m_cols = new ColInfo[] {
-                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
-                   new ColInfo( "order_number","Mã YC", ColInfo.ColType.uniq),
-                   new ColInfo( "car_number"  ,"Mã PT", ColInfo.ColType.uniq),
-                   new ColInfo( "note"        ,"Ghi Chú", ColInfo.ColType.text),
-                };
+            m_cols = new ColInfo[(int)ColIdx.Count];
+            m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
+            m_cols[(int)ColIdx.Order] = new ColInfo(ColIdx.Order.ToField(), ColIdx.Order.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.Car] = new ColInfo(ColIdx.Car.ToField(), ColIdx.Car.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.Task] = new ColInfo(ColIdx.Task.ToField(), ColIdx.Task.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.Note] = new ColInfo(ColIdx.Note.ToField(), ColIdx.Note.ToAlias(), ColInfo.ColType.text);
         }
     };
-#if false
-    [DataContract(Name = "AdvanceTblInfo")]
-    public class lAdvanceTblInfo : lTableInfo
-    {
-        public lAdvanceTblInfo()
-        {
-            m_tblName = "advance";
-            m_tblAlias = "Tạm Ứng";
-            m_crtQry = "CREATE TABLE if not exists advance("
-            + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
-            + "date datetime,"
-            + "payment_number char(31),"
-            + "name char(31),"
-            + "addr char(63),"
-            + "group_name char(31),"
-            + "advance_payment INTEGER,"
-            + "reimbursement INTEGER,"
-            + "actually_spent INTEGER,"
-            + "content text,"
-            + "note text"
-            + ")";
-            m_cols = new lColInfo[] {
-                   new lColInfo( "ID"               ,"ID"           , lColInfo.lColType.num, null, false),
-                   new lColInfo( "payment_number"   ,"Mã Phiếu Chi" , lColInfo.lColType.uniqueText),
-                   new lColInfo( "date"             ,"Ngày Tháng"   , lColInfo.lColType.dateTime),
-                   new lColInfo( "name"             ,"Họ Tên"       , lColInfo.lColType.text),
-                   new lColInfo( "addr"             ,"Địa chỉ"      , lColInfo.lColType.text),
-                   new lColInfo( "group_name"       ,"Thuộc ban"    , lColInfo.lColType.text, "group_name"),
-                   new lColInfo( "content"          ,"Nội dung"     , lColInfo.lColType.text),
-                   new lColInfo( "advance_payment"  ,"Tạm ứng"      , lColInfo.lColType.currency),
-                   new lColInfo( "reimbursement"    ,"Hoàn ứng"     , lColInfo.lColType.currency),
-                   new lColInfo( "actually_spent"   ,"Tồn"          , lColInfo.lColType.currency),
-                   new lColInfo( "note"             ,"Ghi Chú"      , lColInfo.lColType.text),
-                };
-        }
-    };
-#endif
 
     [DataContract(Name = "lReceiptsViewInfo")]
     public class lReceiptsViewInfo : TableInfo
@@ -883,7 +921,7 @@ namespace test_binding
         public virtual DataTable GetData(string qry) { return null; }
         public DataContent CreateDataContent(TableIdx tblIdx)
         {
-            return CreateDataContent(tblIdx.ToName());
+            return CreateDataContent(tblIdx.ToDesc());
         }
         public DataContent CreateDataContent(string tblName)
         {
@@ -1041,6 +1079,7 @@ namespace test_binding
             };
     }
 
+    #region enum_attr
     public static class EnumExtensions
     {
         // This extension method is broken out so you can use a similar pattern with 
@@ -1057,13 +1096,45 @@ namespace test_binding
 
         // This method creates a specific call to the above method, requesting the
         // Description MetaData attribute.
-        public static string ToName(this Enum value)
+        public static string ToDesc(this Enum value) 
         {
             var attribute = value.GetAttribute<DescriptionAttribute>();
             return attribute == null ? value.ToString() : attribute.Description;
         }
 
+        public static string ToField(this Enum value)
+        {
+            var attribute = value.GetAttribute<FieldAttribute>();
+            return attribute == null ? value.ToString() : attribute.Field;
+        }
+        public static string ToAlias(this Enum value)
+        {
+            var attribute = value.GetAttribute<AliasAttribute>();
+            return attribute == null ? value.ToString() : attribute.Alias;
+        }
     }
+
+    public class FieldAttribute : Attribute
+    {
+        private string name;
+        public FieldAttribute(string name)
+        {
+            this.name = name;
+        }
+        public virtual string Field { get{ return name; } }
+        protected string FieldValue { get; set; }
+    }
+    public class AliasAttribute : Attribute
+    {
+        private string name;
+        public AliasAttribute(string name)
+        {
+            this.name = name;
+        }
+        public virtual string Alias { get { return name; } }
+        protected string AliasValue { get; set; }
+    }
+    #endregion
 
     public enum OrderStatus
     {
@@ -1079,6 +1150,11 @@ namespace test_binding
         [Description("Kinh phí")] Expense
     }
 
+    public enum ResStatus
+    {
+        [Description("Free")] Free,
+        [Description("Busy")] Busy,
+    }
     public enum Gender
     {
         [Description("Nam")] Male,
@@ -1196,16 +1272,8 @@ namespace test_binding
         protected void init()
         {
             m_tables = new List<TableInfo>() {
-                    new lReceiptsTblInfo(),
-                    new lInternalPaymentTblInfo(),
-                    new lExternalPaymentTblInfo(),
-                    new lSalaryTblInfo(),
-                    //new lAdvanceTblInfo(),
-                    new lReceiptsContentTblInfo(),
-                    new lGroupNameTblInfo(),
-                    new lBuildingTblInfo(),
-                    new lConstrorgTblInfo(),
                     new TaskTblInfo(),
+                    new GroupNameTblInfo(),
                     new OrderTblInfo(),
                     new HumanTblInfo(),
                     new EquipmentTblInfo(),
@@ -1215,11 +1283,11 @@ namespace test_binding
                     new OrderCarTblInfo(),
                 };
             m_views = new List<TableInfo>() {
-                    new lReceiptsViewInfo(),
-                    new lInterPaymentViewInfo(),
-                    new lExterPaymentViewInfo(),
-                    new lSalaryViewInfo(),
-                    new lDaysumViewInfo()
+                    //new lReceiptsViewInfo(),
+                    //new lInterPaymentViewInfo(),
+                    //new lExterPaymentViewInfo(),
+                    //new lSalaryViewInfo(),
+                    //new lDaysumViewInfo()
                 };
         }
     }

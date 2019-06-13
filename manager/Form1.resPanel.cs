@@ -243,7 +243,7 @@ namespace test_binding
     [DataContract(Name = "HumanResPanel")]
     public class HumanResPanel : ResPanel
     {
-        public HumanResPanel():base("human")
+        public HumanResPanel():base(TableIdx.Human.ToDesc())
         {
             m_srchCtrls = new List<SearchCtrl> {
                 CrtSearchCtrl(m_tblInfo, "name"   , new Point(0, 0), new Size(1, 1),SearchCtrl.SearchMode.like),
@@ -264,8 +264,9 @@ namespace test_binding
         public override void UpdateResDGV(string taskId, DateTime startDate, DateTime endDate)
         {
             m_srchBld.Clear();
-            m_srchBld.Add("start_date", startDate, "<=");
-            m_srchBld.Add("end_date", endDate, ">=");
+            m_srchBld.Add(HumanTblInfo.ColIdx.Enter.ToField(), startDate, "<=");
+            m_srchBld.Add(HumanTblInfo.ColIdx.Leave.ToField(), endDate, ">=");
+            m_srchBld.Add(HumanTblInfo.ColIdx.Busy.ToField(), (int)ResStatus.Free);
             m_srchBld.Search();
             resDGV.DataSource=m_srchBld.dc.m_bindingSource;
             string datef = lConfigMng.GetDisplayDateFormat();
@@ -276,10 +277,10 @@ namespace test_binding
     [DataContract(Name = "EquipmentResPanel")]
     public class EquipmentResPanel : ResPanel
     {
-        public EquipmentResPanel():base( "equipment")
+        public EquipmentResPanel():base(TableIdx.Equip.ToDesc())
         {
             m_srchCtrls = new List<SearchCtrl> {
-                CrtSearchCtrl(m_tblInfo, "note"   , new Point(0, 0), new Size(1, 1),SearchCtrl.SearchMode.like),
+                CrtSearchCtrl(m_tblInfo, EquipmentTblInfo.ColIdx.Note.ToField() , new Point(0, 0), new Size(1, 1),SearchCtrl.SearchMode.like),
             };
         }
         public override void InitCtrl()
@@ -295,8 +296,8 @@ namespace test_binding
         public CarResPanel():base("car")
         {
             m_srchCtrls = new List<SearchCtrl> {
-                CrtSearchCtrl(m_tblInfo, "car_type", new Point(0, 0), new Size(1, 1),SearchCtrl.SearchMode.like),
-                CrtSearchCtrl(m_tblInfo, "brand"   , new Point(0, 1), new Size(1, 1),SearchCtrl.SearchMode.like),
+                CrtSearchCtrl(m_tblInfo, CarTblInfo.ColIdx.Type.ToField(), new Point(0, 0), new Size(1, 1),SearchCtrl.SearchMode.like),
+                CrtSearchCtrl(m_tblInfo, CarTblInfo.ColIdx.Brand.ToField(), new Point(0, 1), new Size(1, 1),SearchCtrl.SearchMode.like),
             };
         }
         public override void InitCtrl()
@@ -324,6 +325,7 @@ namespace test_binding
 
         public virtual int RowCount { get { return orderResDGV.RowCount; } }
         public string m_curOrder;
+        public string m_curTask;
         public ResPanel m_resPanel;
         public OrderResPanel(string tblName)
         {
@@ -362,9 +364,31 @@ namespace test_binding
             //  order - res
             botRightTLP.Controls.Add(orderResDGV, 0, ++iRow);
         }
-        public virtual void UpdateDGV(string orderId)
+        public virtual void UpdateDGV(string orderId, string taskId)
         {
             m_curOrder = orderId;
+            m_curTask = taskId;
+        }
+
+        public virtual void RmBusyRes()
+        {
+            List<int> idxLst = new List<int>();
+            for (int i = 0; i < m_usedResDict.Count;i++)
+            {
+                int v = m_usedResDict.Values.ElementAt(i);
+                if (v == -1)
+                {
+                    idxLst.Add(i);
+                }
+            }
+            if (idxLst.Count > 0)
+            {
+                //show warning msg
+                string msg = string.Format("The busy resource is invalid!\nRows[{0}] was removed!",
+                    string.Join(", ", idxLst));
+                lConfigMng.ShowInputError(msg);
+            }
+            RemoveOrderResByIdx(idxLst);
         }
         protected void UpdateOrderResDGV(string orderIdCol, string resIdCol)
         {
@@ -427,6 +451,7 @@ namespace test_binding
                     var newRow = orderResTbl.NewRow();
                     newRow[1] = m_curOrder;
                     newRow[2] = resId;
+                    newRow[3] = m_curTask;
                     orderResTbl.Rows.Add(newRow);
 
                     //udpate dict & gui
@@ -459,39 +484,39 @@ namespace test_binding
     [DataContract(Name = "OrderHumanPanel")]
     public class OrderHumanPanel:OrderResPanel
     {
-        public OrderHumanPanel() : base("order_human")
+        public OrderHumanPanel() : base(TableIdx.HumanOR.ToDesc())
         {
         }
-        public override void UpdateDGV(string orderId)
+        public override void UpdateDGV(string orderId, string taskId)
         {
-            base.UpdateDGV(orderId);
-            UpdateOrderResDGV("order_number", "human_number");
+            base.UpdateDGV(orderId, taskId);
+            UpdateOrderResDGV(OrderHumanTblInfo.ColIdx.Order.ToField(), OrderHumanTblInfo.ColIdx.Human.ToField());
         }
     }
     [DataContract(Name = "OrderEquipmentPanel")]
     public class OrderEquipmentPanel:OrderResPanel
     {
-        public OrderEquipmentPanel() : base("order_equipment")
+        public OrderEquipmentPanel() : base(TableIdx.EquipOR.ToDesc())
         {
         }
 
-        public override void UpdateDGV(string orderId)
+        public override void UpdateDGV(string orderId, string taskId)
         {
-            base.UpdateDGV(orderId);
-            UpdateOrderResDGV("order_number", "equipment_number");
+            base.UpdateDGV(orderId, taskId);
+            UpdateOrderResDGV(OrderEquipmentTblInfo.ColIdx.Order.ToField(), OrderEquipmentTblInfo.ColIdx.Equip.ToField());
         }
     }
     [DataContract(Name = "OrderCarPanel")]
     public class OrderCarPanel : OrderResPanel
     {
-        public OrderCarPanel():base("order_car")
+        public OrderCarPanel():base(TableIdx.CarOR.ToDesc())
         {
         }
 
-        public override void UpdateDGV(string orderId)
+        public override void UpdateDGV(string orderId, string taskId)
         {
-            base.UpdateDGV(orderId);
-            UpdateOrderResDGV("order_number", "car_number");
+            base.UpdateDGV(orderId, taskId);
+            UpdateOrderResDGV(OrderCarTblInfo.ColIdx.Order.ToField(), OrderCarTblInfo.ColIdx.Car.ToField());
         }
     }
 }

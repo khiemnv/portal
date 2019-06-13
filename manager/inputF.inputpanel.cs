@@ -1641,10 +1641,10 @@ namespace test_binding
         protected override keyMng m_keyMng { get { return m_key; } }
         public TaskInputPanel()
         {
-            m_tblName = TableIdx.Task.ToName();
+            m_tblName = TableIdx.Task.ToDesc();
 
             m_inputsCtrls = new List<InputCtrl> {
-                crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.TskNum, new Point(0, 0), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.Task, new Point(0, 0), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.Group , new Point(0, 1), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.Name  , new Point(0, 2), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.Start , new Point(0, 3), new Size(1, 1)),
@@ -1652,7 +1652,7 @@ namespace test_binding
                 crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.Note  , new Point(0, 5), new Size(1, 1)),
             };
             m_inputsCtrls[0].ReadOnly = true;
-            m_key = new keyMng("CV", m_tblName, TaskTblInfo.ColIdx.TskNum.ToName());
+            m_key = new keyMng("CV", m_tblName, TaskTblInfo.ColIdx.Task.ToField());
         }
 
         protected override void onDGV_CellClick()
@@ -1696,20 +1696,20 @@ namespace test_binding
 
         public OrderInputPanel()
         {
-            m_tblName = TableIdx.Order.ToName();
+            m_tblName = TableIdx.Order.ToDesc();
 
             m_inputsCtrls = new List<InputCtrl> {
-                crtInputCtrl(m_tblInfo, (int)OrderTblInfo.ColIdx.TskNum, new Point(0, 0), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, (int)OrderTblInfo.ColIdx.OrdNum, new Point(0, 1), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)OrderTblInfo.ColIdx.Task, new Point(0, 0), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)OrderTblInfo.ColIdx.Order, new Point(0, 1), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, (int)OrderTblInfo.ColIdx.Type  , new Point(0, 2), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, (int)OrderTblInfo.ColIdx.Number, new Point(0, 3), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, (int)OrderTblInfo.ColIdx.Status, new Point(0, 4), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)OrderTblInfo.ColIdx.Amnt, new Point(0, 3), new Size(1, 1)),
+                crtInputCtrl(m_tblInfo, (int)OrderTblInfo.ColIdx.Stat, new Point(0, 4), new Size(1, 1)),
                 crtInputCtrl(m_tblInfo, (int)OrderTblInfo.ColIdx.Note  , new Point(0, 5), new Size(1, 1)),
             };
 
             m_inputsCtrls[1].ReadOnly = true;
             m_inputsCtrls[4].ReadOnly = true;
-            m_key = new keyMng("YC", m_tblName, OrderTblInfo.ColIdx.TskNum.ToName());
+            m_key = new keyMng("YC", m_tblName, OrderTblInfo.ColIdx.Task.ToField());
             //oder type change ->update resource
             //m_inputsCtrls[2].EditingCompleted += LOrderInputPanel_EditingCompleted;
         }
@@ -1743,9 +1743,9 @@ namespace test_binding
                 if ( e != "")
                 {
                     string taskNumber = e;
-                    if (m_orderSB == null) { m_orderSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.Order.ToName())); }
+                    if (m_orderSB == null) { m_orderSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.Order.ToDesc())); }
                     m_orderSB.Clear();
-                    m_orderSB.Add(OrderTblInfo.ColIdx.TskNum.ToString(), taskNumber);
+                    m_orderSB.Add(OrderTblInfo.ColIdx.Task.ToField(), taskNumber);
                     m_orderSB.Search();
 
                     //clear lbl, resLst, orderResLst
@@ -1768,7 +1768,7 @@ namespace test_binding
         {
             if (m_orderSB == null) { m_orderSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.Order)); }
             m_orderSB.Clear();
-            m_orderSB.Add(OrderTblInfo.ColIdx.TskNum.ToName(), taskNumber);
+            m_orderSB.Add(OrderTblInfo.ColIdx.Task.ToField(), taskNumber);
             m_orderSB.Search();
 
             UpdateTaskInfo(taskNumber);
@@ -1778,15 +1778,15 @@ namespace test_binding
         {
             m_taskNumber = taskNumber;
             //access task data - singleton
-            DataContent dc = appConfig.s_contentProvider.CreateDataContent(TableIdx.Task.ToName());
+            DataContent dc = appConfig.s_contentProvider.CreateDataContent(TableIdx.Task.ToDesc());
             var rows = dc.m_dataTable.Rows;
             for (int i = 0; i < rows.Count; i++)
             {
-                string tskNum = rows[i][TaskTblInfo.ColIdx.TskNum.ToName()].ToString();
+                string tskNum = rows[i][TaskTblInfo.ColIdx.Task.ToField()].ToString();
                 if (tskNum == taskNumber)
                 {
-                    m_taskStartDate = (DateTime)rows[i][TaskTblInfo.ColIdx.Start.ToName()];
-                    m_taskEndDate = (DateTime)rows[i][TaskTblInfo.ColIdx.End.ToName()];
+                    m_taskStartDate = (DateTime)rows[i][TaskTblInfo.ColIdx.Start.ToField()];
+                    m_taskEndDate = (DateTime)rows[i][TaskTblInfo.ColIdx.End.ToField()];
                     break;
                 }
             }
@@ -1866,12 +1866,12 @@ namespace test_binding
                 }
                 else
                 {
-                    lConfigMng.ShowInputError(ErrMsgType.OrderResExist.ToName());
+                    lConfigMng.ShowInputError(ErrMsgType.OrderResExist.ToDesc());
                 }
             }
             else
             {
-                lConfigMng.ShowInputError(ErrMsgType.OrderNone.ToName());
+                lConfigMng.ShowInputError(ErrMsgType.OrderNone.ToDesc());
             }
         }
 
@@ -1900,6 +1900,7 @@ namespace test_binding
         }
 
         private string m_curOrder;
+        private string m_curTask;
         private OrderType m_curOrderType;
         protected override void onDGV_CellClick()
         {
@@ -1908,18 +1909,19 @@ namespace test_binding
             if (rows.Count > 0)
             {
                 //save cur order
-                string orderId = rows[0].Cells[OrderTblInfo.ColIdx.OrdNum.ToName()].Value.ToString();
-
+                string orderId = rows[0].Cells[OrderTblInfo.ColIdx.Order.ToField()].Value.ToString();
+                string taskId = rows[0].Cells[OrderTblInfo.ColIdx.Task.ToField()].Value.ToString();
                 //get type
                 //get date
-                var cell = rows[0].Cells[OrderTblInfo.ColIdx.Type.ToName()];
+                var cell = rows[0].Cells[OrderTblInfo.ColIdx.Type.ToField()];
                 OrderType orderType = (OrderType)int.Parse(cell.Value.ToString());
-                UpdateRightPanel(orderId, orderType);
+                UpdateRightPanel(orderId, orderType, taskId);
             }
         }
-        protected void UpdateRightPanel(string orderId, OrderType orderType)
+        protected void UpdateRightPanel(string orderId, OrderType orderType, string taskId)
         {
             m_curOrder = orderId;
+            m_curTask = taskId;
             m_curOrderType = orderType;
             switch (orderType)
             {
@@ -1965,6 +1967,7 @@ namespace test_binding
             DateTime endDate = DateTime.Now; ;
             getTaskInfo(ref startDate, ref endDate);
             curRP.UpdateResDGV(m_curOrder, startDate, endDate);
+            curORP.RmBusyRes();
         }
         protected void UpdateOrderResDGV()
         {
@@ -1972,7 +1975,7 @@ namespace test_binding
             rightSC.Panel1.Controls.Add(curRP.toprightTLP);
             rightSC.Panel2.Controls.Clear();
             rightSC.Panel2.Controls.Add(curORP.botRightTLP);
-            curORP.UpdateDGV(m_curOrder);
+            curORP.UpdateDGV(m_curOrder, m_curTask);
         }
     }
     [DataContract(Name = "ApproveInputPanel")]
@@ -1983,7 +1986,7 @@ namespace test_binding
         public SplitContainer leftSC;
         public ApproveInputPanel()
         {
-            m_tblName = TableIdx.Order.ToName();
+            m_tblName = TableIdx.Order.ToDesc();
             taskTI = appConfig.s_config.GetTable(TableIdx.Task);
 
             //create public ctrl
@@ -2044,7 +2047,7 @@ namespace test_binding
             DataGridViewSelectedRowCollection rows = taskDGV.SelectedRows;
             if (rows.Count > 0)
             {
-                string taskId = (string)rows[0].Cells[TaskTblInfo.ColIdx.TskNum.ToName()].Value;
+                string taskId = (string)rows[0].Cells[TaskTblInfo.ColIdx.Task.ToField()].Value;
                 if (taskId == null) return;
                 //get task info
 

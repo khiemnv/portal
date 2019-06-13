@@ -179,7 +179,10 @@ namespace test_binding
                 }
             );
         }
-
+        public void Add(string col, int arg1)
+        {
+            Add(col, arg1.ToString());
+        }
         public void Add(string col, string arg1, SearchCtrl.SearchMode mode = SearchCtrl.SearchMode.match)
         {
             Debug.Assert(m_dict.ContainsKey(col));
@@ -188,10 +191,9 @@ namespace test_binding
             switch (colInfo.m_type)
             {
                 case TableInfo.ColInfo.ColType.text:
-                    break;
                 case TableInfo.ColInfo.ColType.num:
-                    break;
                 case TableInfo.ColInfo.ColType.uniq:
+                case TableInfo.ColInfo.ColType.map:
                     break;
                 default:
                     Debug.Assert(false);

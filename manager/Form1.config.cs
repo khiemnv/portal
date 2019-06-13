@@ -57,7 +57,7 @@ namespace test_binding
                     typeof(lInternalPaymentTblInfo),
                     typeof(lExternalPaymentTblInfo),
                     typeof(lSalaryTblInfo),
-                    typeof(lGroupNameTblInfo),
+                    typeof(GroupNameTblInfo),
                     typeof(lBuildingTblInfo),
                     typeof(lReceiptsContentTblInfo),
                     typeof(lConstrorgTblInfo),
@@ -247,7 +247,7 @@ namespace test_binding
             {
                 m_tblInfoArr = new TableInfo[(int)TableIdx.Count];
                 for (int i = 0; i< (int)TableIdx.Count;i++)
-                m_tblInfoArr[i] = GetTable(((TableIdx)i).ToName());
+                m_tblInfoArr[i] = GetTable(((TableIdx)i).ToDesc());
             }
             return m_tblInfoArr[(int)tblType];
         }
