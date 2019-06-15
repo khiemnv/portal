@@ -84,7 +84,7 @@ namespace test_binding
         protected virtual void initCtrls()
         {
             m_inputPanel = CrtInputPanel();
-            m_inputPanel.initCtrls();
+            m_inputPanel.InitCtrls();
             tableLayoutPanel1.Controls.Add(m_inputPanel.m_tbl);
             tableLayoutPanel1.Dock = DockStyle.Fill;
         }

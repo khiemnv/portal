@@ -461,7 +461,11 @@ namespace test_binding
 
         Count
     }
-
+    public enum TaskStatus
+    {
+        [Description("Triển khai") ] Doing,
+        [Description("Hoàn thành") ] Done,
+    }
     [DataContract(Name = "lTaskTblInfo")]
     public class TaskTblInfo : TableInfo
     {
@@ -471,8 +475,9 @@ namespace test_binding
             [Field("task_number")   ,Alias("Mã CV"        )] Task,
             [Field("group_name")    ,Alias("Thuộc ban"    )] Group,
             [Field("task_name")     ,Alias("Tên CV"       )] Name,
-            [Field("start_date")    ,Alias("Ngày bắt đầu" )] Start,
+            [Field("start_date")    ,Alias("Ngày bắt đầu" )] Begin,
             [Field("end_date")      ,Alias("Ngày kết thúc")] End,
+            [Field("task_status")   ,Alias("Trạng thái")   ] Stat,
             [Field("note")          ,Alias("Ghi Chú")      ] Note,
 
             Count
@@ -489,14 +494,16 @@ namespace test_binding
                 + "task_name char(31),"
                 + "start_date datetime,"
                 + "end_date datetime,"
+                + "task_status INTEGER,"
                 + "note text)";
             m_cols = new ColInfo[(int)ColIdx.Count];
             m_cols[(int)ColIdx.ID   ] = new ColInfo(ColIdx.ID.ToField()    , ColIdx.ID.ToAlias()    , ColInfo.ColType.num, false);
             m_cols[(int)ColIdx.Task ] = new ColInfo(ColIdx.Task.ToField()  , ColIdx.Task.ToAlias()  , ColInfo.ColType.uniq);
             m_cols[(int)ColIdx.Group] = new ColInfo(ColIdx.Group.ToField() , ColIdx.Group.ToAlias() , ColInfo.ColType.text, "group_name" );
             m_cols[(int)ColIdx.Name ] = new ColInfo(ColIdx.Name.ToField()  , ColIdx.Name.ToAlias()  , ColInfo.ColType.text);
-            m_cols[(int)ColIdx.Start] = new ColInfo(ColIdx.Start.ToField() , ColIdx.Start.ToAlias() , ColInfo.ColType.dateTime);
+            m_cols[(int)ColIdx.Begin] = new ColInfo(ColIdx.Begin.ToField() , ColIdx.Begin.ToAlias() , ColInfo.ColType.dateTime);
             m_cols[(int)ColIdx.End  ] = new ColInfo(ColIdx.End.ToField()   , ColIdx.End.ToAlias()   , ColInfo.ColType.dateTime);
+            m_cols[(int)ColIdx.Stat] = new ColInfo(ColIdx.Stat.ToField(), ColIdx.Stat.ToAlias(), ColInfo.ColType.map, GetDescLst<TaskStatus>());
             m_cols[(int)ColIdx.Note ] = new ColInfo(ColIdx.Note.ToField()  , ColIdx.Note.ToAlias()  , ColInfo.ColType.text);
         }
     };
@@ -1707,6 +1714,7 @@ namespace test_binding
 #endif
 #if use_cmd_params
         public virtual void Search(List<string> exprs, List<SearchParam> srchParams) { throw new NotImplementedException(); }
+        public virtual void Update(List<string> setExprs, List<string> whereExprs, List<SearchParam> srchParams) { throw new NotImplementedException(); }
         public virtual void AddRec(List<string> exprs, List<SearchParam> srchParams) { throw new NotImplementedException(); }
 #endif
         bool m_changed = true;
@@ -1823,6 +1831,22 @@ namespace test_binding
                 selectCommand = new SQLiteCommand(selectLast(100), m_cnn);
             }
             GetData(selectCommand);
+        }
+
+        public override void Update(List<string> setExprs, List<string> whereExprs, List<SearchParam> srchParams)
+        {
+            SQLiteCommand updateCommand;
+            string sql = string.Format("Update {0} ", m_table);
+            Debug.Assert(setExprs.Count > 0, "can not empty");
+            Debug.Assert(whereExprs.Count > 0, "can not empty");
+            sql += " set " + string.Join(" , ", setExprs);
+            sql += " where " + string.Join(" and ", whereExprs);
+            updateCommand = new SQLiteCommand(sql, m_cnn);
+            foreach (var param in srchParams)
+            {
+                updateCommand.Parameters.AddWithValue(param.key, param.val);
+            }
+            int ret = updateCommand.ExecuteNonQuery();
         }
 #endif
         public override void AddRec(List<string> exprs, List<SearchParam> srchParams)

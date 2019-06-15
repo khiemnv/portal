@@ -99,13 +99,17 @@ namespace test_binding
                 m_srchBld.srchParams.RemoveAt(i);
             }
         }
-        public virtual void UpdateResDGV(string taskId, DateTime startDate, DateTime endDate)
+        public virtual void UpdateResDGV(string taskId, DateTime startDate, DateTime endDate, OrderStatus orderStatus)
         {
             //update res list
             m_srchBld.Clear();
             m_srchBld.Search();
             resDGV.DataSource = m_srchBld.dc.m_bindingSource;
             resLbl.Text = m_tblInfo.m_tblAlias;
+        }
+        public virtual void UpdateResStatus(ResStatus sts)
+        {
+            throw new NotImplementedException();
         }
 
         public void UnmarkResRow(int i) { resDGV.Rows[i].DefaultCellStyle.BackColor = Color.White; }
@@ -151,6 +155,10 @@ namespace test_binding
         }
         private void ResGV_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
+            MarkUsedRes();
+        }
+        protected virtual void MarkUsedRes()
+        {
             for (int i = 0; i < resDGV.Rows.Count; i++)
             {
                 var key = resDGV.Rows[i].Cells[1].Value.ToString();
@@ -161,6 +169,7 @@ namespace test_binding
                 }
             }
         }
+
         private void UpdateCols()
         {
             resDGV.Columns[0].Visible = false;
@@ -261,19 +270,52 @@ namespace test_binding
         {
             base.SearchRes();
         }
-        public override void UpdateResDGV(string taskId, DateTime startDate, DateTime endDate)
+        public override void UpdateResDGV(string taskId, DateTime startDate, DateTime endDate, OrderStatus orderStatus)
         {
             m_srchBld.Clear();
             m_srchBld.Add(HumanTblInfo.ColIdx.Enter.ToField(), startDate, "<=");
             m_srchBld.Add(HumanTblInfo.ColIdx.Leave.ToField(), endDate, ">=");
-            m_srchBld.Add(HumanTblInfo.ColIdx.Busy.ToField(), (int)ResStatus.Free);
+            if (orderStatus == OrderStatus.Request) {
+                m_srchBld.Add(HumanTblInfo.ColIdx.Busy.ToField(), (int)ResStatus.Free);
+            }
             m_srchBld.Search();
+
             resDGV.DataSource=m_srchBld.dc.m_bindingSource;
+            
             string datef = lConfigMng.GetDisplayDateFormat();
             resLbl.Text = string.Format("{0} {1}-{2}", m_tblInfo.m_tblAlias,
                 startDate.ToString(datef), endDate.ToString(datef));
         }
-     }
+        public override void UpdateResStatus(ResStatus sts)
+        {
+            DataContent resDC = appConfig.s_contentProvider.CreateDataContent(m_tbl);
+            for (int i = 0; i < m_orderResPanel.m_usedResDict.Count; i++)
+            {
+                int rowIdx = m_orderResPanel.m_usedResDict.Values.ElementAt(i);
+                resDC.m_dataTable.Rows[rowIdx][HumanTblInfo.ColIdx.Busy.ToField()] = (int)sts;
+            }
+        }
+        protected override void MarkUsedRes()
+        {
+            for (int i = 0; i < resDGV.Rows.Count; i++)
+            {
+                var key = resDGV.Rows[i].Cells[1].Value.ToString();
+                if (m_orderResPanel.m_usedResDict.ContainsKey(key))
+                {
+                    m_orderResPanel.m_usedResDict[key] = i;
+                    MarkResRow(i);
+                }
+                else
+                {
+                    var status = resDGV.Rows[i].Cells[HumanTblInfo.ColIdx.Busy.ToField()].Value.ToString();
+                    if ((ResStatus)int.Parse(status) == ResStatus.Busy)
+                    {
+                        //resDGV.Rows[i].Visible = false;
+                    }
+                }
+            }
+        }
+    }
     [DataContract(Name = "EquipmentResPanel")]
     public class EquipmentResPanel : ResPanel
     {
@@ -373,12 +415,14 @@ namespace test_binding
         public virtual void RmBusyRes()
         {
             List<int> idxLst = new List<int>();
+            List<string> resIdLst = new List<string>();
             for (int i = 0; i < m_usedResDict.Count;i++)
             {
-                int v = m_usedResDict.Values.ElementAt(i);
-                if (v == -1)
+                KeyValuePair<string, int> rec = m_usedResDict.ElementAt(i);
+                if (rec.Value == -1)
                 {
                     idxLst.Add(i);
+                    resIdLst.Add(rec.Key);
                 }
             }
             if (idxLst.Count > 0)
@@ -387,6 +431,10 @@ namespace test_binding
                 string msg = string.Format("The busy resource is invalid!\nRows[{0}] was removed!",
                     string.Join(", ", idxLst));
                 lConfigMng.ShowInputError(msg);
+            }
+            foreach(string resId in resIdLst)
+            {
+                m_usedResDict.Remove(resId);
             }
             RemoveOrderResByIdx(idxLst);
         }

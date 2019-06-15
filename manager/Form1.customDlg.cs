@@ -378,7 +378,7 @@ namespace test_binding
             m_dataPanel = dataPanel;
 
             InitializeComponent();
-            m_dataPanel.initCtrls();
+            m_dataPanel.InitCtrls();
 
             m_tblPanel = new TableLayoutPanel();
             m_tblPanel.Anchor = AnchorStyles.Top | AnchorStyles.Left;

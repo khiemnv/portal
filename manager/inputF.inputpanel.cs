@@ -670,7 +670,20 @@ namespace test_binding
         protected FlowLayoutPanel m_flow;
         protected Button m_addBtn;
         protected Button m_saveBtn;
-        public virtual void initCtrls()
+
+        protected void CrtInputCtrlLst(Dictionary<int, InputCtrl> tDict)
+        {
+            m_inputsCtrls = new List<InputCtrl>();
+            for (int i = 0; i < tDict.Count; i++)
+            {
+                int key = tDict.Keys.ElementAt(i);
+                var inputCtrl = crtInputCtrl(m_tblInfo, key, new Point(0,i), new Size(1, 1));
+                tDict[key] = inputCtrl;
+            };
+            m_inputsCtrls.AddRange(tDict.Values);
+        }
+
+        public virtual void InitCtrls()
         {
             //create table layout & add ctrls to
             //  +-------------------------+
@@ -1448,9 +1461,9 @@ namespace test_binding
             }
         }
 
-        public override void initCtrls()
+        public override void InitCtrls()
         {
-            base.initCtrls();
+            base.InitCtrls();
 
             m_dataGridView.CellEndEdit += (s, e) =>
             {
@@ -1642,16 +1655,19 @@ namespace test_binding
         public TaskInputPanel()
         {
             m_tblName = TableIdx.Task.ToDesc();
-
-            m_inputsCtrls = new List<InputCtrl> {
-                crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.Task, new Point(0, 0), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.Group , new Point(0, 1), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.Name  , new Point(0, 2), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.Start , new Point(0, 3), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.End   , new Point(0, 4), new Size(1, 1)),
-                crtInputCtrl(m_tblInfo, (int)TaskTblInfo.ColIdx.Note  , new Point(0, 5), new Size(1, 1)),
+            Dictionary<int, InputCtrl> tDict = new Dictionary<int, InputCtrl>
+            {
+                { (int)TaskTblInfo.ColIdx.Task , null },
+                { (int)TaskTblInfo.ColIdx.Group, null },
+                { (int)TaskTblInfo.ColIdx.Name , null },
+                { (int)TaskTblInfo.ColIdx.Begin, null },
+                { (int)TaskTblInfo.ColIdx.End  , null },
+                { (int)TaskTblInfo.ColIdx.Stat , null },
+                { (int)TaskTblInfo.ColIdx.Note , null },
             };
-            m_inputsCtrls[0].ReadOnly = true;
+            CrtInputCtrlLst(tDict);
+            tDict[(int)TaskTblInfo.ColIdx.Task].ReadOnly = true;
+            tDict[(int)TaskTblInfo.ColIdx.Stat].ReadOnly = true;
             m_key = new keyMng("CV", m_tblName, TaskTblInfo.ColIdx.Task.ToField());
         }
 
@@ -1785,17 +1801,17 @@ namespace test_binding
                 string tskNum = rows[i][TaskTblInfo.ColIdx.Task.ToField()].ToString();
                 if (tskNum == taskNumber)
                 {
-                    m_taskStartDate = (DateTime)rows[i][TaskTblInfo.ColIdx.Start.ToField()];
+                    m_taskStartDate = (DateTime)rows[i][TaskTblInfo.ColIdx.Begin.ToField()];
                     m_taskEndDate = (DateTime)rows[i][TaskTblInfo.ColIdx.End.ToField()];
                     break;
                 }
             }
         }
 
-        public override void initCtrls()
+        public override void InitCtrls()
         {
             //spliter panel 1
-            base.initCtrls();
+            base.InitCtrls();
             //flow      |add    |remove |save   |
             m_flow.Controls.Clear();
             m_flow.Controls.AddRange(new Control[] { m_addBtn, removeBtn, m_saveBtn });
@@ -1839,8 +1855,8 @@ namespace test_binding
             orp.m_resPanel = rp;
         }
 
-        private OrderResPanel curORP;
-        private ResPanel curRP;
+        protected OrderResPanel curORP;
+        protected ResPanel curRP;
 
         private void RemoveBtn_Click(object sender, EventArgs e)
         {
@@ -1885,7 +1901,7 @@ namespace test_binding
         public string m_taskNumber;
         public DateTime m_taskStartDate;
         public DateTime m_taskEndDate;
-        private void getTaskInfo(ref DateTime startDate, ref DateTime endDate)
+        protected void getTaskInfo(ref DateTime startDate, ref DateTime endDate)
         {
             if (m_taskNumber == null)
             {
@@ -1902,27 +1918,30 @@ namespace test_binding
         private string m_curOrder;
         private string m_curTask;
         private OrderType m_curOrderType;
+        private OrderStatus m_curOrderStatus;
         protected override void onDGV_CellClick()
         {
             base.onDGV_CellClick();
             DataGridViewSelectedRowCollection rows = m_dataGridView.SelectedRows;
             if (rows.Count > 0)
             {
+                var cells = rows[0].Cells;
                 //save cur order
-                string orderId = rows[0].Cells[OrderTblInfo.ColIdx.Order.ToField()].Value.ToString();
-                string taskId = rows[0].Cells[OrderTblInfo.ColIdx.Task.ToField()].Value.ToString();
+                string orderId = cells[OrderTblInfo.ColIdx.Order.ToField()].Value.ToString();
+                string taskId = cells[OrderTblInfo.ColIdx.Task.ToField()].Value.ToString();
                 //get type
                 //get date
-                var cell = rows[0].Cells[OrderTblInfo.ColIdx.Type.ToField()];
-                OrderType orderType = (OrderType)int.Parse(cell.Value.ToString());
-                UpdateRightPanel(orderId, orderType, taskId);
+                OrderType orderType = (OrderType)int.Parse(cells[OrderTblInfo.ColIdx.Type.ToField()].Value.ToString());
+                OrderStatus orderStatus = (OrderStatus)int.Parse(cells[OrderTblInfo.ColIdx.Stat.ToField()].Value.ToString());
+                UpdateRightPanel(taskId,orderId, orderType, orderStatus);
             }
         }
-        protected void UpdateRightPanel(string orderId, OrderType orderType, string taskId)
+        protected void UpdateRightPanel(string taskId, string orderId, OrderType orderType, OrderStatus orderStatus)
         {
             m_curOrder = orderId;
             m_curTask = taskId;
             m_curOrderType = orderType;
+            m_curOrderStatus = orderStatus;
             switch (orderType)
             {
                 case OrderType.Worker: //human
@@ -1931,7 +1950,7 @@ namespace test_binding
 
                     //update order-human
                     UpdateOrderResDGV();
-                    UpdateResDGV();
+                    UpdateResDGV(orderStatus);
                     break;
                 case OrderType.Equip: //equipment
                     curORP = m_EquipORP;
@@ -1939,7 +1958,7 @@ namespace test_binding
 
                     //update order-equipment
                     UpdateOrderResDGV();
-                    UpdateResDGV();
+                    UpdateResDGV(orderStatus);
                     break;
                 case OrderType.Car: //car
                     curORP = m_carORP;
@@ -1947,7 +1966,7 @@ namespace test_binding
 
                     //update order-car
                     UpdateOrderResDGV();
-                    UpdateResDGV();
+                    UpdateResDGV(orderStatus);
                     break;
                 case OrderType.Expense:
                     CleanRightPanel();
@@ -1961,12 +1980,12 @@ namespace test_binding
         private OrderHumanPanel m_humanORP = new OrderHumanPanel();
         private OrderEquipmentPanel m_EquipORP = new OrderEquipmentPanel();
         private OrderResPanel m_carORP = new OrderCarPanel();
-        protected void UpdateResDGV()
+        protected virtual void UpdateResDGV(OrderStatus orderStatus)
         {
             DateTime startDate = DateTime.Now; ;
             DateTime endDate = DateTime.Now; ;
             getTaskInfo(ref startDate, ref endDate);
-            curRP.UpdateResDGV(m_curOrder, startDate, endDate);
+            curRP.UpdateResDGV(m_curOrder, startDate, endDate, orderStatus);
             curORP.RmBusyRes();
         }
         protected void UpdateOrderResDGV()
@@ -1983,7 +2002,9 @@ namespace test_binding
     {
         TableInfo taskTI;
         DataGridView taskDGV;
+        DataGridView orderDGV;
         public SplitContainer leftSC;
+
         public ApproveInputPanel()
         {
             m_tblName = TableIdx.Order.ToDesc();
@@ -1992,9 +2013,9 @@ namespace test_binding
             //create public ctrl
             leftSC = new SplitContainer();
         }
-        public override void initCtrls()
+        public override void InitCtrls()
         {
-            base.initCtrls();
+            base.InitCtrls();
             leftSC.Orientation = Orientation.Horizontal;
             leftSC.Dock = DockStyle.Fill;
             //re-arrange left panel
@@ -2007,11 +2028,11 @@ namespace test_binding
             //  +-------------------------+
             //  |    grid view            |
             //  +-------------------------+
-            DataGridView orderDGV;
             orderDGV = m_dataGridView;
             orderDGV.Dock = DockStyle.Fill;
             orderDGV.AllowUserToAddRows = false;
             orderDGV.AllowUserToDeleteRows = false;
+            orderDGV.CellValueChanged += OrderDGV_CellValueChanged;
             taskDGV = lConfigMng.crtDGV(taskTI);
             taskDGV.Dock = DockStyle.Fill;
             taskDGV.AllowUserToAddRows = false;
@@ -2028,10 +2049,13 @@ namespace test_binding
 
             TableLayoutPanel orderTbl = new TableLayoutPanel();
             orderTbl.Dock = DockStyle.Fill;
-            //flow  |    save btn  |
+            //flow  | apporve btn |   save btn  |
             FlowLayoutPanel tFlow = new FlowLayoutPanel();
             tFlow.AutoSize = true;
-            tFlow.Controls.AddRange(new Control[] { m_saveBtn });
+            Button approveBtn = lConfigMng.crtButton();
+            approveBtn.Text = "Approve";
+            approveBtn.Click += ApproveBtn_Click;
+            tFlow.Controls.AddRange(new Control[] {approveBtn, m_saveBtn });
             orderTbl.Controls.Add(tFlow, 0, 0);
             // add data grid view
             orderTbl.Controls.Add(orderDGV, 0, 1);
@@ -2040,6 +2064,67 @@ namespace test_binding
 
             //event
             taskDGV.CellClick += TaskDGV_CellClick;
+        }
+        private void ApproveBtn_Click(object sender, EventArgs e)
+        {
+            Debug.Assert(orderDGV.SelectedRows.Count == 1, "can approve only one order in time");
+            DataContent orderDC = appConfig.s_contentProvider.CreateDataContent(TableIdx.Order.ToDesc());
+            for (int i = 0; i < orderDGV.SelectedRows.Count;i++)
+            {
+                DataGridViewRow row = orderDGV.SelectedRows[i];
+                orderDC.m_dataTable.Rows[row.Index][OrderTblInfo.ColIdx.Stat.ToField()] = (int)OrderStatus.Approve;
+                UpdateResStatus(ResStatus.Busy);
+                //string orderId = (string)row.Cells[(int)OrderTblInfo.ColIdx.Order].Value;
+                //int type = (int)row.Cells[(int)OrderTblInfo.ColIdx.Type].Value;
+                //UpdateResStat(orderId, (OrderType)type, ResStatus.Busy);
+            }
+            DataContent resDC = appConfig.s_contentProvider.CreateDataContent(curRP.m_tbl);
+            resDC.Submit();     //fix commit error
+            orderDC.Submit();
+        }
+        private void UpdateResStatus(ResStatus status)
+        {
+            curRP.UpdateResStatus(status);
+        }
+
+        private void OrderDGV_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            //if change order status ->approve
+            //  change res status ->busy
+            // NOTE: can not change seleted row
+            //if (e.ColumnIndex == (int)OrderTblInfo.ColIdx.Stat)
+            //{
+            //    DataGridView orderDGV = (DataGridView)sender;
+            //    if (e.RowIndex != -1) {
+            //    DataGridViewRow row = orderDGV.Rows[e.RowIndex];
+            //    row.Selected = true;
+            //    UpdateResStat(row.Cells[(int)OrderTblInfo.ColIdx.Order].Value.ToString(),
+            //        row.Cells[e.ColumnIndex].Value.ToString());
+            //    }
+            //}
+        }
+
+        UpdateBuilder m_humanUB;
+        SearchBuilder m_humanOrderSB;
+        private void UpdateResStat(string orderId, OrderType type, ResStatus sts)
+        {
+            switch (type) {
+                case OrderType.Worker:
+                    if (m_humanUB == null) {m_humanUB = new UpdateBuilder(appConfig.s_config.GetTable(TableIdx.Human.ToDesc()));}
+                    if (m_humanOrderSB == null) { m_humanOrderSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.HumanOR.ToDesc())); }
+                    m_humanOrderSB.Clear();
+                    m_humanOrderSB.Add(OrderHumanTblInfo.ColIdx.Order.ToDesc(), orderId);
+                    m_humanOrderSB.Search();
+                    foreach(DataRow row in m_humanOrderSB.dc.m_dataTable.Rows)
+                    {
+                        string humanId = (string)row[OrderHumanTblInfo.ColIdx.Human.ToDesc()];
+                        m_humanUB.Add(HumanTblInfo.ColIdx.Human.ToDesc(), humanId);
+                        m_humanUB.Add(HumanTblInfo.ColIdx.Busy.ToDesc(), (int)sts);
+                        m_humanUB.Update();
+                    }
+                    break;
+            }
+           
         }
 
         private void TaskDGV_CellClick(object sender, DataGridViewCellEventArgs e)

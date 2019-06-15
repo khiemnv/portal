@@ -61,17 +61,17 @@ namespace test_binding
         public static lDataPanel crtDataPanel(lDataPanel dataPanel)
         {
             lDataPanel newDataPanel = new lDataPanel();
-            newDataPanel.init(dataPanel);
+            newDataPanel.Init(dataPanel);
             return newDataPanel;
         }
 
-        private void init(lDataPanel dataPanel)
+        private void Init(lDataPanel dataPanel)
         {
             m_countOn = dataPanel.m_countOn;
             //m_tblInfo = dataPanel.m_tblInfo;
         }
 
-        public virtual void initCtrls()
+        public virtual void InitCtrls()
         {
             m_reloadPanel = new FlowLayoutPanel();
             m_sumPanel = new FlowLayoutPanel();
@@ -699,41 +699,40 @@ namespace test_binding
     }
 
     [DataContract(Name = "lTaskDataPanel")]
-    public class lTaskDataPanel : lDataPanel
+    public class TaskDataPanel : lDataPanel
     {
-        public lTaskDataPanel()
+        public TaskDataPanel()
         {
-            m_tblName = "task";
+            m_tblName = TableIdx.Task.ToDesc();
         }
         public override Int64 getSum()
         {
             BindingSource bs = (BindingSource)m_dataGridView.DataSource;
             DataTable tbl = (DataTable)bs.DataSource;
             return tbl.Rows.Count;
+        }
+        public override void InitCtrls()
+        {
+            base.InitCtrls();
+            m_dataGridView.AllowUserToAddRows = false;
         }
     }
 
     [DataContract(Name = "lOrderDataPanel")]
-    public class lOrderDataPanel : lDataPanel
+    public class OrderDataPanel : TaskDataPanel
     {
-        public lOrderDataPanel()
+        public OrderDataPanel()
         {
-            m_tblName = "order_tbl";
-        }
-        public override Int64 getSum()
-        {
-            BindingSource bs = (BindingSource)m_dataGridView.DataSource;
-            DataTable tbl = (DataTable)bs.DataSource;
-            return tbl.Rows.Count;
+            m_tblName = TableIdx.Order.ToDesc();
         }
     }
 
     [DataContract(Name = "lHumanDataPanel")]
-    public class lHumanDataPanel : lDataPanel
+    public class HumanDataPanel : lDataPanel
     {
-        public lHumanDataPanel()
+        public HumanDataPanel()
         {
-            m_tblName = "human";
+            m_tblName = TableIdx.Human.ToDesc();
         }
         public override Int64 getSum()
         {
@@ -743,17 +742,11 @@ namespace test_binding
         }
     }
     [DataContract(Name = "lEquipmentDataPanel")]
-    public class lEquipmentDataPanel : lDataPanel
+    public class EquipmentDataPanel : HumanDataPanel
     {
-        public lEquipmentDataPanel()
+        public EquipmentDataPanel()
         {
-            m_tblName = "equipment";
-        }
-        public override Int64 getSum()
-        {
-            BindingSource bs = (BindingSource)m_dataGridView.DataSource;
-            DataTable tbl = (DataTable)bs.DataSource;
-            return tbl.Rows.Count;
+            m_tblName = TableIdx.Equip.ToDesc();
         }
     }
 }

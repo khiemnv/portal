@@ -454,7 +454,7 @@ namespace test_binding
             m_panel.Controls.Add(m_printBtn, 1, 0);
 
             //add data panel ctrls to table layout
-            m_dataPanel.initCtrls();
+            m_dataPanel.InitCtrls();
             //reload tbl panel
             TableLayoutPanel reloadTbl = new TableLayoutPanel();
             reloadTbl.AutoSize = true;
@@ -596,8 +596,8 @@ namespace test_binding
     {
         public lTaskPanel()
         {
-            m_dataPanel = new lTaskDataPanel();
-            m_searchPanel = new lTaskSearchPanel(m_dataPanel);
+            m_dataPanel = new TaskDataPanel();
+            m_searchPanel = new TaskSearchPanel(m_dataPanel);
             m_report = new lTaskReport();
             base.init();
         }
@@ -608,7 +608,7 @@ namespace test_binding
     {
         public lOrderPanel()
         {
-            m_dataPanel = new lOrderDataPanel();
+            m_dataPanel = new OrderDataPanel();
             m_searchPanel = new OrderSearchPanel(m_dataPanel);
             m_report = new lOrderReport();
             base.init();
@@ -620,7 +620,7 @@ namespace test_binding
     {
         public lHumanPanel()
         {
-            m_dataPanel = new lHumanDataPanel();
+            m_dataPanel = new HumanDataPanel();
             m_searchPanel = new HumanSearchPanel(m_dataPanel);
             m_report = new lHumanReport();
             base.init();
@@ -632,7 +632,7 @@ namespace test_binding
     {
         public lEquipmentPanel()
         {
-            m_dataPanel = new lEquipmentDataPanel();
+            m_dataPanel = new EquipmentDataPanel();
             m_searchPanel = new EquipmentSearchPanel(m_dataPanel);
             m_report = new lEquipmentReport();
             base.init();

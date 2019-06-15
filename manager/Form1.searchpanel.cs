@@ -242,7 +242,101 @@ namespace test_binding
             dc.Search(exprs, srchParams);
         }
     }
+    public class UpdateBuilder
+    {
+        TableInfo m_tblInfo;
+        Dictionary<string, TableInfo.ColInfo> m_dict;
+        public List<string> setExprs = new List<string>();
+        public List<string> whereExprs = new List<string>();
+        public List<SearchParam> srchParams = new List<SearchParam>();
+        public DataContent dc;
+        public UpdateBuilder(TableInfo tblInfo)
+        {
+            m_tblInfo = tblInfo;
+            m_dict = new Dictionary<string, TableInfo.ColInfo>();
+            foreach (TableInfo.ColInfo colInfo in m_tblInfo.m_cols)
+            {
+                m_dict.Add(colInfo.m_field, colInfo);
+            }
+            dc = appConfig.s_contentProvider.CreateDataContent(m_tblInfo.m_tblName);
+        }
+        public void Clear()
+        {
+            whereExprs.Clear();
+            srchParams.Clear();
+        }
 
+        public void Add(string col, DateTime date)
+        {
+            Debug.Assert(m_dict.ContainsKey(col));
+
+            TableInfo.ColInfo colInfo = m_dict[col];
+            Debug.Assert(colInfo.m_type == TableInfo.ColInfo.ColType.dateTime);
+
+            setExprs.Add(string.Format("({0}=@startDate)", colInfo.m_field));
+            string zStartDate = date.ToString(lConfigMng.GetDateFormat());
+            srchParams.Add(
+                    new SearchParam()
+                    {
+                        key = "@startDate",
+                        val = string.Format("{0} 00:00:00", zStartDate),
+                        type = DbType.Date
+                    }
+                );
+        }
+        public void Add(string col, int arg1)
+        {
+            Add(col, arg1.ToString());
+        }
+        public void Add(string col, string arg1, bool isWhere = false)
+        {
+            Debug.Assert(m_dict.ContainsKey(col));
+
+            TableInfo.ColInfo colInfo = m_dict[col];
+            switch (colInfo.m_type)
+            {
+                case TableInfo.ColInfo.ColType.text:
+                case TableInfo.ColInfo.ColType.num:
+                case TableInfo.ColInfo.ColType.uniq:
+                case TableInfo.ColInfo.ColType.map:
+                    break;
+                default:
+                    Debug.Assert(false);
+                    break;
+            }
+
+#if use_sqlite
+            {
+                List<string> tExpr = isWhere ?whereExprs: setExprs;
+                tExpr.Add(string.Format("({0}=@{0})", colInfo.m_field));
+                srchParams.Add(
+                    new SearchParam()
+                    {
+                        key = string.Format("@{0}", colInfo.m_field),
+                        val = arg1
+                    }
+                );
+            }
+#else   //use sql server
+                    exprs.Add(string.Format("({0} like @{0})", m_fieldName));
+                    srchParams.Add(
+                        new lSearchParam()
+                        {
+                            key = string.Format("@{0}", m_fieldName),
+                            val = string.Format("%{0}%", m_value),
+                            type = DbType.String
+                        }
+                    );
+                    //exprs.Add(string.Format("({0} like @{0})", m_fieldName));
+                    //srchParams.Add(string.Format("@{0}", m_fieldName), string.Format("%{0}%", m_value));
+#endif
+        }
+        public void Update()
+        {
+            dc.Update(setExprs, whereExprs, srchParams);
+        }
+
+    }
     [DataContract(Name = "SearchCtrlText")]
     public class SearchCtrlText : SearchCtrl
     {
@@ -976,18 +1070,18 @@ namespace test_binding
     }
 
     [DataContract(Name = "TaskSearchPanel")]
-    public class lTaskSearchPanel : SearchPanel
+    public class TaskSearchPanel : SearchPanel
     {
-        public lTaskSearchPanel(lDataPanel dataPanel)
+        public TaskSearchPanel(lDataPanel dataPanel)
         {
             m_dataPanel = dataPanel;
             m_searchCtrls = new List<SearchCtrl> {
-                    CrtSearchCtrl(m_tblInfo, "start_date"    , new Point(0, 0), new Size(1, 1)),
-                    CrtSearchCtrl(m_tblInfo, "end_date"      , new Point(0, 1), new Size(1, 1)),
-                    CrtSearchCtrl(m_tblInfo, "task_number"   , new Point(0, 2), new Size(1, 1), SearchCtrl.SearchMode.match),
-                    CrtSearchCtrl(m_tblInfo, "task_name"     , new Point(1, 0), new Size(1, 1), SearchCtrl.SearchMode.like),
-                    CrtSearchCtrl(m_tblInfo, "group_name"    , new Point(1, 1), new Size(1, 1), SearchCtrl.SearchMode.match),
-                    CrtSearchCtrl(m_tblInfo, "note"          , new Point(1, 2), new Size(1, 1), SearchCtrl.SearchMode.like),
+                    CrtSearchCtrl(m_tblInfo, TaskTblInfo.ColIdx.Begin.ToField(), new Point(0, 0), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, TaskTblInfo.ColIdx.End.ToField() , new Point(0, 1), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, TaskTblInfo.ColIdx.Task.ToField(), new Point(0, 2), new Size(1, 1), SearchCtrl.SearchMode.match),
+                    CrtSearchCtrl(m_tblInfo, TaskTblInfo.ColIdx.Name.ToField(), new Point(1, 0), new Size(1, 1), SearchCtrl.SearchMode.like),
+                    CrtSearchCtrl(m_tblInfo, TaskTblInfo.ColIdx.Group.ToField(), new Point(1, 1), new Size(1, 1), SearchCtrl.SearchMode.match),
+                    CrtSearchCtrl(m_tblInfo, TaskTblInfo.ColIdx.Stat.ToField(), new Point(1, 2), new Size(1, 1), SearchCtrl.SearchMode.match),
                 };
         }
     }

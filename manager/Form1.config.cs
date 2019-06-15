@@ -76,7 +76,7 @@ namespace test_binding
                     typeof(lExternalPaymentDataPanel),
                     typeof(lSalaryDataPanel),
                     typeof(lAdvanceDataPanel),
-                    typeof(lTaskDataPanel),
+                    typeof(TaskDataPanel),
 
                     typeof(lReceiptsReport),
                     typeof(lCurReceiptsReport),
@@ -96,7 +96,7 @@ namespace test_binding
                     typeof(lInterPaymentSearchPanel),
                     typeof(lExternalPaymentSearchPanel),
                     typeof(lSalarySearchPanel),
-                    typeof(lTaskSearchPanel),
+                    typeof(TaskSearchPanel),
 
                     typeof(lReceiptsPanel),
                     typeof(lInterPaymentPanel),
@@ -223,6 +223,7 @@ namespace test_binding
 #endif
         lConfigMng()
         {
+
         }
 
         public void UpdateConfig()
@@ -256,14 +257,19 @@ namespace test_binding
             if (m_tblInfoDict == null)
             {
                 m_tblInfoDict = new Dictionary<string, TableInfo>();
+                for (int i = 0; i < (int)TableIdx.Count; i++)
+                {
+                    var k = (TableIdx)i;
+                    m_tblInfoDict.Add(k.ToDesc(), null);
+                }
                 foreach (TableInfo tbl in m_dbSchema.m_tables)
                 {
-                    m_tblInfoDict.Add(tbl.m_tblName, tbl);
+                    m_tblInfoDict[tbl.m_tblName]=tbl;
                 }
-                foreach (TableInfo tbl in m_dbSchema.m_views)
-                {
-                    m_tblInfoDict.Add(tbl.m_tblName, tbl);
-                }
+                //foreach (TableInfo tbl in m_dbSchema.m_views)
+                //{
+                //    m_tblInfoDict.Add(tbl.m_tblName, tbl);
+                //}
             }
             return m_tblInfoDict[tblName];
         }

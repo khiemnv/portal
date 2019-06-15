@@ -334,6 +334,7 @@ namespace test_binding
         {
             Debug.WriteLine("OnCellLeave");
             base.OnCellLeave(e);
+            //HideCustomCtrl();
         }
         protected override void OnCellDoubleClick(DataGridViewCellEventArgs e)
         {
