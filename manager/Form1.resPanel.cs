@@ -107,7 +107,7 @@ namespace test_binding
             resDGV.DataSource = m_srchBld.dc.m_bindingSource;
             resLbl.Text = m_tblInfo.m_tblAlias;
         }
-        public virtual void UpdateResStatus(ResStatus sts)
+        public virtual void SetResStatus(ResStatus sts)
         {
             throw new NotImplementedException();
         }
@@ -286,7 +286,7 @@ namespace test_binding
             resLbl.Text = string.Format("{0} {1}-{2}", m_tblInfo.m_tblAlias,
                 startDate.ToString(datef), endDate.ToString(datef));
         }
-        public override void UpdateResStatus(ResStatus sts)
+        public override void SetResStatus(ResStatus sts)
         {
             DataContent resDC = appConfig.s_contentProvider.CreateDataContent(m_tbl);
             for (int i = 0; i < m_orderResPanel.m_usedResDict.Count; i++)
@@ -294,6 +294,7 @@ namespace test_binding
                 int rowIdx = m_orderResPanel.m_usedResDict.Values.ElementAt(i);
                 resDC.m_dataTable.Rows[rowIdx][HumanTblInfo.ColIdx.Busy.ToField()] = (int)sts;
             }
+            resDC.Submit();
         }
         protected override void MarkUsedRes()
         {
@@ -391,7 +392,8 @@ namespace test_binding
             saveResBtn.Click += SaveResBtn_Click;
             FlowLayoutPanel tflow = new FlowLayoutPanel();
             tflow.FlowDirection = FlowDirection.LeftToRight;
-            tflow.Controls.AddRange(new Control[] { downBtn, upBtn, saveResBtn });
+            //tflow.Controls.AddRange(new Control[] { downBtn, upBtn, saveResBtn });
+            tflow.Controls.AddRange(new Control[] { downBtn, upBtn });
             tflow.AutoSize = true;
             tflow.Anchor = AnchorStyles.Right;
             botRightTLP.Controls.Add(tflow, 0, ++iRow);
@@ -522,6 +524,10 @@ namespace test_binding
             orderResDC.Submit();
         }
         private void SaveResBtn_Click(object sender, EventArgs e)
+        {
+            Save();
+        }
+        public void Save()
         {
             DataContent orderResDC = appConfig.s_contentProvider.CreateDataContent(m_curOrderResTbl);
             DataContent resDC = appConfig.s_contentProvider.CreateDataContent(m_curResTbl);

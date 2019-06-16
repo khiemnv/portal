@@ -1765,19 +1765,19 @@ namespace test_binding
                     m_orderSB.Search();
 
                     //clear lbl, resLst, orderResLst
-                    ClearRightPanel();
+                    OnTaskChg();
 
                     UpdateTaskInfo(taskNumber);
                 }
             }
         }
 
-        private void ClearRightPanel()
+        protected void OnTaskChg()
         {
-            //resLbl.Text = "Chọn tài nguyên cho Yêu Cầu";
-            //resDGV.DataSource = null;
-            //orderResDGV.DataSource = null;
-            
+            curORP = null;
+            curRP = null;
+
+            ClearRightPanelCtrl();
         }
 
         protected void UpdateOrderDGV(string taskNumber)
@@ -1855,6 +1855,12 @@ namespace test_binding
             orp.m_resPanel = rp;
         }
 
+        protected override void Save()
+        {
+            base.Save();
+            curORP.Save();
+        }
+
         protected OrderResPanel curORP;
         protected ResPanel curRP;
 
@@ -1878,7 +1884,7 @@ namespace test_binding
                     }
                     m_dataContent.Submit();
 
-                    CleanRightPanel();
+                    ClearRightPanelCtrl();
                 }
                 else
                 {
@@ -1891,7 +1897,7 @@ namespace test_binding
             }
         }
 
-        private void CleanRightPanel()
+        private void ClearRightPanelCtrl()
         {
             //clearn resDGV, orderResDGV
             rightSC.Panel1.Controls.Clear();
@@ -1969,7 +1975,10 @@ namespace test_binding
                     UpdateResDGV(orderStatus);
                     break;
                 case OrderType.Expense:
-                    CleanRightPanel();
+                    curORP = null;
+                    curRP = null;
+
+                    ClearRightPanelCtrl();
                     break;
             }
         }
@@ -2067,24 +2076,31 @@ namespace test_binding
         }
         private void ApproveBtn_Click(object sender, EventArgs e)
         {
-            Debug.Assert(orderDGV.SelectedRows.Count == 1, "can approve only one order in time");
-            DataContent orderDC = appConfig.s_contentProvider.CreateDataContent(TableIdx.Order.ToDesc());
+            List<int> idxLst = new List<int>();
             for (int i = 0; i < orderDGV.SelectedRows.Count;i++)
             {
                 DataGridViewRow row = orderDGV.SelectedRows[i];
-                orderDC.m_dataTable.Rows[row.Index][OrderTblInfo.ColIdx.Stat.ToField()] = (int)OrderStatus.Approve;
-                UpdateResStatus(ResStatus.Busy);
-                //string orderId = (string)row.Cells[(int)OrderTblInfo.ColIdx.Order].Value;
-                //int type = (int)row.Cells[(int)OrderTblInfo.ColIdx.Type].Value;
-                //UpdateResStat(orderId, (OrderType)type, ResStatus.Busy);
+                idxLst.Add(row.Index);
             }
-            DataContent resDC = appConfig.s_contentProvider.CreateDataContent(curRP.m_tbl);
-            resDC.Submit();     //fix commit error
+            ApproveOrder(idxLst);
+        }
+        private void ApproveOrder(List<int> idxLst)
+        {
+            DataContent orderDC = appConfig.s_contentProvider.CreateDataContent(TableIdx.Order.ToDesc());
+            foreach(int idx in idxLst)
+            {
+                orderDC.m_dataTable.Rows[idx][OrderTblInfo.ColIdx.Stat.ToField()] = (int)OrderStatus.Approve;
+            }
+
+            //set busy & commit res table
+            SetResStatus(ResStatus.Busy);
+
+            //commit order table
             orderDC.Submit();
         }
-        private void UpdateResStatus(ResStatus status)
+        private void SetResStatus(ResStatus status)
         {
-            curRP.UpdateResStatus(status);
+            curRP.SetResStatus(status);
         }
 
         private void OrderDGV_CellValueChanged(object sender, DataGridViewCellEventArgs e)
@@ -2135,6 +2151,8 @@ namespace test_binding
                 string taskId = (string)rows[0].Cells[TaskTblInfo.ColIdx.Task.ToField()].Value;
                 if (taskId == null) return;
                 //get task info
+
+                OnTaskChg();
 
                 UpdateOrderDGV(taskId);
             }
