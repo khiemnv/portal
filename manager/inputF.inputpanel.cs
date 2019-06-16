@@ -1925,12 +1925,14 @@ namespace test_binding
         private string m_curTask;
         private OrderType m_curOrderType;
         private OrderStatus m_curOrderStatus;
+        DataGridViewRow curOrder;
         protected override void onDGV_CellClick()
         {
             base.onDGV_CellClick();
             DataGridViewSelectedRowCollection rows = m_dataGridView.SelectedRows;
             if (rows.Count > 0)
             {
+                curOrder = CloneWithValues(rows[0]);
                 var cells = rows[0].Cells;
                 //save cur order
                 string orderId = cells[OrderTblInfo.ColIdx.Order.ToField()].Value.ToString();
@@ -1941,6 +1943,15 @@ namespace test_binding
                 OrderStatus orderStatus = (OrderStatus)int.Parse(cells[OrderTblInfo.ColIdx.Stat.ToField()].Value.ToString());
                 UpdateRightPanel(taskId,orderId, orderType, orderStatus);
             }
+        }
+        protected DataGridViewRow CloneWithValues(DataGridViewRow row)
+        {
+            DataGridViewRow clonedRow = (DataGridViewRow)row.Clone();
+            for (Int32 index = 0; index < row.Cells.Count; index++)
+            {
+                clonedRow.Cells[index].Value = row.Cells[index].Value;
+            }
+            return clonedRow;
         }
         protected void UpdateRightPanel(string taskId, string orderId, OrderType orderType, OrderStatus orderStatus)
         {
@@ -2090,17 +2101,28 @@ namespace test_binding
             foreach(int idx in idxLst)
             {
                 orderDC.m_dataTable.Rows[idx][OrderTblInfo.ColIdx.Stat.ToField()] = (int)OrderStatus.Approve;
+                
+                //set busy & commit res table
+                int iType = int.Parse(orderDC.m_dataTable.Rows[idx][OrderTblInfo.ColIdx.Type.ToField()].ToString());
+                OrderType eType = (OrderType)iType;
+                SetResStatus(eType, ResStatus.Busy);
             }
-
-            //set busy & commit res table
-            SetResStatus(ResStatus.Busy);
 
             //commit order table
             orderDC.Submit();
         }
-        private void SetResStatus(ResStatus status)
+        private void SetResStatus(OrderType eType, ResStatus eStatus)
         {
-            curRP.SetResStatus(status);
+            switch (eType)
+            {
+                case OrderType.Car:
+                case OrderType.Equip:
+                case OrderType.Worker:
+                    curRP.SetResStatus(eStatus);
+                    break;
+                case OrderType.Expense:
+                    break;
+            }
         }
 
         private void OrderDGV_CellValueChanged(object sender, DataGridViewCellEventArgs e)
