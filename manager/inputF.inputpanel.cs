@@ -1710,6 +1710,13 @@ namespace test_binding
             OrderNone,
         }
 
+        //current order info
+        protected string m_curOrder;
+        protected string m_curTask;
+        protected OrderType m_curOrderType;
+        protected OrderStatus m_curOrderStatus;
+        protected DataGridViewRow curOrder;
+
         public OrderInputPanel()
         {
             m_tblName = TableIdx.Order.ToDesc();
@@ -1735,9 +1742,7 @@ namespace test_binding
         {
             base.LoadData();    //init combo box & data
 
-            m_humanRP.LoadData();
-            m_equipRP.LoadData();
-            m_carRP.LoadData();
+            LoadRP();
 
             taskCmb = m_inputsCtrls[0];
             taskCmb.ReadOnly = true;
@@ -1749,7 +1754,12 @@ namespace test_binding
 
             string taskNumber = taskCmb.Text;
             UpdateOrderDGV(taskCmb.Text);
-
+        }
+        protected void LoadRP()
+        {
+            m_humanRP.LoadData();
+            m_equipRP.LoadData();
+            m_carRP.LoadData();
         }
         
         SearchBuilder m_orderSB;
@@ -1921,14 +1931,14 @@ namespace test_binding
             }
         }
 
-        private string m_curOrder;
-        private string m_curTask;
-        private OrderType m_curOrderType;
-        private OrderStatus m_curOrderStatus;
-        DataGridViewRow curOrder;
         protected override void onDGV_CellClick()
         {
             base.onDGV_CellClick();
+            OnOrderChanged();
+            
+        }
+        protected void OnOrderChanged()
+        {
             DataGridViewSelectedRowCollection rows = m_dataGridView.SelectedRows;
             if (rows.Count > 0)
             {
@@ -1959,6 +1969,7 @@ namespace test_binding
             m_curTask = taskId;
             m_curOrderType = orderType;
             m_curOrderStatus = orderStatus;
+            bool bUpdateRightPanel = true;
             switch (orderType)
             {
                 case OrderType.Worker: //human
@@ -1966,31 +1977,35 @@ namespace test_binding
                     curRP = m_humanRP;
 
                     //update order-human
-                    UpdateOrderResDGV();
-                    UpdateResDGV(orderStatus);
                     break;
                 case OrderType.Equip: //equipment
                     curORP = m_EquipORP;
                     curRP = m_equipRP;
 
                     //update order-equipment
-                    UpdateOrderResDGV();
-                    UpdateResDGV(orderStatus);
                     break;
                 case OrderType.Car: //car
                     curORP = m_carORP;
                     curRP = m_carRP;
 
                     //update order-car
-                    UpdateOrderResDGV();
-                    UpdateResDGV(orderStatus);
                     break;
                 case OrderType.Expense:
                     curORP = null;
                     curRP = null;
-
-                    ClearRightPanelCtrl();
+                    bUpdateRightPanel = false;
                     break;
+            }
+            if (bUpdateRightPanel)
+            {
+                curRP.m_curOrderStatus = orderStatus;
+                curORP.m_curOrderStatus = orderStatus;
+                UpdateOrderResDGV();
+                UpdateResDGV(orderStatus);
+            }
+            else
+            {
+                    ClearRightPanelCtrl();
             }
         }
 
@@ -2020,7 +2035,7 @@ namespace test_binding
     [DataContract(Name = "ApproveInputPanel")]
     public class ApproveInputPanel: OrderInputPanel
     {
-        TableInfo taskTI;
+        TableInfo taskTbl;
         DataGridView taskDGV;
         DataGridView orderDGV;
         public SplitContainer leftSC;
@@ -2028,7 +2043,7 @@ namespace test_binding
         public ApproveInputPanel()
         {
             m_tblName = TableIdx.Order.ToDesc();
-            taskTI = appConfig.s_config.GetTable(TableIdx.Task);
+            taskTbl = appConfig.s_config.GetTable(TableIdx.Task);
 
             //create public ctrl
             leftSC = new SplitContainer();
@@ -2053,7 +2068,7 @@ namespace test_binding
             orderDGV.AllowUserToAddRows = false;
             orderDGV.AllowUserToDeleteRows = false;
             orderDGV.CellValueChanged += OrderDGV_CellValueChanged;
-            taskDGV = lConfigMng.crtDGV(taskTI);
+            taskDGV = lConfigMng.crtDGV(taskTbl);
             taskDGV.Dock = DockStyle.Fill;
             taskDGV.AllowUserToAddRows = false;
             taskDGV.AllowUserToDeleteRows = false;
@@ -2109,7 +2124,8 @@ namespace test_binding
             }
 
             //commit order table
-            orderDC.Submit();
+            //orderDC.Submit();
+            Save();
         }
         private void SetResStatus(OrderType eType, ResStatus eStatus)
         {
@@ -2183,9 +2199,11 @@ namespace test_binding
         public override void LoadData()
         {
             //base.LoadData();
+            LoadRP();
+
             //task
-            taskTI.LoadData();
-            DataContent taskDC = appConfig.s_contentProvider.CreateDataContent(taskTI.m_tblName);
+            taskTbl.LoadData();
+            DataContent taskDC = appConfig.s_contentProvider.CreateDataContent(taskTbl.m_tblName);
             taskDGV.DataSource = taskDC.m_bindingSource;
             //order
             m_tblInfo.LoadData();

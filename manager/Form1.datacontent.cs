@@ -710,9 +710,9 @@ namespace test_binding
                 + "note text)";
             m_cols = new ColInfo[(int)ColIdx.Count];
             m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
-            m_cols[(int)ColIdx.Order] = new ColInfo(ColIdx.Order.ToField(), ColIdx.Order.ToAlias(), ColInfo.ColType.uniq);
-            m_cols[(int)ColIdx.Human] = new ColInfo(ColIdx.Human.ToField(), ColIdx.Human.ToAlias(), ColInfo.ColType.uniq);
-            m_cols[(int)ColIdx.Task] = new ColInfo(ColIdx.Task.ToField(), ColIdx.Task.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.Order] = new ColInfo(ColIdx.Order.ToField(), ColIdx.Order.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.Human] = new ColInfo(ColIdx.Human.ToField(), ColIdx.Human.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.Task] = new ColInfo(ColIdx.Task.ToField(), ColIdx.Task.ToAlias(), ColInfo.ColType.text);
             m_cols[(int)ColIdx.Note] = new ColInfo(ColIdx.Note.ToField(), ColIdx.Note.ToAlias(), ColInfo.ColType.text);
         }
     };

@@ -18,6 +18,9 @@ namespace test_binding
         protected Button srchBtn;
         protected TableInfo m_tblInfo;
         protected SearchBuilder m_srchBld;
+        protected DataContent m_resDC;
+
+        public OrderStatus m_curOrderStatus;
 
         public string m_tbl { get { return m_tblInfo.m_tblName; } }
         public TableLayoutPanel toprightTLP;
@@ -28,6 +31,7 @@ namespace test_binding
         {
             m_tblInfo = appConfig.s_config.GetTable(tblName);
             m_srchBld = new SearchBuilder(m_tblInfo);
+            m_resDC = m_srchBld.dc;
         }
         public virtual void LoadData()
         {
@@ -79,6 +83,7 @@ namespace test_binding
             toprightTLP.Controls.Add(resDGV, 0, ++iRow);
         }
 
+        public int m_addedSrchCnd;
         private void SrchBtn_Click(object sender, EventArgs e)
         {
             SearchRes();
@@ -91,6 +96,7 @@ namespace test_binding
             {
                 m_srchCtrls[i].UpdateSearchParams(m_srchBld.exprs, m_srchBld.srchParams);
             }
+            m_addedSrchCnd = m_srchBld.exprs.Count - n;
             m_srchBld.Search();
 
             for (int i = m_srchBld.exprs.Count - 1; i >= n; i--)
@@ -111,9 +117,13 @@ namespace test_binding
         {
             throw new NotImplementedException();
         }
+        public virtual void SetResStatus(int iRow, ResStatus sts)
+        {
+            throw new NotImplementedException();
+        }
 
-        public void UnmarkResRow(int i) { resDGV.Rows[i].DefaultCellStyle.BackColor = Color.White; }
-        public void MarkResRow(int i) { resDGV.Rows[i].DefaultCellStyle.BackColor = Color.Gray; }
+        public virtual void UnmarkResRow(int i) { resDGV.Rows[i].DefaultCellStyle.BackColor = Color.White; }
+        public virtual void MarkResRow(int i) { resDGV.Rows[i].DefaultCellStyle.BackColor = Color.Gray; }
 
         private void ResDGV_CellParsing(object sender, DataGridViewCellParsingEventArgs e)
         {
@@ -254,10 +264,12 @@ namespace test_binding
     {
         public HumanResPanel():base(TableIdx.Human.ToDesc())
         {
+#if enable_search
             m_srchCtrls = new List<SearchCtrl> {
                 CrtSearchCtrl(m_tblInfo, "name"   , new Point(0, 0), new Size(1, 1),SearchCtrl.SearchMode.like),
                 CrtSearchCtrl(m_tblInfo, "gender" , new Point(0, 1), new Size(1, 1),SearchCtrl.SearchMode.match),
             };
+#endif
         }
         public override void InitCtrl()
         {
@@ -292,9 +304,23 @@ namespace test_binding
             for (int i = 0; i < m_orderResPanel.m_usedResDict.Count; i++)
             {
                 int rowIdx = m_orderResPanel.m_usedResDict.Values.ElementAt(i);
-                resDC.m_dataTable.Rows[rowIdx][HumanTblInfo.ColIdx.Busy.ToField()] = (int)sts;
+                if (rowIdx == -1)
+                {
+                    //mode: enable search
+                    throw new NotImplementedException();
+                }
+                else
+                {
+                    resDC.m_dataTable.Rows[rowIdx][HumanTblInfo.ColIdx.Busy.ToField()] = (int)sts;
+                }
             }
-            resDC.Submit();
+            //resDC.Submit();
+        }
+        public override void SetResStatus(int rowIdx, ResStatus sts)
+        {
+            DataContent resDC = appConfig.s_contentProvider.CreateDataContent(m_tbl);
+            resDC.m_dataTable.Rows[rowIdx][HumanTblInfo.ColIdx.Busy.ToField()] = (int)sts;
+            //resDC.Submit();
         }
         protected override void MarkUsedRes()
         {
@@ -308,12 +334,28 @@ namespace test_binding
                 }
                 else
                 {
-                    var status = resDGV.Rows[i].Cells[HumanTblInfo.ColIdx.Busy.ToField()].Value.ToString();
-                    if ((ResStatus)int.Parse(status) == ResStatus.Busy)
-                    {
-                        //resDGV.Rows[i].Visible = false;
-                    }
+                    //var status = resDGV.Rows[i].Cells[HumanTblInfo.ColIdx.Busy.ToField()].Value.ToString();
+                    //if ((ResStatus)int.Parse(status) == ResStatus.Busy)
+                    //{
+                    //    //resDGV.Rows[i].Visible = false;
+                    //}
                 }
+            }
+        }
+        public override void MarkResRow(int i)
+        {
+            base.MarkResRow(i);
+            if (m_curOrderStatus == OrderStatus.Approve)
+            {
+                m_resDC.m_dataTable.Rows[i][(int)HumanTblInfo.ColIdx.Busy] = (int)ResStatus.Busy;
+            }
+        }
+        public override void UnmarkResRow(int i)
+        {
+            base.UnmarkResRow(i);
+            if (m_curOrderStatus == OrderStatus.Approve)
+            {
+                m_resDC.m_dataTable.Rows[i][(int)HumanTblInfo.ColIdx.Busy] = (int)ResStatus.Free;
             }
         }
     }
@@ -322,9 +364,11 @@ namespace test_binding
     {
         public EquipmentResPanel():base(TableIdx.Equip.ToDesc())
         {
+#if enable_search
             m_srchCtrls = new List<SearchCtrl> {
                 CrtSearchCtrl(m_tblInfo, EquipmentTblInfo.ColIdx.Note.ToField() , new Point(0, 0), new Size(1, 1),SearchCtrl.SearchMode.like),
             };
+#endif
         }
         public override void InitCtrl()
         {
@@ -338,10 +382,12 @@ namespace test_binding
     {
         public CarResPanel():base("car")
         {
+#if enable_search
             m_srchCtrls = new List<SearchCtrl> {
                 CrtSearchCtrl(m_tblInfo, CarTblInfo.ColIdx.Type.ToField(), new Point(0, 0), new Size(1, 1),SearchCtrl.SearchMode.like),
                 CrtSearchCtrl(m_tblInfo, CarTblInfo.ColIdx.Brand.ToField(), new Point(0, 1), new Size(1, 1),SearchCtrl.SearchMode.like),
             };
+#endif
         }
         public override void InitCtrl()
         {
@@ -368,6 +414,7 @@ namespace test_binding
 
         public virtual int RowCount { get { return orderResDGV.RowCount; } }
         public string m_curOrder;
+        public OrderStatus m_curOrderStatus;
         public string m_curTask;
         public ResPanel m_resPanel;
         public OrderResPanel(string tblName)
@@ -479,12 +526,30 @@ namespace test_binding
 
                 //udpate dict & gui
                 int resRowIndex = m_usedResDict[resId];
-                m_resPanel.UnmarkResRow(resRowIndex);
-                m_usedResDict.Remove(resId);
+                if (resRowIndex == -1)
+                {
+                    //search res
+                    Debug.Assert(m_resPanel.m_addedSrchCnd > 0);
+                    if (m_curOrderStatus == OrderStatus.Approve)
+                    {
+                        //update res status by exec sql qry
+                        throw new NotImplementedException();
+                    }
+                }
+                else
+                {
+                    m_usedResDict.Remove(resId);
+                    m_resPanel.UnmarkResRow(resRowIndex);
+                    if (m_curOrderStatus == OrderStatus.Approve)
+                    {
+                        m_resPanel.SetResStatus(resRowIndex, ResStatus.Free);
+                    }
+                }
 
                 idxLst.Add(row.Index);
             }
             RemoveOrderResByIdx(idxLst);
+            Save();
         }
         private void DownBtn_Click(object sender, EventArgs e)
         {
@@ -507,21 +572,25 @@ namespace test_binding
                     //udpate dict & gui
                     m_usedResDict.Add(resId, resRowIdx);
                     m_resPanel.MarkResRow(row.Index);
+                    if (m_curOrderStatus == OrderStatus.Approve)
+                    {
+                        m_resPanel.SetResStatus(resRowIdx, ResStatus.Busy);
+                    }
                 }
             }
-            orderResDC.Submit();
+            //orderResDC.Submit();
+            Save();
         }
         private void RemoveOrderResByIdx(List<int> idxLst)
         {
             DataContent orderResDC = appConfig.s_contentProvider.CreateDataContent(m_curOrderResTbl);
             //remove in datatable
             idxLst.Sort();
-            for (int idx = idxLst.Count - 1; idx >= 0; idx--)
+            for (int i = idxLst.Count - 1; i >= 0; i--)
             {
-                orderResDC.m_bindingSource.RemoveAt(idx);
-                //orderResGV.Rows.RemoveAt(idx);
+                orderResDC.m_bindingSource.RemoveAt(idxLst[i]);
             }
-            orderResDC.Submit();
+            //orderResDC.Submit();
         }
         private void SaveResBtn_Click(object sender, EventArgs e)
         {
