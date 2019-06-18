@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define enable_search
+
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -18,7 +20,10 @@ namespace test_binding
         protected Button srchBtn;
         protected TableInfo m_tblInfo;
         protected SearchBuilder m_srchBld;
+        protected UpdateBuilder m_updtBld;
         protected DataContent m_resDC;
+        protected virtual string ResIdCol { get { throw new NotImplementedException(); } }
+        protected virtual string ResStatusCol { get { throw new NotImplementedException(); } }
 
         public OrderStatus m_curOrderStatus;
 
@@ -87,6 +92,7 @@ namespace test_binding
         private void SrchBtn_Click(object sender, EventArgs e)
         {
             SearchRes();
+            MarkUsedRes();
         }
         protected virtual void SearchRes()
         {
@@ -113,15 +119,38 @@ namespace test_binding
             resDGV.DataSource = m_srchBld.dc.m_bindingSource;
             resLbl.Text = m_tblInfo.m_tblAlias;
         }
+        //caller: approve()
         public virtual void SetResStatus(ResStatus sts)
         {
-            throw new NotImplementedException();
+            for (int i = 0; i < m_orderResPanel.m_usedResDict.Count; i++)
+            {
+                KeyValuePair<string, int> rec = m_orderResPanel.m_usedResDict.ElementAt(i);
+                int rowIdx = rec.Value;
+                string resId = rec.Key;
+                if (rowIdx == -1)
+                {
+                    m_updtBld.Clear();
+                    m_updtBld.Add(ResIdCol, resId, isWhere:true);
+                    m_updtBld.Add(ResStatusCol, (int)sts);
+                    m_updtBld.Update();
+                }
+                else
+                {
+                    m_resDC.m_dataTable.Rows[rowIdx][ResStatusCol] = (int)sts;
+                }
+            }
         }
         public virtual void SetResStatus(int iRow, ResStatus sts)
         {
-            throw new NotImplementedException();
+            m_resDC.m_dataTable.Rows[iRow][ResStatusCol] = (int)sts;
         }
-
+        public virtual void SetResStatus(string resId, ResStatus sts)
+        {
+            m_updtBld.Clear();
+            m_updtBld.Add(ResIdCol, resId, isWhere:true);
+            m_updtBld.Add(ResStatusCol, (int)sts);
+            m_updtBld.Update();
+        }
         public virtual void UnmarkResRow(int i) { resDGV.Rows[i].DefaultCellStyle.BackColor = Color.White; }
         public virtual void MarkResRow(int i) { resDGV.Rows[i].DefaultCellStyle.BackColor = Color.Gray; }
 
@@ -169,12 +198,17 @@ namespace test_binding
         }
         protected virtual void MarkUsedRes()
         {
+            for( int i = 0; i < m_orderResPanel.m_usedResDict.Count; i++)
+            {
+                string key = m_orderResPanel.m_usedResDict.Keys.ElementAt(i);
+                m_orderResPanel.m_usedResDict[key] = -1;
+            }
             for (int i = 0; i < resDGV.Rows.Count; i++)
             {
-                var key = resDGV.Rows[i].Cells[1].Value.ToString();
-                if (m_orderResPanel.m_usedResDict.ContainsKey(key))
+                var resId = resDGV.Rows[i].Cells[ResIdCol].Value.ToString();
+                if (m_orderResPanel.m_usedResDict.ContainsKey(resId))
                 {
-                    m_orderResPanel.m_usedResDict[key] = i;
+                    m_orderResPanel.m_usedResDict[resId] = i;
                     MarkResRow(i);
                 }
             }
@@ -269,6 +303,7 @@ namespace test_binding
                 CrtSearchCtrl(m_tblInfo, "name"   , new Point(0, 0), new Size(1, 1),SearchCtrl.SearchMode.like),
                 CrtSearchCtrl(m_tblInfo, "gender" , new Point(0, 1), new Size(1, 1),SearchCtrl.SearchMode.match),
             };
+            m_updtBld = new UpdateBuilder(m_tblInfo);
 #endif
         }
         public override void InitCtrl()
@@ -298,64 +333,22 @@ namespace test_binding
             resLbl.Text = string.Format("{0} {1}-{2}", m_tblInfo.m_tblAlias,
                 startDate.ToString(datef), endDate.ToString(datef));
         }
-        public override void SetResStatus(ResStatus sts)
+        protected override string ResStatusCol => HumanTblInfo.ColIdx.Busy.ToField();
+        protected override string ResIdCol => HumanTblInfo.ColIdx.Human.ToField();
+        public override void MarkResRow(int rowIdx)
         {
-            DataContent resDC = appConfig.s_contentProvider.CreateDataContent(m_tbl);
-            for (int i = 0; i < m_orderResPanel.m_usedResDict.Count; i++)
-            {
-                int rowIdx = m_orderResPanel.m_usedResDict.Values.ElementAt(i);
-                if (rowIdx == -1)
-                {
-                    //mode: enable search
-                    throw new NotImplementedException();
-                }
-                else
-                {
-                    resDC.m_dataTable.Rows[rowIdx][HumanTblInfo.ColIdx.Busy.ToField()] = (int)sts;
-                }
-            }
-            //resDC.Submit();
-        }
-        public override void SetResStatus(int rowIdx, ResStatus sts)
-        {
-            DataContent resDC = appConfig.s_contentProvider.CreateDataContent(m_tbl);
-            resDC.m_dataTable.Rows[rowIdx][HumanTblInfo.ColIdx.Busy.ToField()] = (int)sts;
-            //resDC.Submit();
-        }
-        protected override void MarkUsedRes()
-        {
-            for (int i = 0; i < resDGV.Rows.Count; i++)
-            {
-                var key = resDGV.Rows[i].Cells[1].Value.ToString();
-                if (m_orderResPanel.m_usedResDict.ContainsKey(key))
-                {
-                    m_orderResPanel.m_usedResDict[key] = i;
-                    MarkResRow(i);
-                }
-                else
-                {
-                    //var status = resDGV.Rows[i].Cells[HumanTblInfo.ColIdx.Busy.ToField()].Value.ToString();
-                    //if ((ResStatus)int.Parse(status) == ResStatus.Busy)
-                    //{
-                    //    //resDGV.Rows[i].Visible = false;
-                    //}
-                }
-            }
-        }
-        public override void MarkResRow(int i)
-        {
-            base.MarkResRow(i);
+            base.MarkResRow(rowIdx);
             if (m_curOrderStatus == OrderStatus.Approve)
             {
-                m_resDC.m_dataTable.Rows[i][(int)HumanTblInfo.ColIdx.Busy] = (int)ResStatus.Busy;
+                SetResStatus(rowIdx, ResStatus.Busy);
             }
         }
-        public override void UnmarkResRow(int i)
+        public override void UnmarkResRow(int rowIdx)
         {
-            base.UnmarkResRow(i);
+            base.UnmarkResRow(rowIdx);
             if (m_curOrderStatus == OrderStatus.Approve)
             {
-                m_resDC.m_dataTable.Rows[i][(int)HumanTblInfo.ColIdx.Busy] = (int)ResStatus.Free;
+                SetResStatus(rowIdx, ResStatus.Free);
             }
         }
     }
@@ -522,10 +515,11 @@ namespace test_binding
             for (int i = 0; i < orderResDGV.SelectedRows.Count; i++)
             {
                 DataGridViewRow row = orderResDGV.SelectedRows[i];
-                var resId = row.Cells[2].Value.ToString();
+                var resId = GetResId(row);
 
                 //udpate dict & gui
                 int resRowIndex = m_usedResDict[resId];
+                m_usedResDict.Remove(resId);
                 if (resRowIndex == -1)
                 {
                     //search res
@@ -533,12 +527,11 @@ namespace test_binding
                     if (m_curOrderStatus == OrderStatus.Approve)
                     {
                         //update res status by exec sql qry
-                        throw new NotImplementedException();
+                        m_resPanel.SetResStatus(resId, ResStatus.Free);
                     }
                 }
                 else
                 {
-                    m_usedResDict.Remove(resId);
                     m_resPanel.UnmarkResRow(resRowIndex);
                     if (m_curOrderStatus == OrderStatus.Approve)
                     {
@@ -551,6 +544,7 @@ namespace test_binding
             RemoveOrderResByIdx(idxLst);
             Save();
         }
+        protected virtual string GetResId(DataGridViewRow row) { return row.Cells[2].Value.ToString(); }
         private void DownBtn_Click(object sender, EventArgs e)
         {
             DataContent orderResDC = appConfig.s_contentProvider.CreateDataContent(m_curOrderResTbl);

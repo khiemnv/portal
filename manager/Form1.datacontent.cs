@@ -1714,7 +1714,7 @@ namespace test_binding
 #endif
 #if use_cmd_params
         public virtual void Search(List<string> exprs, List<SearchParam> srchParams) { throw new NotImplementedException(); }
-        public virtual void Update(List<string> setExprs, List<string> whereExprs, List<SearchParam> srchParams) { throw new NotImplementedException(); }
+        public virtual int Update(List<string> setExprs, List<string> whereExprs, List<SearchParam> srchParams) { throw new NotImplementedException(); }
         public virtual void AddRec(List<string> exprs, List<SearchParam> srchParams) { throw new NotImplementedException(); }
 #endif
         bool m_changed = true;
@@ -1833,7 +1833,7 @@ namespace test_binding
             GetData(selectCommand);
         }
 
-        public override void Update(List<string> setExprs, List<string> whereExprs, List<SearchParam> srchParams)
+        public override int Update(List<string> setExprs, List<string> whereExprs, List<SearchParam> srchParams)
         {
             SQLiteCommand updateCommand;
             string sql = string.Format("Update {0} ", m_table);
@@ -1847,6 +1847,7 @@ namespace test_binding
                 updateCommand.Parameters.AddWithValue(param.key, param.val);
             }
             int ret = updateCommand.ExecuteNonQuery();
+            return ret;
         }
 #endif
         public override void AddRec(List<string> exprs, List<SearchParam> srchParams)

@@ -263,6 +263,7 @@ namespace test_binding
         public void Clear()
         {
             whereExprs.Clear();
+            setExprs.Clear();
             srchParams.Clear();
         }
 
@@ -273,7 +274,7 @@ namespace test_binding
             TableInfo.ColInfo colInfo = m_dict[col];
             Debug.Assert(colInfo.m_type == TableInfo.ColInfo.ColType.dateTime);
 
-            setExprs.Add(string.Format("({0}=@startDate)", colInfo.m_field));
+            setExprs.Add(string.Format("{0}=@startDate", colInfo.m_field));
             string zStartDate = date.ToString(lConfigMng.GetDateFormat());
             srchParams.Add(
                     new SearchParam()
@@ -308,7 +309,7 @@ namespace test_binding
 #if use_sqlite
             {
                 List<string> tExpr = isWhere ?whereExprs: setExprs;
-                tExpr.Add(string.Format("({0}=@{0})", colInfo.m_field));
+                tExpr.Add(string.Format("{0}=@{0}", colInfo.m_field));
                 srchParams.Add(
                     new SearchParam()
                     {
@@ -331,9 +332,9 @@ namespace test_binding
                     //srchParams.Add(string.Format("@{0}", m_fieldName), string.Format("%{0}%", m_value));
 #endif
         }
-        public void Update()
+        public int Update()
         {
-            dc.Update(setExprs, whereExprs, srchParams);
+            return dc.Update(setExprs, whereExprs, srchParams);
         }
 
     }
