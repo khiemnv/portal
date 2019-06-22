@@ -530,9 +530,9 @@ namespace test_binding
 
                     if (lConfigMng.GetDisplayDateFormat() == "dd/MM/yyyy")
                     {
-                        bool bChg = false;
                         string val = e.Value.ToString();
 #if !use_custom_cols
+                        bool bChg = false;
                         if (m_customCtrl != null)
                         {
                             bChg = HideCustomCtrl(out val);
@@ -550,8 +550,7 @@ namespace test_binding
                     {
                         Debug.WriteLine("OnCellParsing parsing enum");
                         string val = e.Value.ToString();
-                        int n;
-                        if (col.ParseEnum(val, out n))
+                        if (col.ParseEnum(val, out int n))
                         {
                             e.ParsingApplied = true;
                             e.Value = n;
@@ -569,7 +568,7 @@ namespace test_binding
 #if !manual_crt_dgv_columns
             if (AutoGenerateColumns == true)
             {
-                updateCols();
+                UpdateCols();
                 AutoGenerateColumns = false;
             }
 #endif
@@ -579,7 +578,7 @@ namespace test_binding
                 Columns[0].Visible = false;
             }
         }
-        private void updateCols()
+        private void UpdateCols()
         {
             Columns[0].Visible = false;
             TableInfo tblInfo = m_tblInfo;

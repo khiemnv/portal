@@ -174,7 +174,7 @@ namespace test_binding
 #endif
         }
 
-        private void crtColumns()
+        private void CrtColumns()
         {
             int i = 0;
             foreach (var field in m_tblInfo.m_cols)
@@ -183,15 +183,16 @@ namespace test_binding
                 i = m_dataGridView.Columns.Add(field.m_field, field.m_alias);
                 var dgvcol = m_dataGridView.Columns[i];
 #else
-                    DataGridViewColumn dgvcol;
-                    if (field.m_type == TableInfo.ColInfo.ColType.dateTime)
-                    {
-                        dgvcol = new CalendarColumn();
-                        dgvcol.SortMode = DataGridViewColumnSortMode.Automatic;
-                    }
+                DataGridViewColumn dgvcol;
+                if (field.m_type == TableInfo.ColInfo.ColType.dateTime)
+                {
+                    dgvcol = new CalendarColumn();
+                    dgvcol.SortMode = DataGridViewColumnSortMode.Automatic;
+                }
                 else if (field.m_type == TableInfo.ColInfo.ColType.map)
                 {
-                    DataGridViewComboBoxColumn column = new DataGridViewComboBoxColumn();
+                    //DataGridViewComboBoxColumn column = new DataGridViewComboBoxColumn();
+                    var column = new EnumColumn();
                     Dictionary<string, int> dict = field.GetDict();
                     var dt = new DataTable();
                     dt.Columns.Add("name");
@@ -210,26 +211,26 @@ namespace test_binding
                     dgvcol = column;
                 }
                 else if (field.m_lookupTbl != null)
-                    {
-                        var cmb = new DataGridViewComboBoxColumn();
-                        DataTable tbl = field.m_lookupData.m_dataSource;
-                        BindingSource bs = new BindingSource();
-                        bs.DataSource = tbl;
-                        cmb.DataSource = bs;
-                        cmb.DisplayMember = tbl.Columns[1].ColumnName;
-                        cmb.AutoComplete = true;
-                        cmb.DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing;
-                        cmb.FlatStyle = FlatStyle.Flat;
-                        dgvcol = cmb;
-                        dgvcol.SortMode = DataGridViewColumnSortMode.Automatic;
-                    }
-                    else
-                    { 
-                        dgvcol = new DataGridViewTextBoxColumn();
-                    }
-                    i = m_dataGridView.Columns.Add(dgvcol);
-                    dgvcol.HeaderText = field.m_alias;
-                    dgvcol.Name = field.m_field;
+                {
+                    var cmb = new DataGridViewComboBoxColumn();
+                    DataTable tbl = field.m_lookupData.m_dataSource;
+                    BindingSource bs = new BindingSource();
+                    bs.DataSource = tbl;
+                    cmb.DataSource = bs;
+                    cmb.DisplayMember = tbl.Columns[1].ColumnName;
+                    cmb.AutoComplete = true;
+                    cmb.DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing;
+                    cmb.FlatStyle = FlatStyle.Flat;
+                    dgvcol = cmb;
+                    dgvcol.SortMode = DataGridViewColumnSortMode.Automatic;
+                }
+                else
+                {
+                    dgvcol = new DataGridViewTextBoxColumn();
+                }
+                i = m_dataGridView.Columns.Add(dgvcol);
+                dgvcol.HeaderText = field.m_alias;
+                dgvcol.Name = field.m_field;
 #endif //use_custom_cols
                 dgvcol.DataPropertyName = field.m_field;
                 switch (field.m_type)
@@ -487,7 +488,7 @@ namespace test_binding
 
 #if manual_crt_dgv_columns
                 m_dataGridView.AutoGenerateColumns = false;
-                crtColumns();
+                CrtColumns();
 #endif
             m_dataContent = appConfig.s_contentProvider.CreateDataContent(m_tblInfo.m_tblName);
 #if !use_bg_work
