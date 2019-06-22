@@ -1,4 +1,4 @@
-﻿//#define use_custom_cols
+﻿#define use_custom_cols
 #define format_currency
 #define use_sqlite
 //#define check_number_input
@@ -532,12 +532,13 @@ namespace test_binding
                     {
                         bool bChg = false;
                         string val = e.Value.ToString();
+#if !use_custom_cols
                         if (m_customCtrl != null)
                         {
                             bChg = HideCustomCtrl(out val);
                         }
-                        DateTime dt;
-                        if (lConfigMng.ParseDisplayDate(val, out dt))
+#endif
+                        if (lConfigMng.ParseDisplayDate(val, out DateTime dt))
                         {
                             e.ParsingApplied = true;
                             e.Value = dt;

@@ -122,7 +122,7 @@ namespace test_binding
             Label tmpLbl = new Label();
             //tmpLbl.BorderStyle = BorderStyle.FixedSingle;
             tmpLbl.Anchor = AnchorStyles.Right;
-            tmpLbl.Text = "© 2017 BAN TRI KHÁCH CHÙA BA VÀNG";
+            tmpLbl.Text = "© 2019 BAN TRI KHÁCH CHÙA BA VÀNG";
             tmpLbl.AutoSize = true;
             tmpLbl.BackColor = Color.Transparent;
 
@@ -450,8 +450,8 @@ namespace test_binding
             m_panel.Controls.Add(m_searchPanel.m_tblPanel, 0, 0);
 
             //add print btn to table layout
-            m_printBtn.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            m_panel.Controls.Add(m_printBtn, 1, 0);
+            //m_printBtn.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            //m_panel.Controls.Add(m_printBtn, 1, 0);
 
             //add data panel ctrls to table layout
             m_dataPanel.InitCtrls();

@@ -1,7 +1,7 @@
 ﻿//#define DEBUG_DRAWING
 #define use_custom_dgv
-//#define manual_crt_dgv_columns
-//#define use_custom_cols
+#define manual_crt_dgv_columns
+#define use_custom_cols
 #define init_datatable_cols
 #define format_currency
 #define use_cmd_params
@@ -17,6 +17,7 @@ using System.Data;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Linq;
 
 namespace test_binding
 {
@@ -183,12 +184,32 @@ namespace test_binding
                 var dgvcol = m_dataGridView.Columns[i];
 #else
                     DataGridViewColumn dgvcol;
-                    if (field.m_type == lTableInfo.lColInfo.lColType.dateTime)
+                    if (field.m_type == TableInfo.ColInfo.ColType.dateTime)
                     {
                         dgvcol = new CalendarColumn();
                         dgvcol.SortMode = DataGridViewColumnSortMode.Automatic;
                     }
-                    else if (field.m_lookupTbl != null)
+                else if (field.m_type == TableInfo.ColInfo.ColType.map)
+                {
+                    DataGridViewComboBoxColumn column = new DataGridViewComboBoxColumn();
+                    Dictionary<string, int> dict = field.GetDict();
+                    var dt = new DataTable();
+                    dt.Columns.Add("name");
+                    dt.Columns.Add("val");
+                    for (int idx = 0; idx < dict.Count; idx++)
+                    {
+                        var newRow = dt.NewRow();
+                        newRow[0] = dict.Keys.ElementAt(idx);
+                        newRow[1] = idx;
+                        dt.Rows.Add(newRow);
+                    }
+                    column.DataSource = dt;
+                    column.ValueMember = "val";
+                    column.DisplayMember = "name";
+                    column.FlatStyle = FlatStyle.Flat;
+                    dgvcol = column;
+                }
+                else if (field.m_lookupTbl != null)
                     {
                         var cmb = new DataGridViewComboBoxColumn();
                         DataTable tbl = field.m_lookupData.m_dataSource;

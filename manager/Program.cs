@@ -16,6 +16,7 @@ namespace test_binding
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            //Application.Run(new MngForm());
             Application.Run(new Form1());
         }
     }

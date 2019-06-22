@@ -65,9 +65,12 @@ namespace test_binding
             }
             else
             {
-                DateTime dt;
-                if (DateTime.TryParse(this.Value.ToString(), out dt)) { ctl.Value = dt; }
-                else { ctl.Value = (DateTime)this.DefaultNewRowValue; }
+                if (DateTime.TryParse(this.Value.ToString(), out DateTime dt)) { ctl.Value = dt; }
+                else
+                {
+                    //ctl.Value = (DateTime)this.DefaultNewRowValue;
+                    ctl.Value = DateTime.Now;
+                }
             }
         }
 
@@ -95,7 +98,8 @@ namespace test_binding
             get
             {
                 // Use the current date and time as the default value.
-                return DateTime.Now;
+                //return DateTime.Now;
+                return "";
             }
         }
     }
