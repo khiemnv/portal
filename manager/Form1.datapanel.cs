@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Linq;
+using System.Data.SQLite;
 
 namespace test_binding
 {
@@ -174,84 +175,6 @@ namespace test_binding
 #endif
         }
 
-        private void CrtColumns()
-        {
-            int i = 0;
-            foreach (var field in m_tblInfo.m_cols)
-            {
-#if !use_custom_cols
-                i = m_dataGridView.Columns.Add(field.m_field, field.m_alias);
-                var dgvcol = m_dataGridView.Columns[i];
-#else
-                DataGridViewColumn dgvcol;
-                if (field.m_type == TableInfo.ColInfo.ColType.dateTime)
-                {
-                    dgvcol = new CalendarColumn();
-                    dgvcol.SortMode = DataGridViewColumnSortMode.Automatic;
-                }
-                else if (field.m_type == TableInfo.ColInfo.ColType.map)
-                {
-                    //DataGridViewComboBoxColumn column = new DataGridViewComboBoxColumn();
-                    var column = new EnumColumn();
-                    Dictionary<string, int> dict = field.GetDict();
-                    var dt = new DataTable();
-                    dt.Columns.Add("name");
-                    dt.Columns.Add("val");
-                    for (int idx = 0; idx < dict.Count; idx++)
-                    {
-                        var newRow = dt.NewRow();
-                        newRow[0] = dict.Keys.ElementAt(idx);
-                        newRow[1] = idx;
-                        dt.Rows.Add(newRow);
-                    }
-                    column.DataSource = dt;
-                    column.ValueMember = "val";
-                    column.DisplayMember = "name";
-                    column.FlatStyle = FlatStyle.Flat;
-                    dgvcol = column;
-                }
-                else if (field.m_lookupTbl != null)
-                {
-                    var cmb = new DataGridViewComboBoxColumn();
-                    DataTable tbl = field.m_lookupData.m_dataSource;
-                    BindingSource bs = new BindingSource();
-                    bs.DataSource = tbl;
-                    cmb.DataSource = bs;
-                    cmb.DisplayMember = tbl.Columns[1].ColumnName;
-                    cmb.AutoComplete = true;
-                    cmb.DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing;
-                    cmb.FlatStyle = FlatStyle.Flat;
-                    dgvcol = cmb;
-                    dgvcol.SortMode = DataGridViewColumnSortMode.Automatic;
-                }
-                else
-                {
-                    dgvcol = new DataGridViewTextBoxColumn();
-                }
-                i = m_dataGridView.Columns.Add(dgvcol);
-                dgvcol.HeaderText = field.m_alias;
-                dgvcol.Name = field.m_field;
-#endif //use_custom_cols
-                dgvcol.DataPropertyName = field.m_field;
-                switch (field.m_type)
-                {
-#if format_currency
-                    case TableInfo.ColInfo.ColType.currency:
-                        dgvcol.DefaultCellStyle.Format = lConfigMng.getCurrencyFormat();
-                        break;
-#endif
-                    case TableInfo.ColInfo.ColType.dateTime:
-                        dgvcol.DefaultCellStyle.Format = lConfigMng.GetDisplayDateFormat();
-                        break;
-                }
-                //show hide col
-                dgvcol.Visible = field.m_visible;
-            }
-            //last columns
-            var lastCol = m_dataGridView.Columns[i];
-            lastCol.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            lastCol.FillWeight = 1;
-        }
 
         private void updateCols()
         {
@@ -444,9 +367,14 @@ namespace test_binding
                 data = "Submiting Completed!"
             }, true);
 #else
+            OnSubmit();
+#endif
+        }
+
+        protected virtual void OnSubmit()
+        {
             m_stsMng.onTaskBegin("Saving");
             m_dataContent.Submit();
-#endif
         }
 
         public virtual Int64 getSum()
@@ -488,7 +416,7 @@ namespace test_binding
 
 #if manual_crt_dgv_columns
                 m_dataGridView.AutoGenerateColumns = false;
-                CrtColumns();
+                lConfigMng.CrtColumns(m_dataGridView,m_tblInfo);
 #endif
             m_dataContent = appConfig.s_contentProvider.CreateDataContent(m_tblInfo.m_tblName);
 #if !use_bg_work
@@ -737,6 +665,63 @@ namespace test_binding
         {
             base.InitCtrls();
             m_dataGridView.AllowUserToAddRows = false;
+        }
+
+        private void M_dataGridView_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            //data table row state is unchanged
+        }
+
+        private void M_dataGridView_CurrentCellDirtyStateChanged(object sender, EventArgs e)
+        {
+            //call dgv.CommitEdit() to save edited value to cur cell
+        }
+
+        protected override void OnSubmit()
+        {
+            base.OnSubmit();
+            
+            //release resource if task is complete
+            foreach (DataGridViewRow row in m_dataGridView.Rows)
+            {
+                int sts = int.Parse( row.Cells[TaskTblInfo.ColIdx.Stat.ToField()].Value.ToString());
+                if (sts == (int)TaskStatus.Done)
+                {
+                    string taskId = row.Cells[TaskTblInfo.ColIdx.Task.ToField()].Value.ToString();
+                    FreeResByTask(taskId);
+                }
+            }
+        }
+
+        private void FreeResByTask(string taskId)
+        {
+            //get all order
+            var orderSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.Order));
+            orderSB.Clear();
+            orderSB.Add(OrderTblInfo.ColIdx.Task.ToField(), taskId);
+            orderSB.Search();
+            foreach (DataRow row in orderSB.dc.m_dataTable.Rows)
+            {
+                var orderType = int.Parse(row[OrderTblInfo.ColIdx.Type.ToField()].ToString());
+                switch ((OrderType)orderType)
+                {
+                    case OrderType.Worker:
+                        //update human set status = 0 
+                        //where human_number in (select human_number from order_human where task_number = 'CV2019004')
+                        string qry = string.Format("update {0} set {1}=@status where "
+                            + " {2} in (select {3} from {4} where {5} = @task_number)",
+                            TableIdx.Human.ToDesc(), HumanTblInfo.ColIdx.Busy.ToField(),
+                            HumanTblInfo.ColIdx.Human.ToField(), OrderHumanTblInfo.ColIdx.Human.ToField(),
+                            TableIdx.HumanOR.ToDesc(), OrderHumanTblInfo.ColIdx.Task.ToField());
+                        var cnn = appConfig.s_contentProvider.GetCnn();
+                        var sqlcmd = new SQLiteCommand(qry, (SQLiteConnection)cnn);
+                        int iStat = (int)ResStatus.Free;
+                        sqlcmd.Parameters.Add(new SQLiteParameter("@status", iStat.ToString()));
+                        sqlcmd.Parameters.Add(new SQLiteParameter("@task_number", taskId));
+                        int ret = sqlcmd.ExecuteNonQuery();
+                        break;
+                }
+            }
         }
     }
 

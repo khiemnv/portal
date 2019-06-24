@@ -1,5 +1,6 @@
 ﻿#define use_custom_font
 #define use_sqlite
+#define use_custom_cols
 
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,8 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.ComponentModel;
 using System.Globalization;
+using System.Data;
+using System.Linq;
 
 namespace test_binding
 {
@@ -359,7 +362,90 @@ namespace test_binding
             var ctrl = new lCustomDGV(tblInfo);
             ctrl.Font = getFont();
             return ctrl;
+
         }
+
+
+        public static void CrtColumns(DataGridView dgv, TableInfo tblInfo)
+        {
+            int i = 0;
+            foreach (var field in tblInfo.m_cols)
+            {
+#if !use_custom_cols
+                i = dgv.Columns.Add(field.m_field, field.m_alias);
+                var dgvcol = dgv.Columns[i];
+#else
+                DataGridViewColumn dgvcol;
+                if (field.m_type == TableInfo.ColInfo.ColType.dateTime)
+                {
+                    dgvcol = new CalendarColumn();
+                    dgvcol.SortMode = DataGridViewColumnSortMode.Automatic;
+                }
+                else if (field.m_type == TableInfo.ColInfo.ColType.map)
+                {
+                    //DataGridViewComboBoxColumn column = new DataGridViewComboBoxColumn();
+                    var column = new DataGridViewComboBoxColumn();
+                    Dictionary<string, int> dict = field.GetDict();
+                    var dt = new DataTable();
+                    dt.Columns.Add("name");
+                    dt.Columns.Add("val");
+                    for (int idx = 0; idx < dict.Count; idx++)
+                    {
+                        var newRow = dt.NewRow();
+                        newRow[0] = dict.Keys.ElementAt(idx);
+                        newRow[1] = idx;
+                        dt.Rows.Add(newRow);
+                    }
+                    column.DataSource = dt;
+                    column.ValueMember = "val";
+                    column.DisplayMember = "name";
+                    column.DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing;
+                    column.FlatStyle = FlatStyle.Flat;
+                    dgvcol = column;
+                }
+                else if (field.m_lookupTbl != null)
+                {
+                    var cmb = new DataGridViewComboBoxColumn();
+                    DataTable tbl = field.m_lookupData.m_dataSource;
+                    BindingSource bs = new BindingSource();
+                    bs.DataSource = tbl;
+                    cmb.DataSource = bs;
+                    cmb.DisplayMember = tbl.Columns[1].ColumnName;
+                    cmb.AutoComplete = true;
+                    cmb.DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing;
+                    cmb.FlatStyle = FlatStyle.Flat;
+                    dgvcol = cmb;
+                    dgvcol.SortMode = DataGridViewColumnSortMode.Automatic;
+                }
+                else
+                {
+                    dgvcol = new DataGridViewTextBoxColumn();
+                }
+                i = dgv.Columns.Add(dgvcol);
+                dgvcol.HeaderText = field.m_alias;
+                dgvcol.Name = field.m_field;
+#endif //use_custom_cols
+                dgvcol.DataPropertyName = field.m_field;
+                switch (field.m_type)
+                {
+#if format_currency
+                    case TableInfo.ColInfo.ColType.currency:
+                        dgvcol.DefaultCellStyle.Format = lConfigMng.getCurrencyFormat();
+                        break;
+#endif
+                    case TableInfo.ColInfo.ColType.dateTime:
+                        dgvcol.DefaultCellStyle.Format = lConfigMng.GetDisplayDateFormat();
+                        break;
+                }
+                //show hide col
+                dgvcol.Visible = field.m_visible;
+            }
+            //last columns
+            var lastCol = dgv.Columns[i];
+            lastCol.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            lastCol.FillWeight = 1;
+        }
+
         public static MenuStrip CrtMenuStrip()
         {
             var ctrl = new MenuStrip();

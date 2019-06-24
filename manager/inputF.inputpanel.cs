@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SQLite;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
@@ -2072,6 +2073,7 @@ namespace test_binding
             taskDGV.Dock = DockStyle.Fill;
             taskDGV.AllowUserToAddRows = false;
             taskDGV.AllowUserToDeleteRows = false;
+            taskDGV.CellValueChanged += TaskDGV_CellValueChanged;
 
             TableLayoutPanel topLeftTLP = new TableLayoutPanel();
             Label topLeftLbl = lConfigMng.crtLabel();
@@ -2100,6 +2102,12 @@ namespace test_binding
             //event
             taskDGV.CellClick += TaskDGV_CellClick;
         }
+
+        private void TaskDGV_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            //
+        }
+
         private void ApproveBtn_Click(object sender, EventArgs e)
         {
             List<int> idxLst = new List<int>();
@@ -2223,10 +2231,12 @@ namespace test_binding
 
             //task
             taskTbl.LoadData();
+            lConfigMng.CrtColumns(taskDGV, taskTbl);
             DataContent taskDC = appConfig.s_contentProvider.CreateDataContent(taskTbl.m_tblName);
             taskDGV.DataSource = taskDC.m_bindingSource;
             //order
             m_tblInfo.LoadData();
+            lConfigMng.CrtColumns(m_dataGridView, m_tblInfo);
             m_dataContent = appConfig.s_contentProvider.CreateDataContent(m_tblInfo.m_tblName);
             m_dataGridView.DataSource = m_dataContent.m_bindingSource;
             //search order of first task

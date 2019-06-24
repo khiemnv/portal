@@ -47,6 +47,10 @@ namespace test_binding
                     m_srchCtrls[i].LoadData();
                 }
             }
+
+            m_tblInfo.LoadData();
+            lConfigMng.CrtColumns(resDGV, m_tblInfo);
+            resDGV.DataSource = m_srchBld.dc.m_bindingSource;
         }
         public virtual void InitCtrl()
         {
@@ -116,7 +120,7 @@ namespace test_binding
             //update res list
             m_srchBld.Clear();
             m_srchBld.Search();
-            resDGV.DataSource = m_srchBld.dc.m_bindingSource;
+            //resDGV.DataSource = m_srchBld.dc.m_bindingSource;
             resLbl.Text = m_tblInfo.m_tblAlias;
         }
         //caller: approve()
@@ -369,6 +373,10 @@ namespace test_binding
 
             resLbl.Text = "Chọn tài nguyên cho Yêu Cầu";
         }
+
+        protected override string ResIdCol => EquipmentTblInfo.ColIdx.Eqpt.ToField();
+
+        protected override string ResStatusCol => EquipmentTblInfo.ColIdx.Used.ToField();
     }
     [DataContract(Name = "CarResPanel")]
     public class CarResPanel : ResPanel
@@ -388,6 +396,8 @@ namespace test_binding
             
             resLbl.Text = "Chọn phương tiện cho Yêu Cầu";
         }
+        protected override string ResIdCol => CarTblInfo.ColIdx.Car.ToField();
+        protected override string ResStatusCol => CarTblInfo.ColIdx.Used.ToField();
     }
     [DataContract(Name = "OrderResPanel")]
     public class OrderResPanel
