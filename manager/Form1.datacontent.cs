@@ -232,6 +232,12 @@ namespace test_binding
             }
             return txt;
         }
+
+        public static int GetCount<Tenum>()
+        {
+            return Enum.GetValues(typeof(Tenum)).Length;
+        }
+
     }
 
     [DataContract(Name = "ReceiptsTblInfo")]
@@ -463,6 +469,8 @@ namespace test_binding
     }
     public enum TaskStatus
     {
+        [Description("Chuẩn bị")] Equip,
+        [Description("Sẵn sàng")] Ready,
         [Description("Triển khai") ] Doing,
         [Description("Hoàn thành") ] Done,
     }
@@ -479,8 +487,6 @@ namespace test_binding
             [Field("end_date")      ,Alias("Ngày kết thúc")] End,
             [Field("task_status")   ,Alias("Trạng thái")   ] Stat,
             [Field("note")          ,Alias("Ghi Chú")      ] Note,
-
-            Count
         }
 
         public TaskTblInfo()
@@ -496,7 +502,7 @@ namespace test_binding
                 + "end_date datetime,"
                 + "task_status INTEGER,"
                 + "note text)";
-            m_cols = new ColInfo[(int)ColIdx.Count];
+            m_cols = new ColInfo[GetCount<ColIdx>()];
             m_cols[(int)ColIdx.ID   ] = new ColInfo(ColIdx.ID.ToField()    , ColIdx.ID.ToAlias()    , ColInfo.ColType.num, false);
             m_cols[(int)ColIdx.Task ] = new ColInfo(ColIdx.Task.ToField()  , ColIdx.Task.ToAlias()  , ColInfo.ColType.uniq);
             m_cols[(int)ColIdx.Group] = new ColInfo(ColIdx.Group.ToField() , ColIdx.Group.ToAlias() , ColInfo.ColType.text, "group_name" );
@@ -519,8 +525,6 @@ namespace test_binding
             [Field("number")       , Alias( "Số lượng"  ) ] Amnt,
             [Field("order_status") , Alias( "Trạng thái") ] Stat,
             [Field("note")         , Alias("Ghi Chú"    ) ] Note,
-
-            Count
         }
 
         public OrderTblInfo()
@@ -535,7 +539,7 @@ namespace test_binding
                 + "number INTEGER,"
                 + "order_status INTEGER,"
                 + "note text)";
-            m_cols = new ColInfo[(int)ColIdx.Count];  
+            m_cols = new ColInfo[GetCount<ColIdx>()];  
             m_cols[(int)ColIdx.ID   ] = new ColInfo(ColIdx.ID.ToField()    , ColIdx.ID.ToAlias()    , ColInfo.ColType.num , false);
             m_cols[(int)ColIdx.Order] = new ColInfo(ColIdx.Order.ToField() , ColIdx.Order.ToAlias() , ColInfo.ColType.uniq);
             m_cols[(int)ColIdx.Task ] = new ColInfo(ColIdx.Task.ToField()  , ColIdx.Task.ToAlias()  , ColInfo.ColType.text, "task");  //columns[1]
@@ -559,8 +563,6 @@ namespace test_binding
             [Field("age")           , Alias("Tuổi")]        Age,
             [Field("status")        , Alias("Đang bận")]    Busy,
             [Field("note")          , Alias("Ghi Chú")]     Note,
-
-            Count
         }
 
         public HumanTblInfo()
@@ -577,7 +579,7 @@ namespace test_binding
                 + "age INTEGER,"
                 + "status INTEGER,"
                 + "note text)";
-            m_cols = new ColInfo[(int)ColIdx.Count];
+            m_cols = new ColInfo[GetCount<ColIdx>()];
             m_cols[(int)ColIdx.ID]      = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
             m_cols[(int)ColIdx.Human]   = new ColInfo(ColIdx.Human.ToField(), ColIdx.Human.ToAlias(), ColInfo.ColType.uniq);
             m_cols[(int)ColIdx.Name]    = new ColInfo(ColIdx.Name.ToField(), ColIdx.Name.ToAlias(), ColInfo.ColType.text);
@@ -599,8 +601,6 @@ namespace test_binding
             [Field("equipment_type")    , Alias("Loại TB")]         Type,
             [Field("inuse")             , Alias("Đang sử dụng")]    Used,
             [Field("note")              , Alias("Ghi chú")]         Note,
-
-            Count
         }
         public EquipmentTblInfo()
         {
@@ -612,7 +612,7 @@ namespace test_binding
                 + "equipment_type char(31),"
                 + "inuse INTEGER,"
                 + "note text)";
-            m_cols = new ColInfo[(int)ColIdx.Count];
+            m_cols = new ColInfo[GetCount<ColIdx>()];
             m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
             m_cols[(int)ColIdx.Eqpt] = new ColInfo(ColIdx.Eqpt.ToField(), ColIdx.Eqpt.ToAlias(), ColInfo.ColType.uniq);
             m_cols[(int)ColIdx.Type] = new ColInfo(ColIdx.Type.ToField() ,ColIdx.Type.ToAlias(), ColInfo.ColType.text);
@@ -631,8 +631,6 @@ namespace test_binding
             [Field("brand")     , Alias("Hãng SX")  ] Brand,
             [Field("inuse")     , Alias("Đang sử dụng")] Used,
             [Field("note")      , Alias("Ghi chú")  ] Note,
-
-            Count
         }
         public CarTblInfo()
         {
@@ -645,7 +643,7 @@ namespace test_binding
                 + "brand char(31),"
                 + "inuse INTEGER,"
                 + "note text)";
-            m_cols = new ColInfo[(int)ColIdx.Count];
+            m_cols = new ColInfo[GetCount<ColIdx>()];
             m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
             m_cols[(int)ColIdx.Car] = new ColInfo(ColIdx.Car.ToField(), ColIdx.Car.ToAlias(), ColInfo.ColType.uniq);
             m_cols[(int)ColIdx.Type] = new ColInfo(ColIdx.Type.ToField(), ColIdx.Type.ToAlias(), ColInfo.ColType.text);
@@ -664,8 +662,6 @@ namespace test_binding
             [Field("equipment_number"), Alias("Mã TB")  ] Equip,
             [Field("task_number")   , Alias("Mã CV")    ] Task,
             [Field("note")          , Alias("Ghi Chú")  ] Note,
-
-            Count
         }
         public OrderEquipmentTblInfo()
         {
@@ -677,7 +673,7 @@ namespace test_binding
                 + "equipment_number char(31),"
                 + "task_number char(31),"
                 + "note text)";
-            m_cols = new ColInfo[(int)ColIdx.Count];
+            m_cols = new ColInfo[GetCount<ColIdx>()];
             m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
             m_cols[(int)ColIdx.Order] = new ColInfo(ColIdx.Order.ToField(), ColIdx.Order.ToAlias(), ColInfo.ColType.uniq);
             m_cols[(int)ColIdx.Equip] = new ColInfo(ColIdx.Equip.ToField(), ColIdx.Equip.ToAlias(), ColInfo.ColType.uniq);
@@ -695,8 +691,6 @@ namespace test_binding
             [Field("human_number"), Alias("Mã NS")] Human,
             [Field("task_number"), Alias("Mã CV")] Task,
             [Field("note"), Alias("Ghi Chú")] Note,
-
-            Count
         }
         public OrderHumanTblInfo()
         {
@@ -708,7 +702,7 @@ namespace test_binding
                 + "human_number char(31),"
                 + "task_number char(31),"
                 + "note text)";
-            m_cols = new ColInfo[(int)ColIdx.Count];
+            m_cols = new ColInfo[GetCount<ColIdx>()];
             m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
             m_cols[(int)ColIdx.Order] = new ColInfo(ColIdx.Order.ToField(), ColIdx.Order.ToAlias(), ColInfo.ColType.text);
             m_cols[(int)ColIdx.Human] = new ColInfo(ColIdx.Human.ToField(), ColIdx.Human.ToAlias(), ColInfo.ColType.text);
@@ -726,8 +720,6 @@ namespace test_binding
             [Field("car_number"), Alias("Biển số")] Car,
             [Field("task_number"), Alias("Mã CV")] Task,
             [Field("note"), Alias("Ghi chú")] Note,
-
-            Count
         }
         public OrderCarTblInfo()
         {
@@ -738,7 +730,7 @@ namespace test_binding
                 + "order_number char(31),"
                 + "car_number char(31),"
                 + "note text)";
-            m_cols = new ColInfo[(int)ColIdx.Count];
+            m_cols = new ColInfo[GetCount<ColIdx>()];
             m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
             m_cols[(int)ColIdx.Order] = new ColInfo(ColIdx.Order.ToField(), ColIdx.Order.ToAlias(), ColInfo.ColType.uniq);
             m_cols[(int)ColIdx.Car] = new ColInfo(ColIdx.Car.ToField(), ColIdx.Car.ToAlias(), ColInfo.ColType.uniq);

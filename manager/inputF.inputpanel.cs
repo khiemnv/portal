@@ -2123,6 +2123,26 @@ namespace test_binding
                 SetResStatus(eType, ResStatus.Busy);
             }
 
+            //if all order was approved ->chg task_status to ready
+            bool bReady = true;
+            foreach (DataRow row in orderDC.m_dataTable.Rows)
+            {
+                var nStat = int.Parse(row[OrderTblInfo.ColIdx.Stat.ToField()].ToString());
+                if (nStat != (int)OrderStatus.Approve)
+                {
+                    bReady = false;
+                    break;
+                }
+            }
+            if (bReady)
+            {
+                var rowIdx = taskDGV.SelectedRows[0].Index;
+                var taskDC = appConfig.s_contentProvider.CreateDataContent(TableIdx.Task.ToDesc());
+                Debug.Assert(m_curTask.Equals(taskDC.m_dataTable.Rows[rowIdx][TaskTblInfo.ColIdx.Task.ToField()].ToString()));
+                taskDC.m_dataTable.Rows[rowIdx][TaskTblInfo.ColIdx.Stat.ToField()] = (int)TaskStatus.Ready;
+                taskDC.Submit();
+            }
+
             //commit order table
             //orderDC.Submit();
             Save();
