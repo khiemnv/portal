@@ -496,7 +496,7 @@ namespace test_binding
             orderResSB.Clear();
             orderResSB.Add(orderIdCol, m_curOrder);
             orderResSB.Search();
-            //orderResDGV.DataSource = orderResSB.dc.m_bindingSource;
+            orderResDGV.DataSource = orderResSB.dc.m_bindingSource;
             
             //build dict
             m_usedResDict.Clear();

@@ -1753,8 +1753,8 @@ namespace test_binding
                 taskCmb.Text = m_taskNumber;
             }
 
-            string taskNumber = taskCmb.Text;
-            UpdateOrderDGV(taskCmb.Text);
+            m_curTask = taskCmb.Text;
+            UpdateOrderDGV(m_curTask);
         }
         protected void LoadRP()
         {
@@ -1776,8 +1776,8 @@ namespace test_binding
                     m_orderSB.Search();
 
                     //clear lbl, resLst, orderResLst
+                    m_curTask = taskNumber;
                     OnTaskChg();
-
                     UpdateTaskInfo(taskNumber);
                 }
             }
@@ -1869,7 +1869,7 @@ namespace test_binding
         protected override void Save()
         {
             base.Save();
-            curORP.Save();
+            if(curORP!= null) curORP.Save();
         }
 
         protected OrderResPanel curORP;
@@ -1948,6 +1948,7 @@ namespace test_binding
                 //save cur order
                 string orderId = cells[OrderTblInfo.ColIdx.Order.ToField()].Value.ToString();
                 string taskId = cells[OrderTblInfo.ColIdx.Task.ToField()].Value.ToString();
+                Debug.Assert(taskId == m_curTask, "order content invalid");
                 //get type
                 //get date
                 OrderType orderType = (OrderType)int.Parse(cells[OrderTblInfo.ColIdx.Type.ToField()].Value.ToString());
@@ -2116,15 +2117,17 @@ namespace test_binding
                 DataGridViewRow row = orderDGV.SelectedRows[i];
                 idxLst.Add(row.Index);
             }
-            ApproveOrder(idxLst);
+            if (idxLst.Count > 0) ApproveOrder(idxLst);
         }
         private void ApproveOrder(List<int> idxLst)
         {
+            Debug.Assert(idxLst.Count > 0, "list is not empty");
             DataContent orderDC = appConfig.s_contentProvider.CreateDataContent(TableIdx.Order.ToDesc());
             foreach(int idx in idxLst)
             {
                 orderDC.m_dataTable.Rows[idx][OrderTblInfo.ColIdx.Stat.ToField()] = (int)OrderStatus.Approve;
-                
+                string taskNumber = (string)orderDC.m_dataTable.Rows[idx][OrderTblInfo.ColIdx.Task.ToField()];
+                Debug.Assert(taskNumber == m_curTaskRec.Key, "cur task rec is valid");
                 //set busy & commit res table
                 int iType = int.Parse(orderDC.m_dataTable.Rows[idx][OrderTblInfo.ColIdx.Type.ToField()].ToString());
                 OrderType eType = (OrderType)iType;
@@ -2144,7 +2147,8 @@ namespace test_binding
             }
             if (bReady)
             {
-                var rowIdx = taskDGV.SelectedRows[0].Index;
+                //var rowIdx = taskDGV.SelectedRows[0].Index;
+                var rowIdx = m_curTaskRec.Value;
                 var taskDC = appConfig.s_contentProvider.CreateDataContent(TableIdx.Task.ToDesc());
                 Debug.Assert(m_curTask.Equals(taskDC.m_dataTable.Rows[rowIdx][TaskTblInfo.ColIdx.Task.ToField()].ToString()));
                 taskDC.m_dataTable.Rows[rowIdx][TaskTblInfo.ColIdx.Stat.ToField()] = (int)TaskStatus.Ready;
@@ -2209,6 +2213,7 @@ namespace test_binding
            
         }
 
+        private KeyValuePair<string, int> m_curTaskRec;
         private void TaskDGV_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             DataGridViewSelectedRowCollection rows = taskDGV.SelectedRows;
@@ -2218,8 +2223,9 @@ namespace test_binding
                 if (taskId == null) return;
                 //get task info
 
+                m_curTask = taskId; //update base.curTask
+                m_curTaskRec = new KeyValuePair<string, int>(taskId, rows[0].Index);
                 OnTaskChg();
-
                 UpdateOrderDGV(taskId);
             }
         }
