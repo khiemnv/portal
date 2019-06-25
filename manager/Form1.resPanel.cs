@@ -331,7 +331,7 @@ namespace test_binding
             }
             m_srchBld.Search();
 
-            resDGV.DataSource=m_srchBld.dc.m_bindingSource;
+            //resDGV.DataSource=m_srchBld.dc.m_bindingSource;
             
             string datef = lConfigMng.GetDisplayDateFormat();
             resLbl.Text = string.Format("{0} {1}-{2}", m_tblInfo.m_tblAlias,
@@ -496,7 +496,7 @@ namespace test_binding
             orderResSB.Clear();
             orderResSB.Add(orderIdCol, m_curOrder);
             orderResSB.Search();
-            orderResDGV.DataSource = orderResSB.dc.m_bindingSource;
+            //orderResDGV.DataSource = orderResSB.dc.m_bindingSource;
             
             //build dict
             m_usedResDict.Clear();

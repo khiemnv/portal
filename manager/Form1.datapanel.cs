@@ -700,27 +700,86 @@ namespace test_binding
             orderSB.Clear();
             orderSB.Add(OrderTblInfo.ColIdx.Task.ToField(), taskId);
             orderSB.Search();
+
+            var cnn = appConfig.s_contentProvider.GetCnn();
+            int ret;
             foreach (DataRow row in orderSB.dc.m_dataTable.Rows)
             {
                 var orderType = int.Parse(row[OrderTblInfo.ColIdx.Type.ToField()].ToString());
-                switch ((OrderType)orderType)
-                {
-                    case OrderType.Worker:
-                        //update human set status = 0 
-                        //where human_number in (select human_number from order_human where task_number = 'CV2019004')
-                        string qry = string.Format("update {0} set {1}=@status where "
-                            + " {2} in (select {3} from {4} where {5} = @task_number)",
-                            TableIdx.Human.ToDesc(), HumanTblInfo.ColIdx.Busy.ToField(),
-                            HumanTblInfo.ColIdx.Human.ToField(), OrderHumanTblInfo.ColIdx.Human.ToField(),
-                            TableIdx.HumanOR.ToDesc(), OrderHumanTblInfo.ColIdx.Task.ToField());
-                        var cnn = appConfig.s_contentProvider.GetCnn();
-                        var sqlcmd = new SQLiteCommand(qry, (SQLiteConnection)cnn);
-                        int iStat = (int)ResStatus.Free;
-                        sqlcmd.Parameters.Add(new SQLiteParameter("@status", iStat.ToString()));
-                        sqlcmd.Parameters.Add(new SQLiteParameter("@task_number", taskId));
-                        int ret = sqlcmd.ExecuteNonQuery();
-                        break;
-                }
+                FreeResByOrder(cnn, taskId, (OrderType)orderType);
+            }
+
+            //delete order
+            var delOrderQry = string.Format("delete from {0} where {1}=@task_number", 
+            TableIdx.Order.ToDesc(), TaskTblInfo.ColIdx.Task.ToField());
+            var delOrderCmd = new SQLiteCommand(delOrderQry, (SQLiteConnection)cnn);
+            delOrderCmd.Parameters.Add(new SQLiteParameter("@task_number", taskId));
+            ret = delOrderCmd.ExecuteNonQuery();
+            Debug.WriteLine(string.Format("remove {0} orders", ret));
+        }
+
+        private void FreeResByOrder(object cnn, string taskId, OrderType orderType)
+        {
+            string resTbl=null;
+            string stsCol=null;
+            string resCol=null;
+            string refCol=null;
+            string mapTbl=null;
+            string taskCol=null;
+            bool bExec = true;
+            switch (orderType)
+            {
+                case OrderType.Worker:
+                    //update human set status = 0 
+                    //where human_number in (select human_number from order_human where task_number = 'CV2019004')
+                    resTbl = TableIdx.Human.ToDesc();
+                    stsCol = HumanTblInfo.ColIdx.Busy.ToField();
+                    resCol = HumanTblInfo.ColIdx.Human.ToField();
+                    refCol = OrderHumanTblInfo.ColIdx.Human.ToField();
+                    mapTbl = TableIdx.HumanOR.ToDesc();
+                    taskCol = OrderHumanTblInfo.ColIdx.Task.ToField();
+                    break;
+                case OrderType.Car:
+                    resTbl = TableIdx.Car.ToDesc();
+                    stsCol = CarTblInfo.ColIdx.Used.ToField();
+                    resCol = CarTblInfo.ColIdx.Car.ToField();
+                    refCol = OrderCarTblInfo.ColIdx.Car.ToField();
+                    mapTbl = TableIdx.CarOR.ToDesc();
+                    taskCol = OrderCarTblInfo.ColIdx.Task.ToField();
+                    break;
+                case OrderType.Equip:
+                    resTbl = TableIdx.Equip.ToDesc();
+                    stsCol = EquipmentTblInfo.ColIdx.Used.ToField();
+                    resCol = EquipmentTblInfo.ColIdx.Eqpt.ToField();
+                    refCol = OrderEquipmentTblInfo.ColIdx.Equip.ToField();
+                    mapTbl = TableIdx.EquipOR.ToDesc();
+                    taskCol = OrderEquipmentTblInfo.ColIdx.Task.ToField();
+                    break;
+                default:
+                    bExec = false;
+                    break;
+            }
+            if (bExec)
+            {
+                string qry = string.Format("update {0} set {1}=@status where "
+                + " {2} in (select {3} from {4} where {5} = @task_number)",
+                resTbl, stsCol,
+                resCol, refCol,
+                mapTbl, taskCol);
+                var sqlcmd = new SQLiteCommand(qry, (SQLiteConnection)cnn);
+                int iStat = (int)ResStatus.Free;
+                sqlcmd.Parameters.Add(new SQLiteParameter("@status", iStat.ToString()));
+                sqlcmd.Parameters.Add(new SQLiteParameter("@task_number", taskId));
+                int ret = sqlcmd.ExecuteNonQuery();
+                Debug.WriteLine(string.Format("free {0} resources", ret));
+
+                //delete order - res
+                var delQry = string.Format("delete from {0} where {1}=@task_number",
+                    mapTbl, taskCol);
+                var delCmd = new SQLiteCommand(delQry, (SQLiteConnection)cnn);
+                delCmd.Parameters.Add(new SQLiteParameter("@task_number", taskId));
+                ret = delCmd.ExecuteNonQuery();
+                Debug.WriteLine(string.Format("remove {0} order-res records", ret));
             }
         }
     }
