@@ -3,8 +3,8 @@
 #define tab_header_blue
 //#define use_bg_work
 #if !DEBUG
-#define chck_pass
-#define save_config
+//#define chck_pass
+//#define save_config
 #else   //DEBUG
 #define load_input
 #endif  //DEBUG
