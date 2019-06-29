@@ -7,9 +7,10 @@ if "%1"=="" (
 )
 echo export to "%1" ...
 set desdir="%1"
-rmdir /s /q %desdir%
+if exist %desdir% rmdir /s /q %desdir%
 xcopy bin\*.* %desdir%\bin\ /y /q /S
-xcopy *.rdlc %desdir% /y /q 
+xcopy appData.db %desdir%\ /y /q 
+::xcopy *.rdlc %desdir% /y /q 
 
 ::zip
 :zip

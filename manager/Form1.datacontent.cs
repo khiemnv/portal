@@ -464,6 +464,7 @@ namespace test_binding
         [Description("order_human") ] HumanOR,
         [Description("order_equipment")] EquipOR,
         [Description("order_car")   ] CarOR,
+        [Description("organization")] Organization,
 
         Count
     }
@@ -738,6 +739,36 @@ namespace test_binding
             m_cols[(int)ColIdx.Note] = new ColInfo(ColIdx.Note.ToField(), ColIdx.Note.ToAlias(), ColInfo.ColType.text);
         }
     };
+
+    [DataContract(Name = "OrganizationTblInfo")]
+    public class OrgTbl : TableInfo
+    {
+        public enum ColIdx
+        {
+            [Field("ID"), Alias("ID")] ID,
+            [Field("position"), Alias("Chức vụ")] pos,
+            [Field("human_number"), Alias("Mã NS")] man,
+            [Field("superior"), Alias("Cấp trên")] sup,
+            [Field("group_number"), Alias("Ban")] grp,
+        }
+        public OrgTbl()
+        {
+            m_tblName = "human";
+            m_tblAlias = "Nhân Sự";
+            m_crtQry = "CREATE TABLE if not exists organization("
+                + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "position char(31),"
+                + "human_number char(31),"
+                + "superior INTEGER,"
+                + "group_number char(31))";
+            m_cols = new ColInfo[GetCount<ColIdx>()];
+            m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
+            m_cols[(int)ColIdx.pos] = new ColInfo(ColIdx.pos.ToField(), ColIdx.pos.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.man] = new ColInfo(ColIdx.man.ToField(), ColIdx.man.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.sup] = new ColInfo(ColIdx.sup.ToField(), ColIdx.sup.ToAlias(), ColInfo.ColType.num);
+            m_cols[(int)ColIdx.grp] = new ColInfo(ColIdx.grp.ToField(), ColIdx.grp.ToAlias(), ColInfo.ColType.text);
+        }
+    }
 
     [DataContract(Name = "lReceiptsViewInfo")]
     public class lReceiptsViewInfo : TableInfo
