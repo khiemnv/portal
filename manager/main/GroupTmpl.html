@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style type="text/css">
+        .auto-style1 {
+            width: 87px;
+        }
+
+        .auto-style2 {
+            width: 125px;
+        }
+    </style>
+</head>
+<body>
+    <h3 id="group_name">group_name</h3>
+    <table style="width: 100%;margin-left:10px">
+        <tr>
+            <td class="auto-style1">Trưởng ban&nbsp;</td>
+            <td id="mng_name" class="auto-style2">mng_name&nbsp;</td>
+            <td id="mng_desc">mng_desc&nbsp;</td>
+        </tr>
+        <tr>
+            <td class="auto-style1">Phó ban&nbsp;</td>
+            <td id="ass_name" class="auto-style2">ass_name&nbsp;</td>
+            <td id="ass_desc">ass_desc&nbsp;</td>
+        </tr>
+    </table>
+    <h3>Nội quy</h3>
+    <p id="grp_regs" style="margin-left:10px">group_regs</p>
+    <h3>Thành viên</h3>
+    <div id="tbl">
+        <table style="width: 100%;margin-left:10px">
+            <tr>
+                <td>member_name&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>member_name&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        secObj = {
+            "name": "section name",
+            "mng_name": "mng name",
+            "ass_name": "ass mng name",
+            "mng_desc": "mng desc",
+            "ass_desc": "ass desc",
+            "grp_regs": "group regs",
+            "members": [
+                { "name": "member 1" },
+                { "name": "member 2" }
+            ]
+        };
+        secTxt = '';
+        //secObj = JSON.parse(secTxt);
+        var secObj = eval( "(" + secTxt + ")" );
+        document.getElementById("group_name").innerHTML = secObj.name;
+        document.getElementById("mng_name").innerHTML = secObj.mng_name;
+        document.getElementById("mng_desc").innerHTML = secObj.mng_desc;
+        document.getElementById("ass_name").innerHTML = secObj.ass_name;
+        document.getElementById("ass_desc").innerHTML = secObj.ass_desc;
+        document.getElementById("grp_regs").innerHTML = secObj.grp_regs;
+
+        txt = "";
+        txt += '<table style="width: 100%;margin-left:10px">';
+        for (i in secObj.members) {
+            txt += "<tr>";
+            txt += "<td>" + secObj.members[i].name + "</td>";
+            txt += "</tr>";
+        }
+        txt += "</table>";
+        document.getElementById("tbl").innerHTML = txt;
+    </script>
+
+</body>
+</html>

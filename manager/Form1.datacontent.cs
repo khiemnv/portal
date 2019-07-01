@@ -465,6 +465,8 @@ namespace test_binding
         [Description("order_equipment")] EquipOR,
         [Description("order_car")   ] CarOR,
         [Description("organization")] Organization,
+        [Description("section")] Section,
+        [Description("samon")] Samon,
 
         Count
     }
@@ -741,32 +743,109 @@ namespace test_binding
     };
 
     [DataContract(Name = "OrganizationTblInfo")]
-    public class OrgTbl : TableInfo
+    public class OrganizationTblInfo : TableInfo
     {
         public enum ColIdx
         {
             [Field("ID"), Alias("ID")] ID,
             [Field("position"), Alias("Chức vụ")] pos,
-            [Field("human_number"), Alias("Mã NS")] man,
+            [Field("samon_number"), Alias("Mã NS")] pic,
             [Field("superior"), Alias("Cấp trên")] sup,
-            [Field("group_number"), Alias("Ban")] grp,
+            [Field("section_number"), Alias("Ban")] sec,
+            [Field("note"), Alias("Ghi chú")] Note,
         }
-        public OrgTbl()
+        public OrganizationTblInfo()
         {
-            m_tblName = "human";
-            m_tblAlias = "Nhân Sự";
+            m_tblName = "organization";
+            m_tblAlias = "Tổ Chức";
             m_crtQry = "CREATE TABLE if not exists organization("
                 + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + "position char(31),"
-                + "human_number char(31),"
+                + "samon_number char(31),"
                 + "superior INTEGER,"
-                + "group_number char(31))";
+                + "section_number char(31),"
+                + "note text)";
             m_cols = new ColInfo[GetCount<ColIdx>()];
             m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
             m_cols[(int)ColIdx.pos] = new ColInfo(ColIdx.pos.ToField(), ColIdx.pos.ToAlias(), ColInfo.ColType.uniq);
-            m_cols[(int)ColIdx.man] = new ColInfo(ColIdx.man.ToField(), ColIdx.man.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.pic] = new ColInfo(ColIdx.pic.ToField(), ColIdx.pic.ToAlias(), ColInfo.ColType.text);
             m_cols[(int)ColIdx.sup] = new ColInfo(ColIdx.sup.ToField(), ColIdx.sup.ToAlias(), ColInfo.ColType.num);
-            m_cols[(int)ColIdx.grp] = new ColInfo(ColIdx.grp.ToField(), ColIdx.grp.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.sec] = new ColInfo(ColIdx.sec.ToField(), ColIdx.sec.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.Note] = new ColInfo(ColIdx.Note.ToField(), ColIdx.Note.ToAlias(), ColInfo.ColType.text);
+        }
+    }
+
+    [DataContract(Name = "SectionTblInfo")]
+    public class SectionTblInfo : TableInfo
+    {
+        public enum ColIdx
+        {
+            [Field("ID"), Alias("ID")] ID,
+            [Field("section_number"), Alias("Mã Ban")] sec,
+            [Field("section_name"), Alias("Tên Ban")] name,
+            [Field("manager_number"), Alias("Trưởng Ban")] mng,
+            [Field("manager_desc"), Alias("Nhiệm vụ TB")] mngD,
+            [Field("assmng_number"), Alias("Phó Ban")] ass,
+            [Field("assmng_desc"), Alias("Nhiệm vụ PB")] assD,
+            [Field("regulations"), Alias("Nội quy")] regs,
+            [Field("note"), Alias("Ghi chú")] Note,
+        }
+        public SectionTblInfo()
+        {
+            m_tblName = "section";
+            m_tblAlias = "Các Ban";
+            m_crtQry = "CREATE TABLE if not exists section("
+                + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "section_number char(31),"
+                + "section_name char(31),"
+                + "manager_number char(31),"
+                + "manager_desc text,"
+                + "assmng_number char(31),"
+                + "assmng_desc text,"
+                + "regulations text,"
+                + "note text)";
+            m_cols = new ColInfo[GetCount<ColIdx>()];
+            m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
+            m_cols[(int)ColIdx.sec] = new ColInfo(ColIdx.sec.ToField(), ColIdx.sec.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.name] = new ColInfo(ColIdx.name.ToField(), ColIdx.name.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.mng] = new ColInfo(ColIdx.mng.ToField(), ColIdx.mng.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.mngD] = new ColInfo(ColIdx.mngD.ToField(), ColIdx.mngD.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.ass] = new ColInfo(ColIdx.ass.ToField(), ColIdx.ass.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.assD] = new ColInfo(ColIdx.assD.ToField(), ColIdx.assD.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.ass] = new ColInfo(ColIdx.ass.ToField(), ColIdx.ass.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.regs] = new ColInfo(ColIdx.regs.ToField(), ColIdx.regs.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.Note] = new ColInfo(ColIdx.Note.ToField(), ColIdx.Note.ToAlias(), ColInfo.ColType.text);
+        }
+    }
+
+    [DataContract(Name = "MonkTblInfo")]
+    public class SamonTblInfo : TableInfo
+    {
+        public enum ColIdx
+        {
+            [Field("ID"), Alias("ID")] ID,
+            [Field("samon_number"), Alias("Mã NS")] samon,
+            [Field("samon_name"), Alias("Họ Tên")] name,
+            [Field("section_number"), Alias("Ban")] sec,
+            [Field("note"), Alias("Ghi chú")] Note,
+        }
+        public SamonTblInfo()
+        {
+            m_tblName = "samon";
+            m_tblAlias = "Nhan Su";
+
+            m_crtQry = "CREATE TABLE if not exists samon("
+                + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "samon_number char(31),"
+                + "samon_name char(31),"
+                + "section_number char(31),"
+                + "note text)";
+            m_cols = new ColInfo[GetCount<ColIdx>()];
+            m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
+            m_cols[(int)ColIdx.samon] = new ColInfo(ColIdx.samon.ToField(), ColIdx.samon.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.name] = new ColInfo(ColIdx.name.ToField(), ColIdx.name.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.sec] = new ColInfo(ColIdx.sec.ToField(), ColIdx.sec.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.Note] = new ColInfo(ColIdx.Note.ToField(), ColIdx.Note.ToAlias(), ColInfo.ColType.text);
         }
     }
 
@@ -1311,6 +1390,9 @@ namespace test_binding
                     new OrderHumanTblInfo(),
                     new CarTblInfo(),
                     new OrderCarTblInfo(),
+                    new OrganizationTblInfo(),
+                    new SectionTblInfo(),
+                    new SamonTblInfo(),
                 };
             m_views = new List<TableInfo>() {
                     //new lReceiptsViewInfo(),

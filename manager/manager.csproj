@@ -111,6 +111,7 @@
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -184,12 +185,13 @@
       <DependentUpon>inputF.cs</DependentUpon>
     </Compile>
     <Compile Include="inputF.inputpanel.cs" />
-    <Compile Include="MngForm.cs">
+    <Compile Include="main\MngForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MngForm.Designer.cs">
+    <Compile Include="main\MngForm.Designer.cs">
       <DependentUpon>MngForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="main\OrgTab.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="receiptForm.cs">
@@ -349,6 +351,12 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="main\GroupTmpl.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="task\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
