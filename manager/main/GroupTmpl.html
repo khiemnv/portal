@@ -5,6 +5,12 @@
     <meta charset="utf-8" />
     <title></title>
     <style type="text/css">
+        .label{
+            background-color:#C0C0C0;padding:5px
+        }
+        .content{
+            width:90%;margin-left:5%;background-color:whitesmoke;
+        }
         .auto-style1 {
             width: 87px;
         }
@@ -12,15 +18,31 @@
         .auto-style2 {
             width: 125px;
         }
+        .auto-style3 {
+            width: 87px;
+            height: 23px;
+        }
+        .auto-style4 {
+            width: 125px;
+            height: 23px;
+        }
+        .auto-style5 {
+            height: 23px;
+        }
     </style>
 </head>
-<body>
-    <h3 id="group_name">group_name</h3>
-    <table style="width: 100%;margin-left:10px">
+<body style="background-repeat: no-repeat;
+        background-attachment: scroll;
+      padding:10px"
+        >
+    <div style="background-color: white;width:600px; position: relative; left: auto;"
+         >
+    <h3 id="group_name" class="label">group_name</h3>
+    <table class="content">
         <tr>
-            <td class="auto-style1">Trưởng ban&nbsp;</td>
-            <td id="mng_name" class="auto-style2">mng_name&nbsp;</td>
-            <td id="mng_desc">mng_desc&nbsp;</td>
+            <td class="auto-style3">Trưởng ban&nbsp;</td>
+            <td id="mng_name" class="auto-style4">mng_name&nbsp;</td>
+            <td id="mng_desc" class="auto-style5">mng_desc&nbsp;</td>
         </tr>
         <tr>
             <td class="auto-style1">Phó ban&nbsp;</td>
@@ -28,23 +50,20 @@
             <td id="ass_desc">ass_desc&nbsp;</td>
         </tr>
     </table>
-    <h3>Nội quy</h3>
-    <p id="grp_regs" style="margin-left:10px">group_regs</p>
-    <h3>Thành viên</h3>
-    <div id="tbl">
-        <table style="width: 100%;margin-left:10px">
+    <h3 class="label">Nội quy</h3>
+    <p id="grp_regs" class="content">group_regs</p>
+    <h3 class="label">Thành viên</h3>
+    <div id="tbl"  class="content">
+        <table>
             <tr>
                 <td>member_name&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
             </tr>
             <tr>
                 <td>member_name&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
             </tr>
         </table>
     </div>
+        </div>
 
     <script>
         secObj = {
@@ -62,7 +81,7 @@
         secTxt = '';
         //secObj = JSON.parse(secTxt);
         var secObj = eval( "(" + secTxt + ")" );
-        document.getElementById("group_name").innerHTML = secObj.name;
+        document.getElementById("group_name").innerHTML = "Ban " + secObj.name;
         document.getElementById("mng_name").innerHTML = secObj.mng_name;
         document.getElementById("mng_desc").innerHTML = secObj.mng_desc;
         document.getElementById("ass_name").innerHTML = secObj.ass_name;
@@ -70,7 +89,7 @@
         document.getElementById("grp_regs").innerHTML = secObj.grp_regs;
 
         txt = "";
-        txt += '<table style="width: 100%;margin-left:10px">';
+        txt += '<table style="width: 100%;">';
         for (i in secObj.members) {
             txt += "<tr>";
             txt += "<td>" + secObj.members[i].name + "</td>";

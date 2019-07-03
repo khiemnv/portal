@@ -353,6 +353,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="img\CBV_full.jpg" />
     <Content Include="main\GroupTmpl.html" />
   </ItemGroup>
   <ItemGroup>
