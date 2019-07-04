@@ -456,6 +456,7 @@ namespace test_binding
 
     public enum TableIdx
     {
+        [Description("group_name")  ] GrpName,
         [Description("task")        ] Task,
         [Description("order_tbl")   ] Order,
         [Description("human")       ] Human,

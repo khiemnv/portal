@@ -1,0 +1,186 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style type="text/css">
+    .label {
+        background-color: #C0C0C0;
+        padding: 5px
+    }
+
+    .content {
+        width: 90%;
+        margin-left: 5%;
+        background-color: whitesmoke;
+    }
+
+    .auto-style1 {
+        width: 87px;
+    }
+
+    .auto-style2 {
+        width: 125px;
+    }
+
+    .auto-style3 {
+        width: 87px;
+        height: 23px;
+    }
+
+    .auto-style4 {
+        width: 125px;
+        height: 23px;
+    }
+
+    .auto-style5 {
+        height: 23px;
+    }
+
+    table, th, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+    }
+
+    table {
+        width: 100%;
+    }
+
+    th {
+        background-color: #CCCCCC;
+    }
+</style>
+</head>
+<body style="background-repeat: no-repeat; background-attachment: scroll; padding: 10px">
+    <div style="background-color: white; width: 600px; position: relative; left: auto;">
+        <p>Ngày bắt đầu </p>
+        <table style="border: 0; width: auto;">
+            <tr style="border: 0">
+                <td style="border: 0">
+                    <button type="button" onclick="OnPrev()">Prev</button></td>
+                <td style="border: 0" id="date">dd/mm/yyyy(1/2)</td>
+                <td style="border: 0">
+                    <button type="button" onclick="OnNext()">Next</button></td>
+            </tr>
+
+        </table>
+        <h3 class="label">Công Việc</h3>
+        <div id="taskTbl" class="content">
+            <table>
+                <tr>
+                    <th>Tên CV&nbsp;</th>
+                    <th>Ban&nbsp;</th>
+                    <th>Tình trạng&nbsp;</th>
+                </tr>
+                <tr>
+                    <td>cv 1</td>
+                    <td>ban 1&nbsp;</td>
+                    <td>status 1&nbsp;</td>
+                </tr>
+            </table>
+        </div>
+        <h3 class="label">Kế hoạch</h3>
+        <div id="planTbl" class="content">
+
+            <table>
+                <tr>
+                    <th>Tên KH</th>
+                    <th>Ban</th>
+                    <th>Tình trạng</th>
+                </tr>
+                <tr>
+                    <td>kh 1</td>
+                    <td>ban 1</td>
+                    <td>status 1</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+    jsObj = {
+        "taskCols": ["Tên CV", "Ban", "Tình trạng"],
+        "planCols": ["Tên KH", "Ban", "Tình trạng"],
+        "recs": [{
+            "date": "01/01/2019",
+            "plans": [{ "name": "ke hoach 1", "section": "ban", "status": "done" },
+            { "name": "ke hoach 2", "section": "ban", "status": "done" }
+            ],
+            "tasks": [
+                { "name": "task 1", "section": "ban", "status": "done" },
+                { "name": "task 2", "section": "ban", "status": "done" }
+            ]
+        },
+        {
+            "date": "02/01/2019",
+            "plans": [{ "name": "ke hoach 21", "section": "ban", "status": "doing" },
+            { "name": "ke hoach 22", "section": "ban", "status": "done" }
+            ],
+            "tasks": [
+                { "name": "task 21", "section": "ban", "status": "done" },
+                { "name": "task 22", "section": "ban", "status": "done" }
+            ]
+        }
+        ]
+    };
+    jsTxt = '';
+    var jsObj = eval("(" + jsTxt + ")");
+    var curIdx = 0;
+    render(0)
+    function render(idx) {
+        var rec = jsObj.recs[idx];
+
+        document.getElementById("date").innerHTML = rec.date + "(" + (idx + 1) + "/" + jsObj.recs.length + ")";
+        //task
+        txt = "";
+        txt += '<table style="width: 100%;">';
+        //txt += '<tr><th>Tên CV</th><th>Ban</th><th>Tình trạng</th></tr>';
+        txt += "<tr>";
+        for (i in jsObj.taskCols) {
+            txt += "<th>" + jsObj.taskCols[i] + "</th>";
+        }
+        txt += "</tr>";
+        for (i in rec.tasks) {
+            txt += "<tr>";
+            txt += "<td>" + rec.tasks[i].name + "</td>";
+            txt += "<td>" + rec.tasks[i].section + "</td>";
+            txt += "<td>" + rec.tasks[i].status + "</td>";
+            txt += "</tr>";
+        }
+        txt += "</table>";
+        document.getElementById("taskTbl").innerHTML = txt;
+        //plan
+        txt = "";
+        txt += '<table style="width: 100%;">';
+        //txt += '<tr><th>Tên KH</th><th>Ban</th><th>Tình trạng</th></tr>';
+        txt += "<tr>";
+        for (i in jsObj.taskCols) {
+            txt += "<th>" + jsObj.planCols[i] + "</th>";
+        }
+        txt += "</tr>";
+        for (i in rec.plans) {
+            txt += "<tr>";
+            txt += "<td>" + rec.plans[i].name + "</td>";
+            txt += "<td>" + rec.plans[i].section + "</td>";
+            txt += "<td>" + rec.plans[i].status + "</td>";
+            txt += "</tr>";
+        }
+        txt += "</table>";
+        document.getElementById("planTbl").innerHTML = txt;
+    }
+    function OnPrev() {
+        if (curIdx > 0) {
+            curIdx -= 1;
+            render(curIdx);
+        }
+    }
+    function OnNext() {
+        if (curIdx < jsObj.recs.length - 1) {
+            curIdx += 1;
+            render(curIdx);
+        }
+    }
+    </script>
+</body>
+</html>

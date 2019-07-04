@@ -53,6 +53,7 @@ namespace test_binding
             tc.Dock = DockStyle.Fill;
             tc.TabPages.AddRange( new TabPage[] {
                 new OrgTab().m_pg,
+                new TaskTab().m_pg,
             } );
             tc.SelectedIndex = 0;
             this.Controls.Add(tc);

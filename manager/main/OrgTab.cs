@@ -14,6 +14,205 @@ using System.Windows.Forms;
 
 namespace test_binding
 {
+    public class BaseTab
+    {
+        public string Obj2Json(object obj, Type[]knownTypes)
+        {
+            DataContractJsonSerializerSettings settings = new DataContractJsonSerializerSettings();
+            settings.IgnoreExtensionDataObject = true;
+            settings.EmitTypeInformation = EmitTypeInformation.AsNeeded;
+            settings.KnownTypes = knownTypes;
+            var x = new DataContractJsonSerializer(obj.GetType(), settings);
+            var mem = new MemoryStream();
+            x.WriteObject(mem, obj);
+            StreamReader sr = new StreamReader(mem);
+            mem.Position = 0;
+            string ret = sr.ReadToEnd();
+            return ret;
+        }
+    }
+    class TaskTab:BaseTab
+    {
+        public TabPage m_pg;
+        protected TableLayoutPanel m_tbl;
+        protected SplitContainer m_spl;
+        protected TreeView m_tree;
+        protected WebBrowser m_wb;
+        public TaskTab()
+        {
+            InitCtrls();
+            BuildTree();
+            InitEvent();
+        }
+
+        private void InitEvent()
+        {
+            m_tree.AfterCheck += Tree_AfterCheck;
+        }
+
+        private void Tree_AfterCheck(object sender, TreeViewEventArgs e)
+        {
+            List<string> secLst = null;
+            if (m_tree.Nodes["All"].Checked)
+            {
+                //
+            }
+            else
+            {
+                secLst = new List<string>();
+                foreach (TreeNode tn in m_tree.Nodes)
+                {
+                    if (tn.Checked) { secLst.Add(tn.Text); }
+                }
+            }
+            List<DateTime> dtLst = new List<DateTime> {new DateTime(2019,6,15), new DateTime(2019, 6, 16) };
+            var tc = QryTabContent(dtLst,secLst);
+            var knownTypes = new Type[] {
+                    typeof(TabContent),
+                    typeof(DayTask),
+                    typeof(TaskRec),
+                    typeof(PlanRec),
+                };
+            var jsTxt = Obj2Json(tc,knownTypes);
+            var htmlTxt = GenTabHtml(jsTxt);
+            m_wb.DocumentText = htmlTxt;
+        }
+        private string GenTabHtml(string jsTxt)
+        {
+            string tmpl;
+            tmpl = System.IO.File.ReadAllText(@"..\..\main\TaskTmpl.html");
+            //return tmpl;
+            var rpl = tmpl.Replace("jsTxt = '';", string.Format("jsTxt = '{0}'", jsTxt));
+            return rpl;
+        }
+
+        private SearchBuilder m_taskSB;
+        private SearchBuilder m_grpSB;
+        private List<string> QryGrps()
+        {
+            if (m_grpSB == null) { m_grpSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.GrpName)); }
+            m_grpSB.Clear();
+            m_grpSB.Search();
+            var lst = new List<string>();
+            foreach (DataRow row in m_grpSB.dc.m_dataTable.Rows)
+            {
+                lst.Add(row[1].ToString());
+            }
+            return lst;
+        }
+        private TabContent QryTabContent(List<DateTime>dtLst,List<string>secLst)
+        {
+            var tc = new TabContent();
+            tc.planCols = new List<string> {"Kế hoạch","Ban","Tình trạng" };
+            tc.taskCols = new List<string> { "Công việc", "Ban", "Tình trạng" };
+            tc.recs = new List<DayTask>();
+            //qry task
+            foreach (DateTime dt in dtLst)
+            {
+                List<TaskRec> tasks = QryTask(dt, secLst);
+                var rec = new DayTask {
+                    date = dt.ToString(lConfigMng.GetDisplayDateFormat()),
+                    tasks = tasks};
+                tc.recs.Add(rec);
+            }
+            return tc;
+        }
+        private List< TaskRec> QryTask(DateTime startDt, List<string> sectionLst)
+        {
+            var lst = new List<TaskRec>();
+            if (m_taskSB == null) { m_taskSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.Task)); }
+            m_taskSB.Clear();
+            m_taskSB.Add(TaskTblInfo.ColIdx.Begin.ToField(), startDt);
+            if (sectionLst != null) {
+                m_taskSB.Add(TaskTblInfo.ColIdx.Group.ToField(), sectionLst);
+            }
+            m_taskSB.Search();
+            foreach (DataRow row in m_taskSB.dc.m_dataTable.Rows)
+            {
+                TaskStatus sts = (TaskStatus)(int.Parse(row[TaskTblInfo.ColIdx.Stat.ToField()].ToString()));
+                var rec = new TaskRec()
+                {
+                    name = row[TaskTblInfo.ColIdx.Name.ToField()].ToString(),
+                    section = row[TaskTblInfo.ColIdx.Group.ToField()].ToString(),
+                    status = sts.ToDesc()
+                };
+                lst.Add(rec);
+            }
+            return lst;
+        }
+
+        [DataContract]
+        public class PlanRec
+        {
+            [DataMember] public string name;
+            [DataMember] public string section;
+            [DataMember] public string status;
+        }
+        [DataContract]
+        public class TaskRec
+        {
+            [DataMember] public string name;
+            [DataMember] public string section;
+            [DataMember] public string status;
+        }
+        [DataContract]
+        public class DayTask
+        {
+            [DataMember] public string date;
+            [DataMember] public List<PlanRec> plans;
+            [DataMember] public List<TaskRec> tasks;
+        }
+        [DataContract]
+        public class TabContent
+        {
+            [DataMember] public List<string> taskCols;
+            [DataMember] public List<string> planCols;
+            [DataMember] public List<DayTask> recs;
+        }
+
+        private void InitCtrls()
+        {
+            var tbl = new TableLayoutPanel();
+            tbl.Dock = DockStyle.Fill;
+            var spl = new SplitContainer();
+
+            spl.Dock = DockStyle.Fill;
+            spl.Orientation = Orientation.Vertical; // spl1 | spl2
+            spl.FixedPanel = FixedPanel.Panel1;
+            spl.SplitterDistance = 150;
+
+            tbl.Controls.Add(spl);
+            var pg = new TabPage();
+            pg.Controls.Add(tbl);
+            pg.Text = "Công Việc";
+
+            var trvw = new TreeView();
+            trvw.Dock = DockStyle.Fill;
+            trvw.CheckBoxes = true;
+            spl.Panel1.Controls.Add(trvw);
+
+            var wb = new WebBrowser();
+            wb.Dock = DockStyle.Fill;
+            spl.Panel2.Controls.Add(wb);
+
+            //save control handles
+            m_wb = wb;
+            m_tree = trvw;
+            m_pg = pg;
+            m_tbl = tbl;
+            m_spl = spl;
+        }
+
+        private void BuildTree()
+        {
+            m_tree.Nodes.Add("All", "All");
+           var lst = QryGrps();
+            foreach(string grpName in lst)
+            {
+                m_tree.Nodes.Add(grpName);
+            }
+        }
+    }
     class OrgTab
     {
         public TabPage m_pg;
@@ -58,7 +257,7 @@ namespace test_binding
             wb.Dock = DockStyle.Fill;
             //wb.ScriptErrorsSuppressed = true;
             wb.DocumentCompleted += Wb_DocumentCompleted;
-            wb.Url = new Uri(m_CBV);
+            //wb.Url = new Uri(m_CBV);
 
             spl.Panel2.Controls.Add(wb);
             tbl.Dock = DockStyle.Fill;

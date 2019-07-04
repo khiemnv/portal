@@ -237,6 +237,52 @@ namespace test_binding
                     //srchParams.Add(string.Format("@{0}", m_fieldName), string.Format("%{0}%", m_value));
 #endif
         }
+        public void Add(string col, List<string> args)
+        {
+            Debug.Assert(m_dict.ContainsKey(col));
+
+            TableInfo.ColInfo colInfo = m_dict[col];
+            switch (colInfo.m_type)
+            {
+                case TableInfo.ColInfo.ColType.text:
+                case TableInfo.ColInfo.ColType.num:
+                case TableInfo.ColInfo.ColType.uniq:
+                case TableInfo.ColInfo.ColType.map:
+                    break;
+                default:
+                    Debug.Assert(false);
+                    break;
+            }
+
+#if use_sqlite
+            var keys = new List<string>();
+            for (int i = 0; i < args.Count; i++)
+            {
+                var key = string.Format("@{0}_{1}", colInfo.m_field, i);
+                srchParams.Add(
+                    new SearchParam()
+                    {
+                        key = key,
+                        val = string.Format("{0}", args[i])
+                    }
+                );
+                keys.Add(key);
+            }
+            exprs.Add(string.Format("( {0} in ({1}) )", colInfo.m_field, string.Join(",",keys)));
+#else   //use sql server
+                    exprs.Add(string.Format("({0} like @{0})", m_fieldName));
+                    srchParams.Add(
+                        new lSearchParam()
+                        {
+                            key = string.Format("@{0}", m_fieldName),
+                            val = string.Format("%{0}%", m_value),
+                            type = DbType.String
+                        }
+                    );
+                    //exprs.Add(string.Format("({0} like @{0})", m_fieldName));
+                    //srchParams.Add(string.Format("@{0}", m_fieldName), string.Format("%{0}%", m_value));
+#endif
+        }
         public void Search()
         {
             dc.Search(exprs, srchParams);
