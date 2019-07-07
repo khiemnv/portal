@@ -5,68 +5,94 @@
     <meta charset="utf-8" />
     <title></title>
     <style type="text/css">
-    .label {
-        background-color: #C0C0C0;
-        padding: 5px
-    }
+        .label {
+            padding: 5px;
+            color: blue;
+            font-size: 20px;
+            font-weight: bold;
+        }
 
-    .content {
-        width: 90%;
-        margin-left: 5%;
-        background-color: whitesmoke;
-    }
+        .content {
+            width: 90%;
+            margin-left: 5%;
+            background-color: whitesmoke;
+        }
 
-    .auto-style1 {
-        width: 87px;
-    }
+        .auto-style1 {
+            width: 87px;
+        }
 
-    .auto-style2 {
-        width: 125px;
-    }
+        .auto-style2 {
+            width: 125px;
+        }
 
-    .auto-style3 {
-        width: 87px;
-        height: 23px;
-    }
+        .auto-style3 {
+            width: 87px;
+            height: 23px;
+        }
 
-    .auto-style4 {
-        width: 125px;
-        height: 23px;
-    }
+        .auto-style4 {
+            width: 125px;
+            height: 23px;
+        }
 
-    .auto-style5 {
-        height: 23px;
-    }
+        .auto-style5 {
+            height: 23px;
+        }
 
-    table, th, td {
-        border: 1px solid black;
-        border-collapse: collapse;
-    }
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
 
-    table {
-        width: 100%;
-    }
+        table {
+            width: 100%;
+        }
 
-    th {
-        background-color: #CCCCCC;
-    }
-</style>
+        th {
+            color: white;
+            background-color: blue;
+            font-style: normal;
+        }
+
+        .col1 {
+            width: 30%
+        }
+        
+        button {
+        	width: 50px
+        }
+    </style>
 </head>
 <body style="background-repeat: no-repeat; background-attachment: scroll; padding: 10px">
     <div style="background-color: white; width: 600px; position: relative; left: auto;">
-        <p>Ngày bắt đầu </p>
-        <table style="border: 0; width: auto;">
-            <tr style="border: 0">
-                <td style="border: 0">
-                    <button type="button" onclick="OnPrev()">Prev</button></td>
-                <td style="border: 0" id="date">dd/mm/yyyy(1/2)</td>
-                <td style="border: 0">
-                    <button type="button" onclick="OnNext()">Next</button></td>
-            </tr>
-
-        </table>
-        <h3 class="label">Công Việc</h3>
-        <div id="taskTbl" class="content">
+        <div>
+            <p class="label">Danh sách công việc/ kế hoạch trong tuần</p>
+            <span>Ngày bắt đầu:</span>
+            <span style="border: 0" id="date">dd/mm/yyyy(1/2)</span>
+            <!--<table style="border: 0; width: auto;">
+                <tr style="border: 0">
+                    <td style="border: 0">
+                        <button type="button" onclick="OnPrev()">Prev</button></td>
+                    
+                    <td style="border: 0">
+                        <button type="button" onclick="OnNext()">Next</button></td>
+                </tr>
+            </table>-->
+            <br/>
+            <button id="btn0" type="button" onclick="UpdateTaskByDay(0)" disabled="disabled">Mon</button>
+            <button id="btn1" type="button" onclick="UpdateTaskByDay(1)" disabled="disabled">Tue</button>
+            <button id="btn2" type="button" onclick="UpdateTaskByDay(2)" disabled="disabled">wed</button>
+            <button id="btn3" type="button" onclick="UpdateTaskByDay(3)" disabled="disabled">Thu</button>
+            <button id="btn4" type="button" onclick="UpdateTaskByDay(4)" disabled="disabled">Fri</button>
+            <button id="btn5" type="button" onclick="UpdateTaskByDay(5)" disabled="disabled">Sat</button>
+            <button id="btn6" type="button" onclick="UpdateTaskByDay(6)" disabled="disabled">Sun</button>
+            <br/>
+            <span id="warn" style="color:red">warning</span>
+        </div>
+        <br />
+        <span class="label">Công Việc</span>
+        <div id="taskTbl">
             <table>
                 <tr>
                     <th>Tên CV&nbsp;</th>
@@ -80,8 +106,9 @@
                 </tr>
             </table>
         </div>
-        <h3 class="label">Kế hoạch</h3>
-        <div id="planTbl" class="content">
+        <br />
+        <span class="label">Kế hoạch</span>
+        <div id="planTbl">
 
             <table>
                 <tr>
@@ -99,88 +126,115 @@
     </div>
 
     <script>
-    jsObj = {
-        "taskCols": ["Tên CV", "Ban", "Tình trạng"],
-        "planCols": ["Tên KH", "Ban", "Tình trạng"],
-        "recs": [{
-            "date": "01/01/2019",
-            "plans": [{ "name": "ke hoach 1", "section": "ban", "status": "done" },
-            { "name": "ke hoach 2", "section": "ban", "status": "done" }
-            ],
-            "tasks": [
-                { "name": "task 1", "section": "ban", "status": "done" },
-                { "name": "task 2", "section": "ban", "status": "done" }
+        jsObj = {
+            "taskCols": ["Tên CV", "Ban", "Tình trạng"],
+            "planCols": ["Tên KH", "Ban", "Tình trạng"],
+            "recs": [{
+                "date": "01/01/2019",
+                "plans": [{ "name": "ke hoach 1", "section": "ban", "status": "done" },
+                { "name": "ke hoach 2", "section": "ban", "status": "done" }
+                ],
+                "tasks": [
+                    { "name": "task 1", "section": "ban", "status": "done" },
+                    { "name": "task 2", "section": "ban", "status": "done" }
+                ]
+            },
+            {
+                "date": "02/01/2019",
+                "plans": [{ "name": "ke hoach 21", "section": "ban", "status": "doing" },
+                { "name": "ke hoach 22", "section": "ban", "status": "done" }
+                ],
+                "tasks": [
+                    { "name": "task 21", "section": "ban", "status": "done" },
+                    { "name": "task 22", "section": "ban", "status": "done" }
+                ]
+            }
             ]
-        },
-        {
-            "date": "02/01/2019",
-            "plans": [{ "name": "ke hoach 21", "section": "ban", "status": "doing" },
-            { "name": "ke hoach 22", "section": "ban", "status": "done" }
-            ],
-            "tasks": [
-                { "name": "task 21", "section": "ban", "status": "done" },
-                { "name": "task 22", "section": "ban", "status": "done" }
-            ]
+        };
+        //jsTxt = '';
+        //var jsObj = eval("(" + jsTxt + ")");
+        var curIdx = 0;
+        var noTask = true;
+        for (i = jsObj.recs.length - 1; i >= 0; i--) {
+            rec = jsObj.recs[i];
+            n = 0;
+            if (rec.tasks != null) { n = n + rec.tasks.length; }
+            if (rec.plans != null) { n = n + rec.plans.length; }
+            if (n > 0) {
+                document.getElementById("btn" + i).disabled = false;
+                curIdx = i;
+                noTask = false;
+            }
         }
-        ]
-    };
-    jsTxt = '';
-    var jsObj = eval("(" + jsTxt + ")");
-    var curIdx = 0;
-    render(0)
-    function render(idx) {
-        var rec = jsObj.recs[idx];
+        var warn = "";
+        if (noTask) {
+            warn = "Không có công việc!";
+        }
+        document.getElementById("warn").innerHTML = warn;
+        render(curIdx);
+        function render(idx) {
+            var rec = jsObj.recs[idx];
 
-        document.getElementById("date").innerHTML = rec.date + "(" + (idx + 1) + "/" + jsObj.recs.length + ")";
-        //task
-        txt = "";
-        txt += '<table style="width: 100%;">';
-        //txt += '<tr><th>Tên CV</th><th>Ban</th><th>Tình trạng</th></tr>';
-        txt += "<tr>";
-        for (i in jsObj.taskCols) {
-            txt += "<th>" + jsObj.taskCols[i] + "</th>";
-        }
-        txt += "</tr>";
-        for (i in rec.tasks) {
+            document.getElementById("date").innerHTML = rec.date + "(" + (idx + 1) + "/" + jsObj.recs.length + ")";
+            //task
+            txt = "";
+            txt += '<table style="width: 100%;">';
+            //txt += '<tr><th>Tên CV</th><th>Ban</th><th>Tình trạng</th></tr>';
             txt += "<tr>";
-            txt += "<td>" + rec.tasks[i].name + "</td>";
-            txt += "<td>" + rec.tasks[i].section + "</td>";
-            txt += "<td>" + rec.tasks[i].status + "</td>";
+            txt += '<th class="col1">' + jsObj.taskCols[0] + '</th>';
+            txt += '<th class="col1">' + jsObj.taskCols[1] + '</th>';
+            txt += '<th class="col1">' + jsObj.taskCols[2] + '</th>';
+            //for (i in jsObj.taskCols) {
+            //    txt += '<th class="col1">' + jsObj.taskCols[i] + "</th>";
+            //}
             txt += "</tr>";
-        }
-        txt += "</table>";
-        document.getElementById("taskTbl").innerHTML = txt;
-        //plan
-        txt = "";
-        txt += '<table style="width: 100%;">';
-        //txt += '<tr><th>Tên KH</th><th>Ban</th><th>Tình trạng</th></tr>';
-        txt += "<tr>";
-        for (i in jsObj.taskCols) {
-            txt += "<th>" + jsObj.planCols[i] + "</th>";
-        }
-        txt += "</tr>";
-        for (i in rec.plans) {
+            for (i in rec.tasks) {
+                txt += "<tr>";
+                txt += "<td>" + rec.tasks[i].name + "</td>";
+                txt += "<td>" + rec.tasks[i].section + "</td>";
+                txt += "<td>" + rec.tasks[i].status + "</td>";
+                txt += "</tr>";
+            }
+            txt += "</table>";
+            document.getElementById("taskTbl").innerHTML = txt;
+            //plan
+            txt = "";
+            txt += '<table style="width: 100%;">';
+            //txt += '<tr><th>Tên KH</th><th>Ban</th><th>Tình trạng</th></tr>';
             txt += "<tr>";
-            txt += "<td>" + rec.plans[i].name + "</td>";
-            txt += "<td>" + rec.plans[i].section + "</td>";
-            txt += "<td>" + rec.plans[i].status + "</td>";
+            txt += '<th class="col1">' + jsObj.planCols[0] + '</th>';
+            txt += '<th class="col1">' + jsObj.planCols[1] + '</th>';
+            txt += '<th class="col1">' + jsObj.planCols[2] + '</th>';
+            //for (i=0;i< jsObj.taskCols.length;i++) {
+            //    txt += '<th>' + jsObj.planCols[i] + '</th>';
+            //}
             txt += "</tr>";
+            for (i in rec.plans) {
+                txt += "<tr>";
+                txt += '<td>' + rec.plans[i].name + "</td>";
+                txt += "<td>" + rec.plans[i].section + "</td>";
+                txt += "<td>" + rec.plans[i].status + "</td>";
+                txt += "</tr>";
+            }
+            txt += "</table>";
+            document.getElementById("planTbl").innerHTML = txt;
         }
-        txt += "</table>";
-        document.getElementById("planTbl").innerHTML = txt;
-    }
-    function OnPrev() {
-        if (curIdx > 0) {
-            curIdx -= 1;
+        function OnPrev() {
+            if (curIdx > 0) {
+                curIdx -= 1;
+                render(curIdx);
+            }
+        }
+        function OnNext() {
+            if (curIdx < jsObj.recs.length - 1) {
+                curIdx += 1;
+                render(curIdx);
+            }
+        }
+        function UpdateTaskByDay(idx) {
+            curIdx = idx;
             render(curIdx);
         }
-    }
-    function OnNext() {
-        if (curIdx < jsObj.recs.length - 1) {
-            curIdx += 1;
-            render(curIdx);
-        }
-    }
     </script>
 </body>
 </html>

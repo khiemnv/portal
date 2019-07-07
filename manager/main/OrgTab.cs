@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -48,41 +49,236 @@ namespace test_binding
         private void InitEvent()
         {
             m_tree.AfterCheck += Tree_AfterCheck;
+            m_tree.BeforeCheck += M_tree_BeforeCheck;
+            //m_tree.MouseClick += M_tree_MouseClick;
+            m_tree.NodeMouseClick += M_tree_NodeMouseClick;
+            //m_tree.KeyDown += M_tree_KeyDown;
         }
 
+        private void M_tree_KeyDown(object sender, KeyEventArgs e)
+        {
+            OnKeyDown(e);
+        }
+
+        private void M_tree_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            //throw new NotImplementedException();
+            OnNodeMouseClick(e);
+        }
+
+        TreeViewAction m_action = TreeViewAction.Unknown;
+        protected void OnNodeMouseClick(System.Windows.Forms.TreeNodeMouseClickEventArgs e)
+        {
+            //base.OnNodeMouseClick(e);
+
+            // is the click on the checkbox?  If not, discard it
+            System.Windows.Forms.TreeViewHitTestInfo info = m_tree.HitTest(e.X, e.Y);
+            if (info == null || info.Location != System.Windows.Forms.TreeViewHitTestLocations.StateImage)
+            {
+                return;
+            }
+
+            // toggle the node's checked status.  This will then fire OnAfterCheck
+            System.Windows.Forms.TreeNode tn = e.Node;
+            m_action = TreeViewAction.ByMouse;
+            tn.Checked = !tn.Checked;
+            m_action = TreeViewAction.Unknown;
+        }
+        protected void OnKeyDown(System.Windows.Forms.KeyEventArgs e)
+        {
+            //base.OnKeyDown(e);
+
+            // is the keypress a space?  If not, discard it
+            if (e.KeyCode == System.Windows.Forms.Keys.Space)
+            {
+                // toggle the node's checked status.  This will then fire OnAfterCheck
+                m_tree.SelectedNode.Checked = !m_tree.SelectedNode.Checked;
+            }
+        }
+
+        private void M_tree_MouseClick(object sender, MouseEventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void M_tree_BeforeCheck(object sender, TreeViewCancelEventArgs e)
+        {
+            //if(e.Action != TreeViewAction.Unknown)
+            return;
+            if (m_ignore == 0)
+            {
+                var prev = e.Node.StateImageIndex;
+                if (prev != 1) {
+                    e.Node.StateImageIndex = 1; }
+                else
+                {
+                    e.Node.StateImageIndex = 0;
+                }
+            }
+        }
+
+        int m_ignore = 0;
         private void Tree_AfterCheck(object sender, TreeViewEventArgs e)
         {
-            List<string> secLst = null;
-            if (m_tree.Nodes["All"].Checked)
+            //if (e.Action != TreeViewAction.Unknown)
+            if (m_ignore == 0)
             {
-                //
+                if (e.Node.Parent != null)
+                {
+                    m_ignore++;
+                    CheckAllParentNodes(e.Node.Parent, Check(e.Node));
+                    m_ignore--;
+                }
+                if (e.Node.Nodes.Count > 0)
+                {
+                    m_ignore++;
+                    CheckAllChildNodes(e.Node, Check(e.Node));
+                    m_ignore--;
+                }
+
+                var rootN = m_tree.Nodes["All"];
+                List<string> secLst = null;
+                if (Check(rootN))
+                {
+                    //all node is checked
+                }
+                else
+                {
+                    secLst = new List<string>();
+                    foreach (TreeNode tn in rootN.Nodes)
+                    {
+                        if (Check(tn)) { secLst.Add(tn.Text); }
+                    }
+                }
+                if(secLst != null)
+                {
+                    Debug.Print("secLst: {0}",secLst.Count);
+                    foreach(var i in secLst) { Debug.Print("    {0}", i); }
+                }
+                UpdateContent(secLst);
+            }
+        }
+
+        private List<TreeNode> GetAllLeafs(TreeNode parent)
+        {
+            var lst = new List<TreeNode>();
+            var q = new List<TreeNode>();
+            q.Add(parent);
+            while(q.Count > 0)
+            {
+                var n = q[0];
+                q.RemoveAt(0);
+                if (n.Nodes.Count == 0) { lst.Add(n); }
+                else
+                {
+                    q.AddRange(n.Nodes.Cast<TreeNode>().ToList());
+                }
+            }
+            return lst;
+        }
+
+        private void CheckAllParentNodes(TreeNode parent, bool val)
+        {
+            int i = 0;
+            var leafs = GetAllLeafs(parent);
+            for(; i< leafs.Count; i++)
+            {
+                var child = leafs[i];
+                if(!(Check(child)==val)) { break; }    //child not checked
+            }
+            if (i == leafs.Count)
+            {
+                parent.Checked = val;
+                //Check(parent,val?1:0);
             }
             else
             {
-                secLst = new List<string>();
-                foreach (TreeNode tn in m_tree.Nodes)
-                {
-                    if (tn.Checked) { secLst.Add(tn.Text); }
-                }
+                parent.Checked = false;
+                Check(parent,2);
             }
-            List<DateTime> dtLst = new List<DateTime> {new DateTime(2019,6,15), new DateTime(2019, 6, 16) };
-            var tc = QryTabContent(dtLst,secLst);
+        }
+
+        private bool Check(TreeNode node, bool val)
+        {
+            //int idx = val?1:0;
+            //node.StateImageIndex = idx;
+            //return idx == 1;
+            if(node.Checked != val)
+            {
+                node.Checked = val;
+            }
+            else
+            {
+                Debug.Assert(false, "should not reset node state");
+            }
+            return node.Checked;
+        }
+        private bool Check(TreeNode node, int idx = -1)
+        {
+            if (idx == -1)
+            {
+                //node.StateImageIndex = idx;
+                //return node.StateImageIndex == 1;
+                return node.Checked;
+            }
+            else
+            {
+                node.StateImageIndex = idx;
+                return node.Checked;
+            }
+        }
+
+        private void UpdateContent(List<string> secLst)        {
+            
+            //List<DateTime> dtLst = new List<DateTime> {new DateTime(2019,6,15), new DateTime(2019, 6, 16) };
+            List<DateTime> dtLst = new List<DateTime>();
+            var dt = DateTime.Now;
+            var wd = dt.DayOfWeek;
+            for (int i = 1; i < 8; i++)
+            {
+                dtLst.Add(dt.AddDays(i - (int)wd));
+            }
+            var tc = QryTabContent(dtLst, secLst);
             var knownTypes = new Type[] {
                     typeof(TabContent),
                     typeof(DayTask),
                     typeof(TaskRec),
                     typeof(PlanRec),
                 };
-            var jsTxt = Obj2Json(tc,knownTypes);
+            var jsTxt = Obj2Json(tc, knownTypes);
             var htmlTxt = GenTabHtml(jsTxt);
             m_wb.DocumentText = htmlTxt;
         }
+
+        private void CheckAllChildNodes(TreeNode node, bool val)
+        {
+            foreach (TreeNode i in node.Nodes)
+            {
+                if (i.Checked != val) { Check(i, val); }
+                if (i.Nodes.Count > 0) { CheckAllChildNodes(i, val); }
+            }
+        }
         private string GenTabHtml(string jsTxt)
         {
-            string tmpl;
-            tmpl = System.IO.File.ReadAllText(@"..\..\main\TaskTmpl.html");
-            //return tmpl;
-            var rpl = tmpl.Replace("jsTxt = '';", string.Format("jsTxt = '{0}'", jsTxt));
+            string tmpl="";
+            //var fin = File.OpenText(@"..\..\main\TaskTmpl.html");
+            //while (!fin.EndOfStream) { 
+            //string line = fin.ReadLine();
+            //if (line.IndexOf("//jsTxt = '';") != -1)
+            //{
+            //    fin.ReadLine();
+
+            //    tmpl += string.Format("jsTxt = '{0}';\n", jsTxt);
+            //    tmpl += "jsObj = eval(\"(\" + jsTxt + \")\");\n";
+            //}
+            //else
+            //    tmpl += line + "\n";
+            //}
+            //fin.Close();
+            tmpl = File.ReadAllText(@"..\..\main\TaskTmpl.html");
+            //jsTxt = '';
+            //var jsObj = eval("(" + jsTxt + ")");
+            var rpl = tmpl.Replace("//jsTxt = '';", string.Format("jsTxt = '({0})';\njsObj = eval(jsTxt)", jsTxt));
             return rpl;
         }
 
@@ -187,8 +383,9 @@ namespace test_binding
             pg.Text = "Công Việc";
 
             var trvw = new TreeView();
+            //var trvw  = new RikTheVeggie.TriStateTreeView();
             trvw.Dock = DockStyle.Fill;
-            trvw.CheckBoxes = true;
+            //trvw.CheckBoxes = true;
             spl.Panel1.Controls.Add(trvw);
 
             var wb = new WebBrowser();
@@ -203,14 +400,58 @@ namespace test_binding
             m_spl = spl;
         }
 
+
         private void BuildTree()
         {
-            m_tree.Nodes.Add("All", "All");
-           var lst = QryGrps();
+            m_tree.CheckBoxes = false;
+            m_tree.StateImageList = new ImageList();
+            //var imgLst = new Image[]
+            //{
+            //    Image.FromFile(@"..\..\img\cb_unchecked.jpg"),
+            //    Image.FromFile(@"..\..\img\cb_checked.jpg"),
+            //    Image.FromFile(@"..\..\img\cb_gray.bmp"),
+            //};
+            //m_tree.StateImageList.Images.AddRange(imgLst);
+            for (int i = 0; i < 3; i++)
+            {
+                // Create a bitmap which holds the relevent check box style
+                // see http://msdn.microsoft.com/en-us/library/ms404307.aspx and http://msdn.microsoft.com/en-us/library/system.windows.forms.checkboxrenderer.aspx
+
+                System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(16, 16);
+                System.Drawing.Graphics chkGraphics = System.Drawing.Graphics.FromImage(bmp);
+                switch (i)
+                {
+                    // 0,1 - offset the checkbox slightly so it positions in the correct place
+                    case 0:
+                        System.Windows.Forms.CheckBoxRenderer.DrawCheckBox(chkGraphics, new System.Drawing.Point(0, 1), System.Windows.Forms.VisualStyles.CheckBoxState.UncheckedNormal);
+                        break;
+                    case 1:
+                        System.Windows.Forms.CheckBoxRenderer.DrawCheckBox(chkGraphics, new System.Drawing.Point(0, 1), System.Windows.Forms.VisualStyles.CheckBoxState.CheckedNormal);
+                        break;
+                    case 2:
+                        System.Windows.Forms.CheckBoxRenderer.DrawCheckBox(chkGraphics, new System.Drawing.Point(0, 1), System.Windows.Forms.VisualStyles.CheckBoxState.MixedNormal);
+                        break;
+                }
+
+                m_tree.StateImageList.Images.Add(bmp);
+            }
+
+            m_ignore++;
+
+            var node = m_tree.Nodes.Add("All", "All");
+            node.Checked = false;
+            node.StateImageIndex = 0;
+            var lst = QryGrps();
             foreach(string grpName in lst)
             {
-                m_tree.Nodes.Add(grpName);
+                var child = node.Nodes.Add(grpName);
+                child.Checked = false;
+                child.StateImageIndex = 0;
             }
+
+            //m_tree.CheckBoxes = false;
+            
+            m_ignore--;
         }
     }
     class OrgTab
