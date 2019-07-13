@@ -468,6 +468,8 @@ namespace test_binding
         [Description("organization")] Organization,
         [Description("section")] Section,
         [Description("samon")] Samon,
+        [Description("lecture")] Lecture,
+        [Description("topic")] Topic,
 
         Count
     }
@@ -819,7 +821,7 @@ namespace test_binding
         }
     }
 
-    [DataContract(Name = "MonkTblInfo")]
+    [DataContract(Name = "SamonTblInfo")]
     public class SamonTblInfo : TableInfo
     {
         public enum ColIdx
@@ -849,6 +851,79 @@ namespace test_binding
             m_cols[(int)ColIdx.Note] = new ColInfo(ColIdx.Note.ToField(), ColIdx.Note.ToAlias(), ColInfo.ColType.text);
         }
     }
+
+    [DataContract(Name = "LectureTblInfo")]
+    public class LectureTblInfo : TableInfo
+    {
+        public enum Author
+        {
+            [Description("Sư phụ")] su_phu,
+            [Description("Sư ông")] su_ong,
+        }
+        public enum Target
+        {
+            [Description("Phật tử")] phat_tu,
+            [Description("Chư tăng")] chu_tang,
+            [Description("Cư sĩ TTXG")] cu_si,
+        }
+        public enum ColIdx
+        {
+            [Field("ID"), Alias("ID")] ID,
+            [Field("lecture_number"), Alias("Mã BG")] lect,
+            [Field("title"), Alias("Bài giảng")] title,
+            [Field("author"), Alias("Tác giả")] auth,
+            [Field("target"), Alias("Đối tượng")] target,
+            [Field("topic_number"), Alias("Chủ đề")] topic,
+            [Field("created_date"), Alias("Ngày tạo")] crt,
+            [Field("content"), Alias("Nội dung")] content,
+            [Field("link"), Alias("Link")] link,
+            [Field("note"), Alias("Ghi chú")] Note,
+        }
+        public LectureTblInfo()
+        {
+            m_tblName = "lecture";
+            m_tblAlias = "Bài Giảng";
+
+            m_crtQry = "CREATE TABLE if not exists lecture("
+                + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "lecture_number char(31),"
+                + "title char(63),"
+                + "author INTEGER,"
+                + "target INTEGER,"
+                + "topic_number char(31),"
+                + "created_date datetime,"
+                + "content text,"
+                + "link char(255),"
+                + "note text)";
+            m_cols = new ColInfo[GetCount<ColIdx>()];
+            m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
+            m_cols[(int)ColIdx.lect] = new ColInfo(ColIdx.lect.ToField(), ColIdx.lect.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.title] = new ColInfo(ColIdx.title.ToField(), ColIdx.title.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.auth] = new ColInfo(ColIdx.auth.ToField(), ColIdx.auth.ToAlias(), ColInfo.ColType.map, GetDescLst<Author>());
+            m_cols[(int)ColIdx.target] = new ColInfo(ColIdx.target.ToField(), ColIdx.target.ToAlias(), ColInfo.ColType.map, GetDescLst<Target>());
+            m_cols[(int)ColIdx.topic] = new ColInfo(ColIdx.topic.ToField(), ColIdx.topic.ToAlias(), ColInfo.ColType.text, TableIdx.Topic.ToDesc());
+            m_cols[(int)ColIdx.crt] = new ColInfo(ColIdx.crt.ToField(), ColIdx.crt.ToAlias(), ColInfo.ColType.dateTime);
+            m_cols[(int)ColIdx.content] = new ColInfo(ColIdx.content.ToField(), ColIdx.content.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.link] = new ColInfo(ColIdx.link.ToField(), ColIdx.link.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.Note] = new ColInfo(ColIdx.Note.ToField(), ColIdx.Note.ToAlias(), ColInfo.ColType.text);
+        }
+    }
+    [DataContract(Name = "lTopicTblInfo")]
+    public class lTopicTblInfo : TableInfo
+    {
+        public lTopicTblInfo()
+        {
+            m_tblName = "topic";
+            m_tblAlias = "Chủ đề";
+            m_crtQry = "CREATE TABLE if not exists topic("
+                + "ID INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "name nchar(31))";
+            m_cols = new ColInfo[] {
+                   new ColInfo( "ID","ID", ColInfo.ColType.num, null, false),
+                   new ColInfo( "name","Chủ đề", ColInfo.ColType.text)
+                };
+        }
+    };
 
     [DataContract(Name = "lReceiptsViewInfo")]
     public class lReceiptsViewInfo : TableInfo
@@ -1016,7 +1091,7 @@ namespace test_binding
             m_dataContents = new Dictionary<string, DataContent>();
         }
 
-        protected Form1 m_form;
+        protected Control m_form;
         private Dictionary<string, lDataSync> m_dataSyncs;
         private Dictionary<string, DataContent> m_dataContents;
 
@@ -1275,7 +1350,14 @@ namespace test_binding
     public class lSQLiteContentProvider : lContentProvider
     {
         static lSQLiteContentProvider m_instance;
-        public static lContentProvider getInstance(Form1 parent)
+        public static lContentProvider CrtInstance(Control parent)
+        {
+            var newObj = new lSQLiteContentProvider();
+            newObj.m_form = parent;
+            m_instance = newObj;
+            return newObj;
+        }
+        public static lContentProvider GetInstance(Control parent)
         {
             if (m_instance == null)
             {
@@ -1394,6 +1476,8 @@ namespace test_binding
                     new OrganizationTblInfo(),
                     new SectionTblInfo(),
                     new SamonTblInfo(),
+                    new LectureTblInfo(),
+                    new lTopicTblInfo(),
                 };
             m_views = new List<TableInfo>() {
                     //new lReceiptsViewInfo(),
@@ -1580,7 +1664,7 @@ namespace test_binding
 #if use_bg_work
         myWorker m_wkr;
 #else
-        public Form1 m_form;
+        public Control m_form;
 #endif
         public DataTable m_dataTable { get; private set; }
 

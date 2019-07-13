@@ -1314,6 +1314,16 @@ namespace test_binding
         }
     }
 
+    //not impl
+    public class LectureReport : lBaseReport
+    {
+        public LectureReport()
+        {
+            m_rdlcPath = @"..\..\rpt_interpayment.rdlc";
+            m_viewName = "v_advance";
+        }
+    }
+
     public class fileExporter
     {
         class lMapExt

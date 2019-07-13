@@ -118,7 +118,7 @@ namespace test_binding
         public List<string> exprs = new List<string>();
         public List<SearchParam> srchParams = new List<SearchParam>();
         public DataContent dc;
-        public SearchBuilder(TableInfo tblInfo)
+        public SearchBuilder(TableInfo tblInfo, lContentProvider contentProvider = null)
         {
             m_tblInfo = tblInfo;
             m_dict = new Dictionary<string, TableInfo.ColInfo>();
@@ -126,7 +126,10 @@ namespace test_binding
             {
                 m_dict.Add(colInfo.m_field, colInfo);
             }
-            dc = appConfig.s_contentProvider.CreateDataContent(m_tblInfo.m_tblName);
+            if (contentProvider != null)
+                dc = contentProvider.CreateDataContent(m_tblInfo.m_tblName);
+            else
+                dc = appConfig.s_contentProvider.CreateDataContent(m_tblInfo.m_tblName);
         }
         public void Clear()
         {
@@ -1173,6 +1176,23 @@ namespace test_binding
             m_searchCtrls = new List<SearchCtrl> {
                     CrtSearchCtrl(m_tblInfo, "equipment_number" , new Point(0, 0), new Size(1, 1)),
                     CrtSearchCtrl(m_tblInfo, "note"             , new Point(0, 1), new Size(1, 1), SearchCtrl.SearchMode.like),
+                };
+        }
+    }
+
+    [DataContract(Name = "LectureSearchPanel")]
+    public class LectureSearchPanel : SearchPanel
+    {
+        public LectureSearchPanel(lDataPanel dataPanel)
+        {
+            m_dataPanel = dataPanel;
+            m_searchCtrls = new List<SearchCtrl> {
+                    CrtSearchCtrl(m_tblInfo, LectureTblInfo.ColIdx.lect.ToField(), new Point(0, 0), new Size(1, 1),SearchCtrl.SearchMode.match),
+                    CrtSearchCtrl(m_tblInfo, LectureTblInfo.ColIdx.title.ToField() , new Point(0, 1), new Size(1, 1),SearchCtrl.SearchMode.like),
+                    CrtSearchCtrl(m_tblInfo, LectureTblInfo.ColIdx.auth.ToField(), new Point(0, 2), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, LectureTblInfo.ColIdx.target.ToField(), new Point(1, 0), new Size(1, 1)),
+                    CrtSearchCtrl(m_tblInfo, LectureTblInfo.ColIdx.topic.ToField(), new Point(1, 1), new Size(1, 1), SearchCtrl.SearchMode.match),
+                    CrtSearchCtrl(m_tblInfo, LectureTblInfo.ColIdx.crt.ToField(), new Point(1, 2), new Size(1, 1)),
                 };
         }
     }

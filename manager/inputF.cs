@@ -234,4 +234,21 @@ namespace test_binding
             return m_panel;
         }
     }
+
+    public class lLectInputF : inputF
+    {
+        protected override void initCtrls()
+        {
+            this.Text = "Bài Giảng";
+            base.initCtrls();
+
+            splitContainer1.Panel2Collapsed = true;
+            splitContainer1.Panel2.Hide();
+            splitContainer1.Panel1.Anchor = AnchorStyles.Right;
+        }
+        protected override InputPanel CrtInputPanel()
+        {
+            return new LectInputPanel();
+        }
+    }
 }

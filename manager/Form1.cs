@@ -48,6 +48,7 @@ namespace test_binding
 
             //init config & load config
             //appConfig.s_config = lConfigMng.crtInstance();
+            bool bSaveCfg = false;
             if (appConfig.s_config.m_dbSchema == null)
             {
 #if use_sqlite
@@ -55,16 +56,20 @@ namespace test_binding
 #else
                 appConfig.s_config.m_dbSchema = new lSqlDbSchema();
 #endif  //use_sqlite
-                appConfig.s_config.m_panels = new List<lBasePanel> {
-                    //new lReceiptsPanel(),
-                    //new lInterPaymentPanel(),
-                    //new lExternalPaymentPanel(),
-                    //new lSalaryPanel(),
-                    new lTaskPanel(),
-                    new lOrderPanel(),
-                    new lHumanPanel(),
-                    new lEquipmentPanel(),
-                };
+                bSaveCfg = true;
+            }
+            appConfig.s_config.m_panels = new List<lBasePanel> {
+                //new lReceiptsPanel(),
+                //new lInterPaymentPanel(),
+                //new lExternalPaymentPanel(),
+                //new lSalaryPanel(),
+                new lTaskPanel(),
+                new lOrderPanel(),
+                new lHumanPanel(),
+                new lEquipmentPanel(),
+            };
+            if (bSaveCfg)
+            {
 #if save_config
                 appConfig.s_config.UpdateConfig();
 #endif
@@ -72,7 +77,7 @@ namespace test_binding
 
             //init content provider
 #if use_sqlite
-            appConfig.s_contentProvider = lSQLiteContentProvider.getInstance(this);
+            appConfig.s_contentProvider = lSQLiteContentProvider.CrtInstance(this);
 #else
             appConfig.s_contentProvider = lSqlContentProvider.getInstance(this);
 #endif  //use_sqlite
@@ -635,6 +640,18 @@ namespace test_binding
             m_dataPanel = new EquipmentDataPanel();
             m_searchPanel = new EquipmentSearchPanel(m_dataPanel);
             m_report = new lEquipmentReport();
+            base.init();
+        }
+    }
+
+    [DataContract(Name = "LecturePanel")]
+    public class LecturePanel : lBasePanel
+    {
+        public LecturePanel()
+        {
+            m_dataPanel = new LectureDataPanel();
+            m_searchPanel = new LectureSearchPanel(m_dataPanel);
+            m_report = new LectureReport();
             base.init();
         }
     }

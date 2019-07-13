@@ -510,6 +510,10 @@ namespace test_binding
         // exactly as they are.   
         ~lDataPanel()
         {
+#if !use_bg_work
+            m_dataContent.FillTableCompleted -= M_dataContent_FillTableCompleted;
+            m_dataContent.UpdateTableCompleted -= M_dataContent_FillTableCompleted;
+#endif
             // Finalizer calls Dispose(false)  
             Dispose(false);
         }
@@ -626,6 +630,21 @@ namespace test_binding
             return tbl.Rows.Count;
         }
     }
+
+    public class lTopicDataPanel : lDataPanel
+    {
+        public lTopicDataPanel()
+        {
+            m_tblName = "topic";
+        }
+        public override Int64 getSum()
+        {
+            BindingSource bs = (BindingSource)m_dataGridView.DataSource;
+            DataTable tbl = (DataTable)bs.DataSource;
+            return tbl.Rows.Count;
+        }
+    }
+
     public class lReceiptsContentDataPanel : lGroupNameDataPanel
     {
         public lReceiptsContentDataPanel()
@@ -813,6 +832,26 @@ namespace test_binding
         public EquipmentDataPanel()
         {
             m_tblName = TableIdx.Equip.ToDesc();
+        }
+    }
+
+    [DataContract(Name = "lLectureDataPanel")]
+    public class LectureDataPanel : lDataPanel
+    {
+        public LectureDataPanel()
+        {
+            m_tblName = TableIdx.Lecture.ToDesc();
+        }
+        public override Int64 getSum()
+        {
+            BindingSource bs = (BindingSource)m_dataGridView.DataSource;
+            DataTable tbl = (DataTable)bs.DataSource;
+            return tbl.Rows.Count;
+        }
+        public override void InitCtrls()
+        {
+            base.InitCtrls();
+            m_dataGridView.AllowUserToAddRows = false;
         }
     }
 }

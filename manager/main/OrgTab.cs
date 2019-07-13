@@ -123,19 +123,33 @@ namespace test_binding
             //if (e.Action != TreeViewAction.Unknown)
             if (m_ignore == 0)
             {
-                if (e.Node.Parent != null)
+                // check/uncheck tree nodes
+                var val = Check(e.Node);
+                var lst = new List<TreeNode>();
+                lst.Add(e.Node);
+                m_ignore++;
+                while (lst.Count > 0)
                 {
-                    m_ignore++;
-                    CheckAllParentNodes(e.Node.Parent, Check(e.Node));
-                    m_ignore--;
+                    var node = lst[0];
+                    lst.RemoveAt(0);
+                    var parent = node.Parent;
+                    if (parent != null)
+                    {
+                        CheckParentNode(parent, val);
+                        lst.Add(parent);
+                    }
                 }
-                if (e.Node.Nodes.Count > 0)
+                lst.Add(e.Node);
+                while (lst.Count > 0)
                 {
-                    m_ignore++;
-                    CheckAllChildNodes(e.Node, Check(e.Node));
-                    m_ignore--;
+                    var node = lst[0];
+                    lst.RemoveAt(0);
+                    if (Check(node) != val) { Check(node, val); }
+                    lst.AddRange(node.Nodes.Cast<TreeNode>());
                 }
+                m_ignore--;
 
+                // get task by section lst
                 var rootN = m_tree.Nodes["All"];
                 List<string> secLst = null;
                 if (Check(rootN))
@@ -177,23 +191,23 @@ namespace test_binding
             return lst;
         }
 
-        private void CheckAllParentNodes(TreeNode parent, bool val)
+        private void CheckParentNode(TreeNode parent, bool val)
         {
             int i = 0;
-            var leafs = GetAllLeafs(parent);
-            for(; i< leafs.Count; i++)
+            var childLst = parent.Nodes;
+            for(; i< childLst.Count; i++)
             {
-                var child = leafs[i];
+                var child = childLst[i];
                 if(!(Check(child)==val)) { break; }    //child not checked
             }
-            if (i == leafs.Count)
+            if (i == childLst.Count)
             {
-                parent.Checked = val;
-                //Check(parent,val?1:0);
+                if (Check(parent) != val) {Check(parent, val); }
+                Check(parent,val?1:0);
             }
             else
             {
-                parent.Checked = false;
+                if (Check(parent) != false) { Check(parent, false); }
                 Check(parent,2);
             }
         }
@@ -286,7 +300,7 @@ namespace test_binding
         private SearchBuilder m_grpSB;
         private List<string> QryGrps()
         {
-            if (m_grpSB == null) { m_grpSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.GrpName)); }
+            if (m_grpSB == null) { m_grpSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.GrpName), MngForm.s_contentProvider); }
             m_grpSB.Clear();
             m_grpSB.Search();
             var lst = new List<string>();
@@ -316,7 +330,7 @@ namespace test_binding
         private List< TaskRec> QryTask(DateTime startDt, List<string> sectionLst)
         {
             var lst = new List<TaskRec>();
-            if (m_taskSB == null) { m_taskSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.Task)); }
+            if (m_taskSB == null) { m_taskSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.Task), MngForm.s_contentProvider); }
             m_taskSB.Clear();
             m_taskSB.Add(TaskTblInfo.ColIdx.Begin.ToField(), startDt);
             if (sectionLst != null) {
@@ -623,7 +637,7 @@ namespace test_binding
 
         private SectionRec QrySection(string group_number)
         {
-            if (m_sectionSB == null) { m_sectionSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.Section)); }
+            if (m_sectionSB == null) { m_sectionSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.Section), MngForm.s_contentProvider); }
             m_sectionSB.Clear();
             m_sectionSB.Add(SectionTblInfo.ColIdx.sec.ToField(), group_number);
             m_sectionSB.Search();
@@ -649,7 +663,7 @@ namespace test_binding
 
         private List<SamonRec> QryMonks(string section_number)
         {
-            if (m_monkSB == null) { m_monkSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.Samon)); }
+            if (m_monkSB == null) { m_monkSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.Samon),MngForm.s_contentProvider); }
             m_monkSB.Clear();
             m_monkSB.Add(SamonTblInfo.ColIdx.sec.ToField(), section_number);
             m_monkSB.Search();
@@ -667,7 +681,7 @@ namespace test_binding
         private string GetMonkName(string monk_number)
         {
             string ret = "";
-            if (m_monkSB == null) { m_monkSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.Samon)); }
+            if (m_monkSB == null) { m_monkSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.Samon), MngForm.s_contentProvider); }
             m_monkSB.Clear();
             m_monkSB.Add(SamonTblInfo.ColIdx.samon.ToField(), monk_number);
             m_monkSB.Search();
@@ -735,7 +749,7 @@ namespace test_binding
             return dt;
 #else
             var tbl = appConfig.s_config.GetTable(TableIdx.Organization);
-            var dc = appConfig.s_contentProvider.CreateDataContent(TableIdx.Organization);
+            var dc = MngForm.s_contentProvider.CreateDataContent(TableIdx.Organization);
             dc.Search(new List<string>(), new List<SearchParam>());
             return dc.m_dataTable;
 #endif

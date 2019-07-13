@@ -8,12 +8,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using test_binding.lecture;
 
 namespace test_binding
 {
     public partial class MngForm : Form
     {
-
+        public static lContentProvider s_contentProvider;
         private TabControl m_tabCtrl;
 
         public MngForm()
@@ -33,21 +34,24 @@ namespace test_binding
 #endif  //use_sqlite
             }
 
-                //init content provider
+            //init content provider
 #if use_sqlite
-            appConfig.s_contentProvider = lSQLiteContentProvider.getInstance(null);
+            s_contentProvider = lSQLiteContentProvider.CrtInstance(this);
 #else
                 appConfig.s_contentProvider = lSqlContentProvider.getInstance(null);
 #endif  //use_sqlite
 
             Menu = new MainMenu();
             var miWindow = new MenuItem("Windows");
+            Menu.MenuItems.Add(miWindow);
             var miHelp = new MenuItem("Help");
-            var miMng = new MenuItem("TaskManager");
+            Menu.MenuItems.Add(miHelp);
+            var miMng = new MenuItem("Task Manager");
             miMng.Click += MiMng_Click;
             miWindow.MenuItems.Add(miMng);
-            Menu.MenuItems.Add(miWindow);
-            Menu.MenuItems.Add(miHelp);
+            var miLect = new MenuItem("Lecture Manager");
+            miLect.Click += MiLectMng_Click;
+            miWindow.MenuItems.Add(miLect);
 
             var tc = new TabControl();
             tc.Dock = DockStyle.Fill;
@@ -59,10 +63,16 @@ namespace test_binding
             this.Controls.Add(tc);
         }
 
+        private void MiLectMng_Click(object sender, EventArgs e)
+        {
+            var form = new LectForm();
+            form.ShowDialog();
+        }
+
         private void MiMng_Click(object sender, EventArgs e)
         {
             var form = new Form1();
-            form.Show();
+            form.ShowDialog();
         }
     }
 }

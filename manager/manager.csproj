@@ -185,6 +185,12 @@
       <DependentUpon>inputF.cs</DependentUpon>
     </Compile>
     <Compile Include="inputF.inputpanel.cs" />
+    <Compile Include="lecture\LectForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="lecture\LectForm.Designer.cs">
+      <DependentUpon>LectForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="main\MngForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -354,6 +360,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="img\CBV_full.jpg" />
+    <Content Include="img\cb_checked.jpg" />
+    <Content Include="img\cb_gray.bmp" />
+    <Content Include="img\cb_unchecked.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="main\TaskTmpl.html" />
     <Content Include="main\GroupTmpl.html" />
   </ItemGroup>

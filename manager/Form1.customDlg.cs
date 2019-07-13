@@ -444,6 +444,13 @@ namespace test_binding
         }
     }
 
+    public class lTopicEditDlg : lEditDlg
+    {
+        public lTopicEditDlg()
+            : base(new lTopicDataPanel())
+        {
+        }
+    }
 
     public class lPasswdDlg : Form
     {

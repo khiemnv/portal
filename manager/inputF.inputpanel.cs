@@ -2250,5 +2250,33 @@ namespace test_binding
             //UpdateDGVCols(orderDGV, m_tblInfo);
         }
     }
+
+    [DataContract(Name = "LectInputPanel")]
+    public class LectInputPanel : InputPanel
+    {
+        protected override InputCtrl m_keyCtrl { get { return m_inputsCtrls[0]; } }
+        private keyMng m_key;
+        protected override keyMng m_keyMng { get { return m_key; } }
+        public LectInputPanel()
+        {
+            m_tblName = TableIdx.Lecture.ToDesc();
+            Dictionary<int, InputCtrl> tDict = new Dictionary<int, InputCtrl>
+            {
+                { (int)LectureTblInfo.ColIdx.lect , null },
+                { (int)LectureTblInfo.ColIdx.title, null },
+                { (int)LectureTblInfo.ColIdx.auth, null },
+                { (int)LectureTblInfo.ColIdx.target, null },
+                { (int)LectureTblInfo.ColIdx.topic  , null },
+                { (int)LectureTblInfo.ColIdx.crt , null },
+                { (int)LectureTblInfo.ColIdx.content , null },
+                { (int)LectureTblInfo.ColIdx.link , null },
+                { (int)LectureTblInfo.ColIdx.Note , null },
+            };
+            CrtInputCtrlLst(tDict);
+            tDict[(int)LectureTblInfo.ColIdx.lect].ReadOnly = true;
+            m_key = new keyMng("BG", m_tblName, LectureTblInfo.ColIdx.lect.ToField());
+        }
+
+    }
 }
 
