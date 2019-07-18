@@ -193,27 +193,6 @@ namespace test_binding
             dlg.Dispose();
         }
 
-        private void MiConstrorg_Click(object sender, EventArgs e)
-        {
-            lEditDlg edtDlg = new lConstrorgEditDlg();
-            edtDlg.ShowDialog();
-            edtDlg.Dispose();
-        }
-
-        private void MiBuilding_Click(object sender, EventArgs e)
-        {
-            lEditDlg edtDlg = new lBuildingEditDlg();
-            edtDlg.ShowDialog();
-            edtDlg.Dispose();
-        }
-
-        private void MiEditReceiptsContent_Click(object sender, EventArgs e)
-        {
-            lEditDlg edtDlg = new lReceiptsContentEditDlg();
-            edtDlg.ShowDialog();
-            edtDlg.Dispose();
-        }
-
         private void MiEditGroupName_Click(object sender, EventArgs e)
         {
             lEditDlg edtDlg = new lGroupNameEditDlg();

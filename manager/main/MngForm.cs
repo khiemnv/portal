@@ -55,10 +55,11 @@ namespace test_binding
 
             var tc = new TabControl();
             tc.Dock = DockStyle.Fill;
-            tc.TabPages.AddRange( new TabPage[] {
+            tc.TabPages.AddRange(new TabPage[] {
                 new OrgTab().m_pg,
                 new TaskTab().m_pg,
-            } );
+                new TrainingTab().m_pg,
+            }) ;
             tc.SelectedIndex = 0;
             this.Controls.Add(tc);
         }

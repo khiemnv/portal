@@ -422,27 +422,6 @@ namespace test_binding
         {
         }
     }
-    public class lReceiptsContentEditDlg : lEditDlg
-    {
-        public lReceiptsContentEditDlg()
-            : base(new lReceiptsContentDataPanel())
-        {
-        }
-    }
-    public class lBuildingEditDlg : lEditDlg
-    {
-        public lBuildingEditDlg()
-            : base(new lBuildingDataPanel())
-        {
-        }
-    }
-    public class lConstrorgEditDlg : lEditDlg
-    {
-        public lConstrorgEditDlg()
-            : base(new lConstrorgDataPanel())
-        {
-        }
-    }
 
     public class lTopicEditDlg : lEditDlg
     {
@@ -451,6 +430,7 @@ namespace test_binding
         {
         }
     }
+
 
     public class lPasswdDlg : Form
     {

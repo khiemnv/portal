@@ -470,6 +470,8 @@ namespace test_binding
         [Description("samon")] Samon,
         [Description("lecture")] Lecture,
         [Description("topic")] Topic,
+        [Description("budgrp")] Budgrp,
+        [Description("training")] Training,
 
         Count
     }
@@ -909,9 +911,9 @@ namespace test_binding
         }
     }
     [DataContract(Name = "lTopicTblInfo")]
-    public class lTopicTblInfo : TableInfo
+    public class TopicTblInfo : TableInfo
     {
-        public lTopicTblInfo()
+        public TopicTblInfo()
         {
             m_tblName = "topic";
             m_tblAlias = "Chủ đề";
@@ -924,6 +926,89 @@ namespace test_binding
                 };
         }
     };
+
+    [DataContract(Name = "lBudgrpTblInfo")]
+    public class BudgrpTblInfo : TableInfo
+    {
+        public enum ColIdx
+        {
+            [Field("ID"), Alias("ID")] ID,
+            [Field("budgrp_number"), Alias("Mã ĐT")] grp,
+            [Field("budgrp_name"), Alias("Tên ĐT")] name,
+            [Field("about"), Alias("Thông tin")] about,
+        }
+        public BudgrpTblInfo()
+        {
+            m_tblName = "budgrp";
+            m_tblAlias = "Đạo tràng";
+            m_crtQry = "CREATE TABLE if not exists budgrp("
+                + "ID INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "budgrp_number char(31),"
+                + "budgrp_name char(31),"
+                + "about text)";
+            m_cols = new ColInfo[GetCount<ColIdx>()];
+            m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
+            m_cols[(int)ColIdx.grp] = new ColInfo(ColIdx.grp.ToField(), ColIdx.grp.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.name] = new ColInfo(ColIdx.name.ToField(), ColIdx.name.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.about] = new ColInfo(ColIdx.about.ToField(), ColIdx.about.ToAlias(), ColInfo.ColType.text);
+        }
+    };
+
+    [DataContract(Name = "TrainingTblInfo")]
+    public class TrainingTblInfo : TableInfo
+    {
+        public enum Star
+        {
+            [Description("1")] bad,
+            [Description("2")] poor,
+            [Description("bình thường")] norm,
+            [Description("tốt")] good,
+            [Description("rất tốt")] ex,
+        }
+        public enum Trainer
+        {
+            [Description("Sư phụ")] su_phu,
+            [Description("Sư ông")] su_ong,
+        }
+        public enum ColIdx
+        {
+            [Field("ID"), Alias("ID")] ID,
+            [Field("training_number"), Alias("Mã TPDT")] trng,
+            [Field("date"), Alias("Ngày tháng")] date,
+            [Field("topic_number"), Alias("Chủ đề")] topic,
+            [Field("budgrp_number"), Alias("Đạo tràng")] bgrp,
+            [Field("trnr"), Alias("Người giảng")] trnr,
+            [Field("star"), Alias("Star")] star,
+            [Field("link"), Alias("Link")] link,
+            [Field("comment"), Alias("Nhận xét")] cmnt,
+        }
+        public TrainingTblInfo()
+        {
+            m_tblName = "training";
+            m_tblAlias = "Trạch Pháp Đạo Tràng";
+
+            m_crtQry = "CREATE TABLE if not exists training("
+                + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "training_number char(31),"
+                + "date datetime,"
+                + "topic_number char(31),"
+                + "budgrp_number char(31),"
+                + "trnr INTEGER,"
+                + "star INTEGER,"
+                + "link char(255),"
+                + "comment text)";
+            m_cols = new ColInfo[GetCount<ColIdx>()];
+            m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
+            m_cols[(int)ColIdx.trng] = new ColInfo(ColIdx.trng.ToField(), ColIdx.trng.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.date] = new ColInfo(ColIdx.date.ToField(), ColIdx.date.ToAlias(), ColInfo.ColType.dateTime);
+            m_cols[(int)ColIdx.topic] = new ColInfo(ColIdx.topic.ToField(), ColIdx.topic.ToAlias(), ColInfo.ColType.text, TableIdx.Topic.ToDesc());
+            m_cols[(int)ColIdx.bgrp] = new ColInfo(ColIdx.bgrp.ToField(), ColIdx.bgrp.ToAlias(), ColInfo.ColType.text, TableIdx.Budgrp.ToDesc());
+            m_cols[(int)ColIdx.trnr] = new ColInfo(ColIdx.trnr.ToField(), ColIdx.trnr.ToAlias(), ColInfo.ColType.map, GetDescLst<Trainer>());
+            m_cols[(int)ColIdx.star] = new ColInfo(ColIdx.star.ToField(), ColIdx.star.ToAlias(), ColInfo.ColType.map, GetDescLst<Star>());
+            m_cols[(int)ColIdx.link] = new ColInfo(ColIdx.link.ToField(), ColIdx.link.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.cmnt] = new ColInfo(ColIdx.cmnt.ToField(), ColIdx.cmnt.ToAlias(), ColInfo.ColType.text);
+        }
+    }
 
     [DataContract(Name = "lReceiptsViewInfo")]
     public class lReceiptsViewInfo : TableInfo
@@ -1477,7 +1562,9 @@ namespace test_binding
                     new SectionTblInfo(),
                     new SamonTblInfo(),
                     new LectureTblInfo(),
-                    new lTopicTblInfo(),
+                    new TopicTblInfo(),
+                    new BudgrpTblInfo(),
+                    new TrainingTblInfo(),
                 };
             m_views = new List<TableInfo>() {
                     //new lReceiptsViewInfo(),

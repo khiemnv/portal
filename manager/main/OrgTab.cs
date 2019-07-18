@@ -17,6 +17,26 @@ namespace test_binding
 {
     public class BaseTab
     {
+        public TabPage m_pg;
+        protected TableLayoutPanel m_tbl;
+        protected SplitContainer m_spl;
+        protected TreeView m_tree;
+        protected WebBrowser m_wb;
+        protected lContentProvider s_contentProvider { get { return MngForm.s_contentProvider; } }
+
+        protected enum TreeStyle
+        {
+            check,
+            radio
+        }
+        protected TreeStyle m_treeStyle;
+
+        public BaseTab()
+        {
+            InitCtrls();
+            BuildTree();
+            InitEvent();
+        }
         public string Obj2Json(object obj, Type[]knownTypes)
         {
             DataContractJsonSerializerSettings settings = new DataContractJsonSerializerSettings();
@@ -31,28 +51,42 @@ namespace test_binding
             string ret = sr.ReadToEnd();
             return ret;
         }
-    }
-    class TaskTab:BaseTab
-    {
-        public TabPage m_pg;
-        protected TableLayoutPanel m_tbl;
-        protected SplitContainer m_spl;
-        protected TreeView m_tree;
-        protected WebBrowser m_wb;
-        public TaskTab()
+        protected virtual void InitCtrls()
         {
-            InitCtrls();
-            BuildTree();
-            InitEvent();
-        }
+            var tbl = new TableLayoutPanel();
+            tbl.Dock = DockStyle.Fill;
+            var spl = new SplitContainer();
 
-        private void InitEvent()
+            spl.Dock = DockStyle.Fill;
+            spl.Orientation = Orientation.Vertical; // spl1 | spl2
+            spl.FixedPanel = FixedPanel.Panel1;
+            spl.SplitterDistance = 150;
+
+            tbl.Controls.Add(spl);
+            var pg = new TabPage();
+            pg.Controls.Add(tbl);
+
+            var trvw = new TreeView();
+            //var trvw  = new RikTheVeggie.TriStateTreeView();
+            trvw.Dock = DockStyle.Fill;
+            //trvw.CheckBoxes = true;
+            spl.Panel1.Controls.Add(trvw);
+
+            var wb = new WebBrowser();
+            wb.Dock = DockStyle.Fill;
+            spl.Panel2.Controls.Add(wb);
+
+            //save control handles
+            m_wb = wb;
+            m_tree = trvw;
+            m_pg = pg;
+            m_tbl = tbl;
+            m_spl = spl;
+        }
+        protected void InitEvent()
         {
             m_tree.AfterCheck += Tree_AfterCheck;
-            m_tree.BeforeCheck += M_tree_BeforeCheck;
-            //m_tree.MouseClick += M_tree_MouseClick;
             m_tree.NodeMouseClick += M_tree_NodeMouseClick;
-            //m_tree.KeyDown += M_tree_KeyDown;
         }
 
         private void M_tree_KeyDown(object sender, KeyEventArgs e)
@@ -96,83 +130,76 @@ namespace test_binding
             }
         }
 
-        private void M_tree_MouseClick(object sender, MouseEventArgs e)
-        {
-            //throw new NotImplementedException();
-        }
-
-        private void M_tree_BeforeCheck(object sender, TreeViewCancelEventArgs e)
-        {
-            //if(e.Action != TreeViewAction.Unknown)
-            return;
-            if (m_ignore == 0)
-            {
-                var prev = e.Node.StateImageIndex;
-                if (prev != 1) {
-                    e.Node.StateImageIndex = 1; }
-                else
-                {
-                    e.Node.StateImageIndex = 0;
-                }
-            }
-        }
-
         int m_ignore = 0;
         private void Tree_AfterCheck(object sender, TreeViewEventArgs e)
         {
             //if (e.Action != TreeViewAction.Unknown)
             if (m_ignore == 0)
             {
-                // check/uncheck tree nodes
-                var val = Check(e.Node);
-                var lst = new List<TreeNode>();
-                lst.Add(e.Node);
                 m_ignore++;
-                while (lst.Count > 0)
+                switch(m_treeStyle)
                 {
-                    var node = lst[0];
-                    lst.RemoveAt(0);
-                    var parent = node.Parent;
-                    if (parent != null)
-                    {
-                        CheckParentNode(parent, val);
-                        lst.Add(parent);
-                    }
-                }
-                lst.Add(e.Node);
-                while (lst.Count > 0)
-                {
-                    var node = lst[0];
-                    lst.RemoveAt(0);
-                    if (Check(node) != val) { Check(node, val); }
-                    lst.AddRange(node.Nodes.Cast<TreeNode>());
+                    case TreeStyle.check:
+                        updateChkBoxState(e);
+                        break;
+                    case TreeStyle.radio:
+                        updateRadBtnState(e);
+                        break;
                 }
                 m_ignore--;
 
-                // get task by section lst
-                var rootN = m_tree.Nodes["All"];
-                List<string> secLst = null;
-                if (Check(rootN))
-                {
-                    //all node is checked
-                }
-                else
-                {
-                    secLst = new List<string>();
-                    foreach (TreeNode tn in rootN.Nodes)
-                    {
-                        if (Check(tn)) { secLst.Add(tn.Text); }
-                    }
-                }
-                if(secLst != null)
-                {
-                    Debug.Print("secLst: {0}",secLst.Count);
-                    foreach(var i in secLst) { Debug.Print("    {0}", i); }
-                }
-                UpdateContent(secLst);
+                OnSelectedChg();
             }
         }
 
+        private void updateRadBtnState(TreeViewEventArgs e)
+        {
+            var val = Check(e.Node);
+            if (!val)
+            {
+                Check(e.Node, true);
+                Check(e.Node, 1);
+            }
+            else
+            {
+                //uncheck other node
+                foreach (TreeNode node in m_tree.Nodes)
+                {
+                    if (Check(node)) { Check(node, 0); Check(node, false); }
+                }
+                Check(e.Node, true);
+                Check(e.Node, 1);
+            }
+        }
+
+        private void updateChkBoxState(TreeViewEventArgs e)
+        {
+            // check/uncheck tree nodes
+            var val = Check(e.Node);
+            var lst = new List<TreeNode>();
+            lst.Add(e.Node);
+            while (lst.Count > 0)
+            {
+                var node = lst[0];
+                lst.RemoveAt(0);
+                var parent = node.Parent;
+                if (parent != null)
+                {
+                    CheckParentNode(parent, val);
+                    lst.Add(parent);
+                }
+            }
+            lst.Add(e.Node);
+            while (lst.Count > 0)
+            {
+                var node = lst[0];
+                lst.RemoveAt(0);
+                if (Check(node) != val) { Check(node, val); }
+                lst.AddRange(node.Nodes.Cast<TreeNode>());
+            }
+        }
+
+        public virtual void OnSelectedChg() { }
         private List<TreeNode> GetAllLeafs(TreeNode parent)
         {
             var lst = new List<TreeNode>();
@@ -227,7 +254,7 @@ namespace test_binding
             }
             return node.Checked;
         }
-        private bool Check(TreeNode node, int idx = -1)
+        protected bool Check(TreeNode node, int idx = -1)
         {
             if (idx == -1)
             {
@@ -240,6 +267,129 @@ namespace test_binding
                 node.StateImageIndex = idx;
                 return node.Checked;
             }
+        }
+        private void CheckAllChildNodes(TreeNode node, bool val)
+        {
+            foreach (TreeNode i in node.Nodes)
+            {
+                if (i.Checked != val) { Check(i, val); }
+                if (i.Nodes.Count > 0) { CheckAllChildNodes(i, val); }
+            }
+        }
+
+        private ImageList CrtChkBoxImg()
+        {
+            var lst = new ImageList();
+            for (int i = 0; i < 3; i++)
+            {
+                // Create a bitmap which holds the relevent check box style
+                // see http://msdn.microsoft.com/en-us/library/ms404307.aspx and http://msdn.microsoft.com/en-us/library/system.windows.forms.checkboxrenderer.aspx
+
+                System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(16, 16);
+                System.Drawing.Graphics chkGraphics = System.Drawing.Graphics.FromImage(bmp);
+                switch (i)
+                {
+                    // 0,1 - offset the checkbox slightly so it positions in the correct place
+                    case 0:
+                        System.Windows.Forms.CheckBoxRenderer.DrawCheckBox(chkGraphics, new System.Drawing.Point(0, 1), System.Windows.Forms.VisualStyles.CheckBoxState.UncheckedNormal);
+                        break;
+                    case 1:
+                        System.Windows.Forms.CheckBoxRenderer.DrawCheckBox(chkGraphics, new System.Drawing.Point(0, 1), System.Windows.Forms.VisualStyles.CheckBoxState.CheckedNormal);
+                        break;
+                    case 2:
+                        System.Windows.Forms.CheckBoxRenderer.DrawCheckBox(chkGraphics, new System.Drawing.Point(0, 1), System.Windows.Forms.VisualStyles.CheckBoxState.MixedNormal);
+                        break;
+                }
+
+                lst.Images.Add(bmp);
+            }
+            return lst;
+        }
+        private ImageList CrtRadBtnImg()
+        {
+            var lst = new ImageList();
+            for (int i = 0; i < 2; i++)
+            {
+                Bitmap bmp = new Bitmap(16, 16);
+                Graphics chkGraphics = Graphics.FromImage(bmp);
+                switch (i)
+                {
+                    // 0,1 - offset the checkbox slightly so it positions in the correct place
+                    case 0:
+                        RadioButtonRenderer.DrawRadioButton(chkGraphics, new Point(0, 1), System.Windows.Forms.VisualStyles.RadioButtonState.UncheckedNormal);
+                        break;
+                    case 1:
+                        RadioButtonRenderer.DrawRadioButton(chkGraphics, new Point(0, 1), System.Windows.Forms.VisualStyles.RadioButtonState.CheckedNormal);
+                        break;
+                }
+
+                lst.Images.Add(bmp);
+            }
+            return lst;
+        }
+        private void BuildTree()
+        {
+            m_tree.CheckBoxes = false;
+            m_tree.StateImageList = new ImageList();
+            //var imgLst = new Image[]
+            //{
+            //    Image.FromFile(@"..\..\img\cb_unchecked.jpg"),
+            //    Image.FromFile(@"..\..\img\cb_checked.jpg"),
+            //    Image.FromFile(@"..\..\img\cb_gray.bmp"),
+            //};
+            //m_tree.StateImageList.Images.AddRange(imgLst);
+            switch (m_treeStyle)
+            {
+                case TreeStyle.check:
+                    m_tree.StateImageList = CrtChkBoxImg();
+                    break;
+                case TreeStyle.radio:
+                    m_tree.StateImageList = CrtRadBtnImg();
+                    break;
+            }
+
+            m_ignore++;
+
+            AddTreeNode();
+
+            m_ignore--;
+        }
+        protected virtual void AddTreeNode() { }
+    }
+    class TaskTab:BaseTab
+    {
+        public TaskTab()
+        {
+        }
+        protected override void InitCtrls()
+        {
+            base.InitCtrls();
+            m_treeStyle = TreeStyle.check;  //set style before call buildTree()
+            m_pg.Text = "Công Việc";
+        }
+        public override void OnSelectedChg()
+        {
+            // get task by section lst
+            var rootN = m_tree.Nodes["All"];
+            List<string> secLst = null;
+            if (Check(rootN))
+            {
+                //all node is checked
+            }
+            else
+            {
+                secLst = new List<string>();
+                foreach (TreeNode tn in rootN.Nodes)
+                {
+                    if (Check(tn)) { secLst.Add(tn.Text); }
+                }
+            }
+            if (secLst != null)
+            {
+                Debug.Print("secLst: {0}", secLst.Count);
+                foreach (var i in secLst) { Debug.Print("    {0}", i); }
+            }
+            UpdateContent(secLst);
         }
 
         private void UpdateContent(List<string> secLst)        {
@@ -264,14 +414,6 @@ namespace test_binding
             m_wb.DocumentText = htmlTxt;
         }
 
-        private void CheckAllChildNodes(TreeNode node, bool val)
-        {
-            foreach (TreeNode i in node.Nodes)
-            {
-                if (i.Checked != val) { Check(i, val); }
-                if (i.Nodes.Count > 0) { CheckAllChildNodes(i, val); }
-            }
-        }
         private string GenTabHtml(string jsTxt)
         {
             string tmpl="";
@@ -380,92 +522,18 @@ namespace test_binding
             [DataMember] public List<DayTask> recs;
         }
 
-        private void InitCtrls()
+        protected override void AddTreeNode()
         {
-            var tbl = new TableLayoutPanel();
-            tbl.Dock = DockStyle.Fill;
-            var spl = new SplitContainer();
-
-            spl.Dock = DockStyle.Fill;
-            spl.Orientation = Orientation.Vertical; // spl1 | spl2
-            spl.FixedPanel = FixedPanel.Panel1;
-            spl.SplitterDistance = 150;
-
-            tbl.Controls.Add(spl);
-            var pg = new TabPage();
-            pg.Controls.Add(tbl);
-            pg.Text = "Công Việc";
-
-            var trvw = new TreeView();
-            //var trvw  = new RikTheVeggie.TriStateTreeView();
-            trvw.Dock = DockStyle.Fill;
-            //trvw.CheckBoxes = true;
-            spl.Panel1.Controls.Add(trvw);
-
-            var wb = new WebBrowser();
-            wb.Dock = DockStyle.Fill;
-            spl.Panel2.Controls.Add(wb);
-
-            //save control handles
-            m_wb = wb;
-            m_tree = trvw;
-            m_pg = pg;
-            m_tbl = tbl;
-            m_spl = spl;
-        }
-
-
-        private void BuildTree()
-        {
-            m_tree.CheckBoxes = false;
-            m_tree.StateImageList = new ImageList();
-            //var imgLst = new Image[]
-            //{
-            //    Image.FromFile(@"..\..\img\cb_unchecked.jpg"),
-            //    Image.FromFile(@"..\..\img\cb_checked.jpg"),
-            //    Image.FromFile(@"..\..\img\cb_gray.bmp"),
-            //};
-            //m_tree.StateImageList.Images.AddRange(imgLst);
-            for (int i = 0; i < 3; i++)
-            {
-                // Create a bitmap which holds the relevent check box style
-                // see http://msdn.microsoft.com/en-us/library/ms404307.aspx and http://msdn.microsoft.com/en-us/library/system.windows.forms.checkboxrenderer.aspx
-
-                System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(16, 16);
-                System.Drawing.Graphics chkGraphics = System.Drawing.Graphics.FromImage(bmp);
-                switch (i)
-                {
-                    // 0,1 - offset the checkbox slightly so it positions in the correct place
-                    case 0:
-                        System.Windows.Forms.CheckBoxRenderer.DrawCheckBox(chkGraphics, new System.Drawing.Point(0, 1), System.Windows.Forms.VisualStyles.CheckBoxState.UncheckedNormal);
-                        break;
-                    case 1:
-                        System.Windows.Forms.CheckBoxRenderer.DrawCheckBox(chkGraphics, new System.Drawing.Point(0, 1), System.Windows.Forms.VisualStyles.CheckBoxState.CheckedNormal);
-                        break;
-                    case 2:
-                        System.Windows.Forms.CheckBoxRenderer.DrawCheckBox(chkGraphics, new System.Drawing.Point(0, 1), System.Windows.Forms.VisualStyles.CheckBoxState.MixedNormal);
-                        break;
-                }
-
-                m_tree.StateImageList.Images.Add(bmp);
-            }
-
-            m_ignore++;
-
             var node = m_tree.Nodes.Add("All", "All");
             node.Checked = false;
             node.StateImageIndex = 0;
             var lst = QryGrps();
-            foreach(string grpName in lst)
+            foreach (string grpName in lst)
             {
                 var child = node.Nodes.Add(grpName);
                 child.Checked = false;
                 child.StateImageIndex = 0;
             }
-
-            //m_tree.CheckBoxes = false;
-            
-            m_ignore--;
         }
     }
     class OrgTab
@@ -765,5 +833,162 @@ namespace test_binding
             public List<Node> childs = new List<Node>();
         }
 
+    }
+
+    class TrainingTab:BaseTab
+    {
+        public TrainingTab()
+        {
+        }
+        protected override void InitCtrls()
+        {
+            base.InitCtrls();
+            m_treeStyle = TreeStyle.radio;  //set style before call buildTree()
+            m_pg.Text = "Trạch Pháp";
+        }
+        protected override void AddTreeNode()
+        {
+                //var node = m_tree.Nodes.Add("All", "All");
+                //node.Checked = false;
+                //node.StateImageIndex = 0;
+            var lst = QryBudgrps();
+            var c = m_tree.Nodes;
+            foreach (BudgrpRec rec in lst)
+            {
+                var child = c.Add(rec.name);
+                child.Tag = rec.numb;
+                child.Checked = false;
+                child.StateImageIndex = 0;
+            }
+        }
+        public override void OnSelectedChg()
+        {
+            // get task by section lst
+            var col = m_tree.Nodes;
+            List<string> secLst = null;
+            {
+                secLst = new List<string>();
+                foreach (TreeNode tn in col)
+                {
+                    if (Check(tn)) { secLst.Add(tn.Tag.ToString()); }
+                }
+                UpdateContent(secLst[0]);
+            }
+        }
+
+        [DataContract]
+        public class TrngRec
+        {
+            [DataMember] public string date;
+            [DataMember] public string topic;
+            [DataMember] public string trainer;
+            //[DataMember] public string question;
+            [DataMember] public string cmnt;
+            [DataMember] public string star;
+        }
+
+        [DataContract]
+        public class BudgrpRec
+        {
+            public string numb;
+            [DataMember] public string name;
+            [DataMember] public string about;
+        }
+
+        [DataContract]
+        public class TabContent
+        {
+            [DataMember] public BudgrpRec budgrpRec;
+            [DataMember] public List<string> trngCols;
+            [DataMember] public List<TrngRec> recs;
+        }
+
+        private void UpdateContent(string grpId)
+        {
+            var tc = QryTabContent(grpId);
+            var knownTypes = new Type[] {
+                    typeof(TabContent),
+                    typeof(BudgrpRec),
+                    typeof(TrngRec),
+                };
+            var jsTxt = Obj2Json(tc, knownTypes);
+            var htmlTxt = GenTabHtml(jsTxt);
+            m_wb.DocumentText = htmlTxt;
+        }
+
+        
+        private object QryTabContent(string grpId)
+        {
+            var tc = new TabContent();
+            var bgtb = appConfig.s_config.GetTable(TableIdx.Budgrp);
+            var bgsb = new SearchBuilder(bgtb, s_contentProvider);
+            bgsb.Clear();
+            bgsb.Add(BudgrpTblInfo.ColIdx.grp.ToField(), grpId);
+            bgsb.Search();
+            var bgrec = new BudgrpRec();
+            for (int i = 0; i < bgsb.dc.m_dataTable.Rows.Count; i++)
+            {
+                var row = bgsb.dc.m_dataTable.Rows[i];
+                bgrec.name = row[BudgrpTblInfo.ColIdx.name.ToField()].ToString();
+                bgrec.about = row[BudgrpTblInfo.ColIdx.about.ToField()].ToString();
+                break;
+            }
+            tc.budgrpRec = bgrec;
+
+            var trntb = appConfig.s_config.GetTable(TableIdx.Training);
+            var trnsb = new SearchBuilder(trntb, s_contentProvider);
+            trnsb.Clear();
+            trnsb.Add(TrainingTblInfo.ColIdx.bgrp.ToField(), grpId);
+            trnsb.Search();
+            tc.trngCols = new List<string> {
+                TrainingTblInfo.ColIdx.date.ToAlias(),
+                TrainingTblInfo.ColIdx.topic.ToAlias(),
+                TrainingTblInfo.ColIdx.trnr.ToAlias(),
+                TrainingTblInfo.ColIdx.cmnt.ToAlias(),
+                TrainingTblInfo.ColIdx.star.ToAlias(),
+            };
+            tc.recs = new List<TrngRec>();
+            foreach(DataRow row in trnsb.dc.m_dataTable.Rows)
+            {
+                var trnrec = new TrngRec();
+                DateTime dateTime = (DateTime)row[TrainingTblInfo.ColIdx.date.ToField()];
+                trnrec.date = dateTime.ToString(lConfigMng.GetDisplayDateFormat());
+                trnrec.topic = row[TrainingTblInfo.ColIdx.topic.ToField()].ToString();
+                TrainingTblInfo.Trainer trainer = (TrainingTblInfo.Trainer)int.Parse(row[TrainingTblInfo.ColIdx.trnr.ToField()].ToString());
+                trnrec.trainer = trainer.ToDesc();
+                trnrec.cmnt = row[TrainingTblInfo.ColIdx.cmnt.ToField()].ToString();
+                TrainingTblInfo.Star star = (TrainingTblInfo.Star)int.Parse(row[TrainingTblInfo.ColIdx.star.ToField()].ToString());
+                trnrec.star = star.ToDesc();
+                tc.recs.Add(trnrec);
+            }
+            return tc;
+        }
+
+        private string GenTabHtml(string jsTxt)
+        {
+            string tmpl = "";
+            tmpl = File.ReadAllText(@"..\..\main\budgrpTmpl.html");
+            //jsTxt = '';
+            //var jsObj = eval("(" + jsTxt + ")");
+            var rpl = tmpl.Replace("//jsTxt = '';", string.Format("jsTxt = '({0})';\njsObj = eval(jsTxt)", jsTxt));
+            return rpl;
+        }
+
+        private List<BudgrpRec> QryBudgrps()
+        {
+            var dc = MngForm.s_contentProvider.CreateDataContent(TableIdx.Budgrp);
+            dc.Search(new List<string>(), new List<SearchParam>());
+            var lst = new List<BudgrpRec>();
+            foreach (DataRow row in dc.m_dataTable.Rows)
+            {
+                var rec = new BudgrpRec
+                {
+                   numb = row[(int)BudgrpTblInfo.ColIdx.grp].ToString(),
+                   name = row[(int)BudgrpTblInfo.ColIdx.name].ToString()
+                };
+                lst.Add(rec);
+            }
+            return lst;
+        }
     }
 }

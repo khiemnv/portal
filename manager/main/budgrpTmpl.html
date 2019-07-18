@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style type="text/css">
+        .label {
+            padding: 5px;
+            color: blue;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .content {
+            width: 90%;
+            margin-left: 5%;
+            background-color: whitesmoke;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        th {
+            color: white;
+            background-color: blue;
+            font-style: normal;
+        }
+
+        .col1 {
+            width: *
+        }
+        
+        button {
+        	width: 50px
+        }
+    </style>
+</head>
+<body style="background-repeat: no-repeat; background-attachment: scroll; padding: 10px">
+    <div style="background-color: white; width: 600px; position: relative; left: auto;">
+        <span class="label">Thông tin đạo tràng:</span>
+        <span class="label" id="name">minh long</span><br/>          
+        <span id="about">thong tin</span><br/>
+        <br />
+        <span class="label">Lịch sử giảng dạy</span>
+        <div id="trngTbl">
+            <table>
+                <tr>
+                    <th>ngày</th>
+                    <th>bài giảng</th>
+                    <th>người giảng</th>
+                </tr>
+                <tr>
+                    <td>01/01/2019</td>
+                    <td>chu de1</td>
+                    <td>su ong</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        jsObj = {
+            "budgrpRec": {
+                "name": "minh long",
+                "about": "thong tin thanh lap ngay xxx truong dao trang yyy pho dao trang zzz noi quy aaa dia chi zzzz thong tin thanh lap ngay xxx truong dao trang yyy pho dao trang zzz"
+            },
+            "trngCols": ["ngày", "bài giảng", "người giảng", "ghi chú", "nhận xét"],
+            "recs": [{
+                "date": "01/01/2019",
+                "topic": "chu de1",
+                "trainer": "su ong",
+                "cmnt": "nhan xet 1",
+                "star": "4"
+            }
+            ]
+        };
+        //jsTxt = '';
+        //var jsObj = eval("(" + jsTxt + ")");
+        //thong tin
+        budgrpRec = jsObj.budgrpRec;
+        document.getElementById("name").innerHTML = budgrpRec.name;
+        document.getElementById("about").innerHTML = budgrpRec.about;
+        //training history
+        txt = "";
+        txt += '<table style="width: 100%;">';
+        txt += "<tr>";
+        cols = jsObj.trngCols;
+        for (i in cols) {
+            txt += '<th class="col1">' + cols[i] + '</th>';
+        }
+        txt += "</tr>";
+        for (i in jsObj.recs) {
+            trngRec = jsObj.recs[i];
+            txt += "<tr>";
+            txt += "<td>" + trngRec.date + "</td>";
+            txt += "<td>" + trngRec.topic + "</td>";
+            txt += "<td>" + trngRec.trainer + "</td>";
+            txt += "<td>" + trngRec.cmnt + "</td>";
+            txt += "<td>" + trngRec.star + "</td>";
+            txt += "</tr>";
+        }
+        txt += "</table>";
+        document.getElementById("trngTbl").innerHTML = txt;
+    </script>
+</body>
+</html>
