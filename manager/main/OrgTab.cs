@@ -21,21 +21,26 @@ namespace test_binding
         protected TableLayoutPanel m_tbl;
         protected SplitContainer m_spl;
         protected TreeView m_tree;
+        protected ContextMenuStrip m_treeCms;
         protected WebBrowser m_wb;
         protected lContentProvider s_contentProvider { get { return MngForm.s_contentProvider; } }
 
         protected enum TreeStyle
         {
             check,
-            radio
+            radio,
         }
         protected TreeStyle m_treeStyle;
+        protected bool m_autoRebuild;    //rebuild tree
 
         public BaseTab()
         {
             InitCtrls();
-            BuildTree();
-            InitEvent();
+            if (!m_autoRebuild)
+            {
+                BuildTree();
+            }
+           InitEvent();
         }
         public string Obj2Json(object obj, Type[]knownTypes)
         {
@@ -72,6 +77,10 @@ namespace test_binding
             //trvw.CheckBoxes = true;
             spl.Panel1.Controls.Add(trvw);
 
+            m_treeCms = new ContextMenuStrip();
+            var mi = m_treeCms.Items.Add("Refresh");
+            mi.Click += TCMS_RefreshClick;
+
             var wb = new WebBrowser();
             wb.Dock = DockStyle.Fill;
             spl.Panel2.Controls.Add(wb);
@@ -83,25 +92,57 @@ namespace test_binding
             m_tbl = tbl;
             m_spl = spl;
         }
-        protected void InitEvent()
+
+        private void TCMS_RefreshClick(object sender, EventArgs e)
         {
-            m_tree.AfterCheck += Tree_AfterCheck;
-            m_tree.NodeMouseClick += M_tree_NodeMouseClick;
+            m_tree.Nodes.Clear();
+            BuildTree();
         }
 
-        private void M_tree_KeyDown(object sender, KeyEventArgs e)
+        protected void InitEvent()
+        {
+            m_pg.Enter += Pg_Enter;
+            m_tree.AfterCheck += Tree_AfterCheck;
+            m_tree.NodeMouseClick += Tree_NodeMouseClick;
+            m_tree.MouseDown += Tree_MouseDown;
+        }
+
+        private void Tree_MouseDown(object sender, MouseEventArgs e)
+        {
+            //show menu
+            switch (e.Button)
+            {
+                case MouseButtons.Right:
+                    {
+                        m_treeCms.Show(m_tree, e.X, e.Y);//places the menu at the pointer position
+                    }
+                    break;
+            }
+        }
+
+        private void Pg_Enter(object sender, EventArgs e)
+        {
+            //rebuild tree
+            if (m_autoRebuild)
+            {
+                m_tree.Nodes.Clear();
+                BuildTree();
+            }
+        }
+
+        private void Tree_KeyDown(object sender, KeyEventArgs e)
         {
             OnKeyDown(e);
         }
 
-        private void M_tree_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        private void Tree_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             //throw new NotImplementedException();
-            OnNodeMouseClick(e);
+            OnNodeMouseClick(sender,e);
         }
 
-        TreeViewAction m_action = TreeViewAction.Unknown;
-        protected void OnNodeMouseClick(System.Windows.Forms.TreeNodeMouseClickEventArgs e)
+        //TreeViewAction m_action = TreeViewAction.Unknown;
+        protected void OnNodeMouseClick(object sender, System.Windows.Forms.TreeNodeMouseClickEventArgs e)
         {
             //base.OnNodeMouseClick(e);
 
@@ -114,9 +155,11 @@ namespace test_binding
 
             // toggle the node's checked status.  This will then fire OnAfterCheck
             System.Windows.Forms.TreeNode tn = e.Node;
-            m_action = TreeViewAction.ByMouse;
-            tn.Checked = !tn.Checked;
-            m_action = TreeViewAction.Unknown;
+            //m_action = TreeViewAction.ByMouse;
+            var bChk = Check(tn);
+            Check(tn, !bChk);
+            Tree_AfterCheck(this, new TreeViewEventArgs(e.Node,TreeViewAction.ByMouse));
+            //m_action = TreeViewAction.Unknown;
         }
         protected void OnKeyDown(System.Windows.Forms.KeyEventArgs e)
         {
@@ -143,7 +186,7 @@ namespace test_binding
                         updateChkBoxState(e);
                         break;
                     case TreeStyle.radio:
-                        updateRadBtnState(e);
+                        UpdateRadBtnState(e);
                         break;
                 }
                 m_ignore--;
@@ -152,7 +195,7 @@ namespace test_binding
             }
         }
 
-        private void updateRadBtnState(TreeViewEventArgs e)
+        private void UpdateRadBtnState(TreeViewEventArgs e)
         {
             var val = Check(e.Node);
             if (!val)
@@ -241,31 +284,32 @@ namespace test_binding
 
         private bool Check(TreeNode node, bool val)
         {
-            //int idx = val?1:0;
-            //node.StateImageIndex = idx;
-            //return idx == 1;
-            if(node.Checked != val)
-            {
-                node.Checked = val;
-            }
-            else
-            {
-                Debug.Assert(false, "should not reset node state");
-            }
-            return node.Checked;
+            int idx = val?1:0;
+            node.StateImageIndex = idx;
+            return idx == 1;
+
+            //if(node.Checked != val)
+            //{
+            //    node.Checked = val;
+            //}
+            //else
+            //{
+            //    Debug.Assert(false, "should not reset node state");
+            //}
+            //return node.Checked;
         }
         protected bool Check(TreeNode node, int idx = -1)
         {
             if (idx == -1)
             {
-                //node.StateImageIndex = idx;
-                //return node.StateImageIndex == 1;
-                return node.Checked;
+                return node.StateImageIndex == 1;
+                //return node.Checked;
             }
             else
             {
                 node.StateImageIndex = idx;
-                return node.Checked;
+                return idx == 1;
+                //return node.Checked;
             }
         }
         private void CheckAllChildNodes(TreeNode node, bool val)
@@ -531,7 +575,7 @@ namespace test_binding
             foreach (string grpName in lst)
             {
                 var child = node.Nodes.Add(grpName);
-                child.Checked = false;
+                //child.Checked = false;
                 child.StateImageIndex = 0;
             }
         }
@@ -857,7 +901,7 @@ namespace test_binding
             {
                 var child = c.Add(rec.name);
                 child.Tag = rec.numb;
-                child.Checked = false;
+                //child.Checked = false;
                 child.StateImageIndex = 0;
             }
         }
@@ -985,6 +1029,217 @@ namespace test_binding
                 {
                    numb = row[(int)BudgrpTblInfo.ColIdx.grp].ToString(),
                    name = row[(int)BudgrpTblInfo.ColIdx.name].ToString()
+                };
+                lst.Add(rec);
+            }
+            return lst;
+        }
+    }
+
+
+    class LectureTab : BaseTab
+    {
+        public LectureTab()
+        {
+        }
+        protected override void InitCtrls()
+        {
+            base.InitCtrls();
+            m_treeStyle = TreeStyle.check;  //set style before call buildTree()
+            m_pg.Text = "Bài Giảng";
+        }
+
+        class composite
+        {
+            public string name;
+            public string key;
+            public Dictionary<string,composite> childs;
+        }
+
+        protected override void AddTreeNode()
+        {
+            var lst = QryLectures();
+
+            //build compsite struct
+            var root = new composite();
+            root.childs = new Dictionary<string, composite>();
+            foreach (LectRec rec in lst)
+            {
+                composite parent = root;
+                composite child;
+                var path = new string[]{ rec.auth,rec.target,rec.topic};
+                //find topic node
+                foreach (string name in path)
+                {
+                    if (parent.childs.ContainsKey(name))
+                    {
+                        child = parent.childs[name];
+                    }
+                    else
+                    {
+                        child = new composite() { name = name,childs = new Dictionary<string, composite>()};
+                        parent.childs.Add(name, child);
+                    }
+                    parent = child;
+                }
+                parent.childs.Add(rec.lect,new composite() { key = rec.lect, name = rec.title });
+            }
+
+            //crt tree node
+            var q = new Queue<object[]> ();
+            q.Enqueue(new object[] { m_tree.Nodes, root });
+            while(q.Count >0)
+            {
+                var objs = q.Dequeue();
+                TreeNodeCollection nodes = (TreeNodeCollection)objs[0];
+                composite parent = (composite)objs[1];
+                foreach(composite child in parent.childs.Values)
+                {
+                    var node = nodes.Add(child.name);
+                    //node.Checked = false;
+                    node.StateImageIndex = 0;
+                    if (child.childs != null)
+                    {
+                        q.Enqueue(new object[] { node.Nodes, child });
+                    }
+                    else
+                    {
+                        //leaf
+                        node.Tag = child.key;
+                    }
+                }
+            }
+        }
+        public override void OnSelectedChg()
+        {
+            // get task by section lst
+            var lst = new List<string>();
+            var q = new Queue<object>();
+            q.Enqueue(m_tree.Nodes);
+            while(q.Count > 0)
+            {
+                var col = (TreeNodeCollection)q.Dequeue();
+                foreach (TreeNode tn in col)
+                {
+                    if (tn.Tag == null)
+                    {
+                        q.Enqueue(tn.Nodes);
+                    }
+                    else
+                    {
+                        //leaf
+                        if (Check(tn))
+                        {
+                            lst.Add(tn.Tag.ToString());
+                        }
+                    }
+                }
+            }
+            if (lst.Count > 0)
+            {
+                UpdateContent(lst);
+            }
+        }
+
+        [DataContract]
+        public class LectRec
+        {
+            public string lect; //lecture_number
+            [DataMember] public string title;
+            [DataMember] public string auth;
+            [DataMember] public string target;
+            [DataMember] public string topic;
+            [DataMember] public string crt;
+            [DataMember] public string content;
+            [DataMember] public string link;
+        }
+
+        [DataContract]
+        public class TabContent
+        {
+            [DataMember] public List<string> cols;
+            [DataMember] public List<LectRec> recs;
+        }
+
+        private void UpdateContent(List< string> lst)
+        {
+            var tc = QryTabContent(lst);
+            var knownTypes = new Type[] {
+                    typeof(TabContent),
+                    typeof(LectRec),
+                };
+            var jsTxt = Obj2Json(tc, knownTypes);
+            var htmlTxt = GenTabHtml(jsTxt);
+            m_wb.DocumentText = htmlTxt;
+        }
+
+
+        private object QryTabContent(List< string> lst)
+        {
+            var tc = new TabContent();
+            var bgtb = appConfig.s_config.GetTable(TableIdx.Lecture);
+            var bgsb = new SearchBuilder(bgtb, s_contentProvider);
+            bgsb.Clear();
+            bgsb.Add(LectureTblInfo.ColIdx.lect.ToField(), lst);
+            bgsb.Search();
+            tc.recs = new List<LectRec>();
+            for (int i = 0; i < bgsb.dc.m_dataTable.Rows.Count; i++)
+            {
+                var rec = new LectRec();
+                var row = bgsb.dc.m_dataTable.Rows[i];
+                rec.lect = row[LectureTblInfo.ColIdx.lect.ToField()].ToString();
+                rec.title = row[LectureTblInfo.ColIdx.title.ToField()].ToString();
+                var auth = (LectureTblInfo.Author)int.Parse(row[LectureTblInfo.ColIdx.auth.ToField()].ToString());
+                rec.auth = auth.ToDesc();
+                var target = (LectureTblInfo.Target)int.Parse(row[LectureTblInfo.ColIdx.target.ToField()].ToString());
+                rec.target = target.ToDesc();
+                rec.topic = row[LectureTblInfo.ColIdx.topic.ToField()].ToString();
+                var date = (DateTime)row[LectureTblInfo.ColIdx.crt.ToField()];
+                rec.crt = date.ToString(lConfigMng.GetDisplayDateFormat());
+                rec.content = row[LectureTblInfo.ColIdx.content.ToField()].ToString();
+                rec.link = row[LectureTblInfo.ColIdx.link.ToField()].ToString();
+                tc.recs.Add(rec);
+            }
+
+            tc.cols = new List<string> {
+                LectureTblInfo.ColIdx.title.ToAlias(),
+                LectureTblInfo.ColIdx.auth.ToAlias(),
+                LectureTblInfo.ColIdx.target.ToAlias(),
+                LectureTblInfo.ColIdx.topic.ToAlias(),
+                LectureTblInfo.ColIdx.crt.ToAlias(),
+                LectureTblInfo.ColIdx.content.ToAlias(),
+                LectureTblInfo.ColIdx.link.ToAlias(),
+            };
+            return tc;
+        }
+
+        private string GenTabHtml(string jsTxt)
+        {
+            string tmpl = "";
+            tmpl = File.ReadAllText(@"..\..\main\LectTmpl.html");
+            //jsTxt = '';
+            //var jsObj = eval("(" + jsTxt + ")");
+            var rpl = tmpl.Replace("//jsTxt = '';", string.Format("jsTxt = '({0})';\njsObj = eval(jsTxt)", jsTxt));
+            return rpl;
+        }
+
+        private List<LectRec> QryLectures()
+        {
+            var dc = MngForm.s_contentProvider.CreateDataContent(TableIdx.Lecture);
+            dc.Search(new List<string>(), new List<SearchParam>());
+            var lst = new List<LectRec>();
+            foreach (DataRow row in dc.m_dataTable.Rows)
+            {
+                var rec = new LectRec
+                {
+                    lect = row[LectureTblInfo.ColIdx.lect.ToField()].ToString(),
+                    title = row[LectureTblInfo.ColIdx.title.ToField()].ToString(),
+                    auth = ((LectureTblInfo.Author)int.Parse(row[LectureTblInfo.ColIdx.auth.ToField()].ToString())).ToDesc(),
+                    target = ((LectureTblInfo.Target)int.Parse(row[LectureTblInfo.ColIdx.target.ToField()].ToString())).ToDesc(),
+                    topic = row[LectureTblInfo.ColIdx.topic.ToField()].ToString(),
+                    crt = row[LectureTblInfo.ColIdx.crt.ToField()].ToString(),
+                    content = row[LectureTblInfo.ColIdx.content.ToField()].ToString(),
+                    link = row[LectureTblInfo.ColIdx.link.ToField()].ToString(),
                 };
                 lst.Add(rec);
             }

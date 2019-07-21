@@ -66,8 +66,10 @@
 </head>
 <body style="background-repeat: no-repeat; background-attachment: scroll; padding: 10px">
     <div style="background-color: white; width: 600px; position: relative; left: auto;">
-        <div>
             <p class="label">Danh sách công việc/ kế hoạch trong tuần</p>
+            <span id="warn" style="color:red">warning</span>
+        <div id="taskPanel">
+        <div>
             <span>Ngày bắt đầu:</span>
             <span style="border: 0" id="date">dd/mm/yyyy(1/2)</span>
             <!--<table style="border: 0; width: auto;">
@@ -87,8 +89,6 @@
             <button id="btn4" type="button" onclick="UpdateTaskByDay(4)" disabled="disabled">Fri</button>
             <button id="btn5" type="button" onclick="UpdateTaskByDay(5)" disabled="disabled">Sat</button>
             <button id="btn6" type="button" onclick="UpdateTaskByDay(6)" disabled="disabled">Sun</button>
-            <br/>
-            <span id="warn" style="color:red">warning</span>
         </div>
         <br />
         <span class="label">Công Việc</span>
@@ -123,6 +123,7 @@
                 </tr>
             </table>
         </div>
+    </div>
     </div>
 
     <script>
@@ -169,9 +170,11 @@
         var warn = "";
         if (noTask) {
             warn = "Không có công việc!";
+            document.getElementById("taskPanel").innerHTML = "";
+        } else {
+            render(curIdx);
         }
         document.getElementById("warn").innerHTML = warn;
-        render(curIdx);
         function render(idx) {
             var rec = jsObj.recs[idx];
 

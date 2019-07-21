@@ -59,6 +59,7 @@ namespace test_binding
                 new OrgTab().m_pg,
                 new TaskTab().m_pg,
                 new TrainingTab().m_pg,
+                new LectureTab().m_pg,
             }) ;
             tc.SelectedIndex = 0;
             this.Controls.Add(tc);

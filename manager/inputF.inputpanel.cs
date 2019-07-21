@@ -2274,6 +2274,7 @@ namespace test_binding
             };
             CrtInputCtrlLst(tDict);
             tDict[(int)LectureTblInfo.ColIdx.lect].ReadOnly = true;
+            tDict[(int)LectureTblInfo.ColIdx.topic].ReadOnly = true;
             m_key = new keyMng("BG", m_tblName, LectureTblInfo.ColIdx.lect.ToField());
         }
 
