@@ -218,7 +218,7 @@ namespace test_binding
             }
         }
 
-        protected void UpdatePage(string htmlTxt)
+        protected void UpdateWB(string htmlTxt)
         {
 #if use_gecko
             string filename = string.Format(@"{0}\{1}", Path.GetTempPath(), "page.htm");
@@ -439,11 +439,13 @@ namespace test_binding
     }
     class TaskTab:BaseTab
     {
+        private TaskPageContent m_pgCnt;
         public TaskTab()
         {
         }
         protected override void InitCtrls()
         {
+            m_pgCnt = new TaskPageContent() { m_cp = s_contentProvider };
             base.InitCtrls();
             m_treeStyle = TreeStyle.check;  //set style before call buildTree()
             m_pg.Text = "Công Việc";
@@ -470,138 +472,8 @@ namespace test_binding
                 Debug.Print("secLst: {0}", secLst.Count);
                 foreach (var i in secLst) { Debug.Print("    {0}", i); }
             }
-            UpdateContent(secLst);
-        }
-
-        private void UpdateContent(List<string> secLst)        {
-            
-            //List<DateTime> dtLst = new List<DateTime> {new DateTime(2019,6,15), new DateTime(2019, 6, 16) };
-            List<DateTime> dtLst = new List<DateTime>();
-            var dt = DateTime.Now;
-            var wd = dt.DayOfWeek;
-            for (int i = 1; i < 8; i++)
-            {
-                dtLst.Add(dt.AddDays(i - (int)wd));
-            }
-            var tc = QryTabContent(dtLst, secLst);
-            var knownTypes = new Type[] {
-                    typeof(TabContent),
-                    typeof(DayTask),
-                    typeof(TaskRec),
-                    typeof(PlanRec),
-                };
-            var jsTxt = Obj2Json(tc, knownTypes);
-            var htmlTxt = GenTabHtml(jsTxt);
-
-            UpdatePage(htmlTxt);
-        }
-
-        private string GenTabHtml(string jsTxt)
-        {
-            string tmpl="";
-            //var fin = File.OpenText(@"..\..\main\TaskTmpl.html");
-            //while (!fin.EndOfStream) { 
-            //string line = fin.ReadLine();
-            //if (line.IndexOf("//jsTxt = '';") != -1)
-            //{
-            //    fin.ReadLine();
-
-            //    tmpl += string.Format("jsTxt = '{0}';\n", jsTxt);
-            //    tmpl += "jsObj = eval(\"(\" + jsTxt + \")\");\n";
-            //}
-            //else
-            //    tmpl += line + "\n";
-            //}
-            //fin.Close();
-            tmpl = File.ReadAllText(@"..\..\main\TaskTmpl.html");
-            //jsTxt = '';
-            //var jsObj = eval("(" + jsTxt + ")");
-            var rpl = tmpl.Replace("//jsTxt = '';", string.Format("jsTxt = '({0})';\njsObj = eval(jsTxt)", jsTxt));
-            return rpl;
-        }
-
-        private SearchBuilder m_taskSB;
-        private SearchBuilder m_grpSB;
-        private List<string> QryGrps()
-        {
-            if (m_grpSB == null) { m_grpSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.GrpName), MngForm.s_contentProvider); }
-            m_grpSB.Clear();
-            m_grpSB.Search();
-            var lst = new List<string>();
-            foreach (DataRow row in m_grpSB.dc.m_dataTable.Rows)
-            {
-                lst.Add(row[1].ToString());
-            }
-            return lst;
-        }
-        private TabContent QryTabContent(List<DateTime>dtLst,List<string>secLst)
-        {
-            var tc = new TabContent();
-            tc.planCols = new List<string> {"Kế hoạch","Ban","Tình trạng" };
-            tc.taskCols = new List<string> { "Công việc", "Ban", "Tình trạng" };
-            tc.recs = new List<DayTask>();
-            //qry task
-            foreach (DateTime dt in dtLst)
-            {
-                List<TaskRec> tasks = QryTask(dt, secLst);
-                var rec = new DayTask {
-                    date = dt.ToString(lConfigMng.GetDisplayDateFormat()),
-                    tasks = tasks};
-                tc.recs.Add(rec);
-            }
-            return tc;
-        }
-        private List< TaskRec> QryTask(DateTime startDt, List<string> sectionLst)
-        {
-            var lst = new List<TaskRec>();
-            if (m_taskSB == null) { m_taskSB = new SearchBuilder(appConfig.s_config.GetTable(TableIdx.Task), MngForm.s_contentProvider); }
-            m_taskSB.Clear();
-            m_taskSB.Add(TaskTblInfo.ColIdx.Begin.ToField(), startDt);
-            if (sectionLst != null) {
-                m_taskSB.Add(TaskTblInfo.ColIdx.Group.ToField(), sectionLst);
-            }
-            m_taskSB.Search();
-            foreach (DataRow row in m_taskSB.dc.m_dataTable.Rows)
-            {
-                TaskStatus sts = (TaskStatus)(int.Parse(row[TaskTblInfo.ColIdx.Stat.ToField()].ToString()));
-                var rec = new TaskRec()
-                {
-                    name = row[TaskTblInfo.ColIdx.Name.ToField()].ToString(),
-                    section = row[TaskTblInfo.ColIdx.Group.ToField()].ToString(),
-                    status = sts.ToDesc()
-                };
-                lst.Add(rec);
-            }
-            return lst;
-        }
-
-        [DataContract]
-        public class PlanRec
-        {
-            [DataMember] public string name;
-            [DataMember] public string section;
-            [DataMember] public string status;
-        }
-        [DataContract]
-        public class TaskRec
-        {
-            [DataMember] public string name;
-            [DataMember] public string section;
-            [DataMember] public string status;
-        }
-        [DataContract]
-        public class DayTask
-        {
-            [DataMember] public string date;
-            [DataMember] public List<PlanRec> plans;
-            [DataMember] public List<TaskRec> tasks;
-        }
-        [DataContract]
-        public class TabContent
-        {
-            [DataMember] public List<string> taskCols;
-            [DataMember] public List<string> planCols;
-            [DataMember] public List<DayTask> recs;
+            var htmlTxt = m_pgCnt.GenHtmlContent(secLst);
+            UpdateWB(htmlTxt);
         }
 
         protected override void AddTreeNode()
@@ -609,7 +481,7 @@ namespace test_binding
             var node = m_tree.Nodes.Add("All", "All");
             node.Checked = false;
             node.StateImageIndex = 0;
-            var lst = QryGrps();
+            var lst = m_pgCnt.QryGrps();
             foreach (string grpName in lst)
             {
                 var child = node.Nodes.Add(grpName);
@@ -920,11 +792,13 @@ namespace test_binding
 
     class TrainingTab:BaseTab
     {
+        private TrainContent m_pgCnt;
         public TrainingTab()
         {
         }
         protected override void InitCtrls()
         {
+            m_pgCnt = new TrainContent() { m_cp = s_contentProvider };
             base.InitCtrls();
             m_treeStyle = TreeStyle.radio;  //set style before call buildTree()
             m_pg.Text = "Trạch Pháp";
@@ -934,9 +808,9 @@ namespace test_binding
                 //var node = m_tree.Nodes.Add("All", "All");
                 //node.Checked = false;
                 //node.StateImageIndex = 0;
-            var lst = QryBudgrps();
+            var lst = m_pgCnt.QryBudgrps();
             var c = m_tree.Nodes;
-            foreach (BudgrpRec rec in lst)
+            foreach (TrainContent.BudgrpRec rec in lst)
             {
                 var child = c.Add(rec.name);
                 child.Tag = rec.numb;
@@ -948,134 +822,19 @@ namespace test_binding
         {
             // get task by section lst
             var col = m_tree.Nodes;
-            List<string> secLst = null;
+            List<string> secLst;
+            secLst = new List<string>();
+            foreach (TreeNode tn in col)
             {
-                secLst = new List<string>();
-                foreach (TreeNode tn in col)
-                {
-                    if (Check(tn)) { secLst.Add(tn.Tag.ToString()); }
-                }
-                UpdateContent(secLst[0]);
+                if (Check(tn)) { secLst.Add(tn.Tag.ToString()); }
             }
-        }
-
-        [DataContract]
-        public class TrngRec
-        {
-            [DataMember] public string date;
-            [DataMember] public string topic;
-            [DataMember] public string trainer;
-            //[DataMember] public string question;
-            [DataMember] public string cmnt;
-            [DataMember] public string star;
-        }
-
-        [DataContract]
-        public class BudgrpRec
-        {
-            public string numb;
-            [DataMember] public string name;
-            [DataMember] public string about;
-        }
-
-        [DataContract]
-        public class TabContent
-        {
-            [DataMember] public BudgrpRec budgrpRec;
-            [DataMember] public List<string> trngCols;
-            [DataMember] public List<TrngRec> recs;
-        }
-
-        private void UpdateContent(string grpId)
-        {
-            var tc = QryTabContent(grpId);
-            var knownTypes = new Type[] {
-                    typeof(TabContent),
-                    typeof(BudgrpRec),
-                    typeof(TrngRec),
-                };
-            var jsTxt = Obj2Json(tc, knownTypes);
-            var htmlTxt = GenTabHtml(jsTxt);
-
-            UpdatePage(htmlTxt);
-        }
-
-        
-        private object QryTabContent(string grpId)
-        {
-            var tc = new TabContent();
-            var bgtb = appConfig.s_config.GetTable(TableIdx.Budgrp);
-            var bgsb = new SearchBuilder(bgtb, s_contentProvider);
-            bgsb.Clear();
-            bgsb.Add(BudgrpTblInfo.ColIdx.grp.ToField(), grpId);
-            bgsb.Search();
-            var bgrec = new BudgrpRec();
-            for (int i = 0; i < bgsb.dc.m_dataTable.Rows.Count; i++)
+            if (secLst.Count > 0)
             {
-                var row = bgsb.dc.m_dataTable.Rows[i];
-                bgrec.name = row[BudgrpTblInfo.ColIdx.name.ToField()].ToString();
-                bgrec.about = row[BudgrpTblInfo.ColIdx.about.ToField()].ToString();
-                break;
+                var htmlTxt = m_pgCnt.GenHtmlContent(secLst);
+                UpdateWB(htmlTxt);
             }
-            tc.budgrpRec = bgrec;
-
-            var trntb = appConfig.s_config.GetTable(TableIdx.Training);
-            var trnsb = new SearchBuilder(trntb, s_contentProvider);
-            trnsb.Clear();
-            trnsb.Add(TrainingTblInfo.ColIdx.bgrp.ToField(), grpId);
-            trnsb.Search();
-            tc.trngCols = new List<string> {
-                TrainingTblInfo.ColIdx.date.ToAlias(),
-                TrainingTblInfo.ColIdx.topic.ToAlias(),
-                TrainingTblInfo.ColIdx.trnr.ToAlias(),
-                TrainingTblInfo.ColIdx.cmnt.ToAlias(),
-                TrainingTblInfo.ColIdx.star.ToAlias(),
-            };
-            tc.recs = new List<TrngRec>();
-            foreach(DataRow row in trnsb.dc.m_dataTable.Rows)
-            {
-                var trnrec = new TrngRec();
-                DateTime dateTime = (DateTime)row[TrainingTblInfo.ColIdx.date.ToField()];
-                trnrec.date = dateTime.ToString(lConfigMng.GetDisplayDateFormat());
-                trnrec.topic = row[TrainingTblInfo.ColIdx.topic.ToField()].ToString();
-                TrainingTblInfo.Trainer trainer = (TrainingTblInfo.Trainer)int.Parse(row[TrainingTblInfo.ColIdx.trnr.ToField()].ToString());
-                trnrec.trainer = trainer.ToDesc();
-                trnrec.cmnt = row[TrainingTblInfo.ColIdx.cmnt.ToField()].ToString();
-                TrainingTblInfo.Star star = (TrainingTblInfo.Star)int.Parse(row[TrainingTblInfo.ColIdx.star.ToField()].ToString());
-                trnrec.star = star.ToDesc();
-                tc.recs.Add(trnrec);
-            }
-            return tc;
-        }
-
-        private string GenTabHtml(string jsTxt)
-        {
-            string tmpl = "";
-            tmpl = File.ReadAllText(@"..\..\main\budgrpTmpl.html");
-            //jsTxt = '';
-            //var jsObj = eval("(" + jsTxt + ")");
-            var rpl = tmpl.Replace("//jsTxt = '';", string.Format("jsTxt = '({0})';\njsObj = eval(jsTxt)", jsTxt));
-            return rpl;
-        }
-
-        private List<BudgrpRec> QryBudgrps()
-        {
-            var dc = MngForm.s_contentProvider.CreateDataContent(TableIdx.Budgrp);
-            dc.Search(new List<string>(), new List<SearchParam>());
-            var lst = new List<BudgrpRec>();
-            foreach (DataRow row in dc.m_dataTable.Rows)
-            {
-                var rec = new BudgrpRec
-                {
-                   numb = row[(int)BudgrpTblInfo.ColIdx.grp].ToString(),
-                   name = row[(int)BudgrpTblInfo.ColIdx.name].ToString()
-                };
-                lst.Add(rec);
-            }
-            return lst;
         }
     }
-
 
     class LectureTab : BaseTab
     {
@@ -1084,6 +843,7 @@ namespace test_binding
         }
         protected override void InitCtrls()
         {
+            m_pgCnt = new LectContent() { m_cp = s_contentProvider };
             base.InitCtrls();
             m_treeStyle = TreeStyle.check;  //set style before call buildTree()
             m_pg.Text = "Bài Giảng";
@@ -1098,12 +858,12 @@ namespace test_binding
 
         protected override void AddTreeNode()
         {
-            var lst = QryLectures();
+            var lst = m_pgCnt.QryLectures();
 
             //build compsite struct
             var root = new composite();
             root.childs = new Dictionary<string, composite>();
-            foreach (LectRec rec in lst)
+            foreach (LectContent.LectRec rec in lst)
             {
                 composite parent = root;
                 composite child;
@@ -1150,6 +910,8 @@ namespace test_binding
                 }
             }
         }
+        
+        private LectContent m_pgCnt;
         public override void OnSelectedChg()
         {
             // get task by section lst
@@ -1177,40 +939,9 @@ namespace test_binding
             }
             if (lst.Count > 0)
             {
-                UpdateContent(lst);
+                var htmlTxt = m_pgCnt.GenHtmlContent(lst);
+                UpdateWB(htmlTxt);
             }
-        }
-
-        [DataContract]
-        public class LectRec
-        {
-            public string lect; //lecture_number
-            [DataMember] public string title;
-            [DataMember] public string auth;
-            [DataMember] public string target;
-            [DataMember] public string topic;
-            [DataMember] public string crt;
-            [DataMember] public string content;
-            [DataMember] public string link;
-        }
-
-        [DataContract]
-        public class TabContent
-        {
-            [DataMember] public List<string> cols;
-            [DataMember] public List<LectRec> recs;
-        }
-
-        private void UpdateContent(List< string> lst)
-        {
-            var tc = QryTabContent(lst);
-            var knownTypes = new Type[] {
-                    typeof(TabContent),
-                    typeof(LectRec),
-                };
-            var jsTxt = Obj2Json(tc, knownTypes);
-            var htmlTxt = GenTabHtml(jsTxt);
-            UpdatePage(htmlTxt);
         }
 
         private void OpenInBrowser(string htmlTxt)
@@ -1220,82 +951,6 @@ namespace test_binding
                     "testhtm.htm");
             File.WriteAllText(filename, htmlTxt);
             Process.Start(filename);
-        }
-
-        private object QryTabContent(List< string> lst)
-        {
-            var tc = new TabContent();
-            var bgtb = appConfig.s_config.GetTable(TableIdx.Lecture);
-            var bgsb = new SearchBuilder(bgtb, s_contentProvider);
-            bgsb.Clear();
-            bgsb.Add(LectureTblInfo.ColIdx.lect.ToField(), lst);
-            bgsb.Search();
-            tc.recs = new List<LectRec>();
-            for (int i = 0; i < bgsb.dc.m_dataTable.Rows.Count; i++)
-            {
-                var rec = new LectRec();
-                var row = bgsb.dc.m_dataTable.Rows[i];
-                rec.lect = row[LectureTblInfo.ColIdx.lect.ToField()].ToString();
-                rec.title = row[LectureTblInfo.ColIdx.title.ToField()].ToString();
-                var auth = (LectureTblInfo.Author)int.Parse(row[LectureTblInfo.ColIdx.auth.ToField()].ToString());
-                rec.auth = auth.ToDesc();
-                var target = (LectureTblInfo.Target)int.Parse(row[LectureTblInfo.ColIdx.target.ToField()].ToString());
-                rec.target = target.ToDesc();
-                rec.topic = row[LectureTblInfo.ColIdx.topic.ToField()].ToString();
-                var date = (DateTime)row[LectureTblInfo.ColIdx.crt.ToField()];
-                rec.crt = date.ToString(lConfigMng.GetDisplayDateFormat());
-                rec.content = row[LectureTblInfo.ColIdx.content.ToField()].ToString();
-                rec.link = row[LectureTblInfo.ColIdx.link.ToField()].ToString();
-                tc.recs.Add(rec);
-            }
-
-            tc.cols = new List<string> {
-                LectureTblInfo.ColIdx.title.ToAlias(),
-                LectureTblInfo.ColIdx.auth.ToAlias(),
-                LectureTblInfo.ColIdx.target.ToAlias(),
-                LectureTblInfo.ColIdx.topic.ToAlias(),
-                LectureTblInfo.ColIdx.crt.ToAlias(),
-                LectureTblInfo.ColIdx.content.ToAlias(),
-                LectureTblInfo.ColIdx.link.ToAlias(),
-            };
-            return tc;
-        }
-
-        private string GenTabHtml(string jsTxt)
-        {
-            string tmpl = "";
-#if !CFG_MNG_ANY
-            tmpl = File.ReadAllText(@"..\..\..\main\LectTmpl.html");
-#else
-            tmpl = File.ReadAllText(@"..\..\main\LectTmpl.html");
-#endif
-            //jsTxt = '';
-            //var jsObj = eval("(" + jsTxt + ")");
-            var rpl = tmpl.Replace("//jsTxt = '';", string.Format("jsTxt = '({0})';\njsObj = eval(jsTxt)", jsTxt));
-            return rpl;
-        }
-
-        private List<LectRec> QryLectures()
-        {
-            var dc = MngForm.s_contentProvider.CreateDataContent(TableIdx.Lecture);
-            dc.Search(new List<string>(), new List<SearchParam>());
-            var lst = new List<LectRec>();
-            foreach (DataRow row in dc.m_dataTable.Rows)
-            {
-                var rec = new LectRec
-                {
-                    lect = row[LectureTblInfo.ColIdx.lect.ToField()].ToString(),
-                    title = row[LectureTblInfo.ColIdx.title.ToField()].ToString(),
-                    auth = ((LectureTblInfo.Author)int.Parse(row[LectureTblInfo.ColIdx.auth.ToField()].ToString())).ToDesc(),
-                    target = ((LectureTblInfo.Target)int.Parse(row[LectureTblInfo.ColIdx.target.ToField()].ToString())).ToDesc(),
-                    topic = row[LectureTblInfo.ColIdx.topic.ToField()].ToString(),
-                    crt = row[LectureTblInfo.ColIdx.crt.ToField()].ToString(),
-                    content = row[LectureTblInfo.ColIdx.content.ToField()].ToString(),
-                    link = row[LectureTblInfo.ColIdx.link.ToField()].ToString(),
-                };
-                lst.Add(rec);
-            }
-            return lst;
         }
     }
 }

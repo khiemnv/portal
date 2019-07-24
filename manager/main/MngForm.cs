@@ -21,7 +21,6 @@ namespace test_binding
         {
             InitializeComponent();
 
-
             //init config & load config
             appConfig.s_config = lConfigMng.crtInstance();
 

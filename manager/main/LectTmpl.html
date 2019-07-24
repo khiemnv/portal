@@ -32,36 +32,53 @@
             background-color: blue;
             font-style: normal;
         }
-        
-      .txtbtn {
-      color:black;
-      cursor:pointer;
-      text-decoration: underline;
-      }
-      .txtbtn:hover, .txtbtn:visited {
-      cursor:pointer;
-      color:blue;
-      text-decoration: underline;
-      }
-     
+
+        .txtbtn {
+            color: black;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+            .txtbtn:hover, .txtbtn:visited {
+                cursor: pointer;
+                color: blue;
+                text-decoration: underline;
+            }
     </style>
 </head>
 <body style="background-repeat: no-repeat; background-attachment: scroll; padding: 10px">
     <div style="background-color: white; width: 600px; position: relative; left: auto;">
         <span class="label">Bài giảng</span>
-        <iframe id="frame1" width="720" src="" frameborder="1" allowtransparency="true" allowfullscreen></iframe>
-        <div id="mp4player" style="text-align:center"> 
-<!--           <button onclick="playPause()">Play/Pause</button> 
-          <button onclick="makeBig()">Big</button>
-          <button onclick="makeSmall()">Small</button>
-          <button onclick="makeNormal()">Normal</button>
-          <br><br/> -->
-          <video id="video1" width="720" autoplay controls>
-            <source src="" type="video/mp4">
-            Your browser does not support HTML5 video.
-          </video>
-        </div> 
-        <br/>
+        <div id="player" style="text-align: center">
+            <button onclick="makeBig('frame1')">Big</button>
+            <button onclick="makeSmall('frame1')">Small</button>
+            <button onclick="makeNormal('frame1')">Normal</button>
+            <br>
+            <br />
+            <iframe id="frame1" width="720" height="540" style="border-width: 1px"></iframe>
+        </div>
+        <div id="mp4player" style="text-align: center">
+            <button onclick="playPause('video1')">Play/Pause</button>
+            <button onclick="makeBig('video1')">Big</button>
+            <button onclick="makeSmall('video1')">Small</button>
+            <button onclick="makeNormal('video1')">Normal</button>
+            <br>
+            <br />
+            <video id="video1" width="720" autoplay controls>
+                <source type="video/mp4">
+                Your browser does not support HTML5 video.
+            </video>
+        </div>
+        <div id="mp3player" style="text-align: center">
+            <button onclick="playPause('audio1')">Play/Pause</button>
+            <br>
+            <br />
+            <audio id="audio1" autoplay controls>
+                <source type="audio/mpeg">
+                Your browser does not support HTML5 audio.
+            </audio>
+        </div>
+        <br />
         <div id="lectTbl">
             <table>
                 <tr>
@@ -77,7 +94,7 @@
             </table>
         </div>
     </div>
-	<div id="log" style="color:gray">playing:</div>
+    <div id="log" style="color: gray">playing:</div>
     <script>
         jsObj = {
             "cols": ["tieu de", "người giảng", "doi tuong", "chu de", "ngày", "noi dung", "link"],
@@ -98,18 +115,26 @@
                 "auth": "su phu",
                 "content": "noi dung",
                 "link": "https://www.youtube.com/watch?v=HQ1lFe9I0lo"
+            },
+            {
+                "crt": "03/01/2019",
+                "title": "bai giang 3",
+                "topic": "chu de 3",
+                "target": "doi tuong 3",
+                "auth": "su phu",
+                "content": "noi dung",
+                "link": "file:///D:/music/nhac%20niem%20phat/Nammobotatquantheam.mp3"
             }
             ]
         };
         //jsTxt = '';
         //var jsObj = eval("(" + jsTxt + ")");
 
-        //video
-        var m_video1 = document.getElementById("video1");
-
         //hide frame
-        document.getElementById("frame1").style.display = "none";
-        document.getElementById("mp4player").style.display = "none";
+        m_scale = 3 / 4;;
+        show("player", false);
+        show("mp4player", false);
+        show("mp3player", false);
         document.getElementById("log").innerHTML = "browser: " + who();
         //lecture
 
@@ -153,28 +178,38 @@
             lnk = arr[1];
 
             //check browser
-            str = who();
-            n = str.search(/Chrome|Edge|Firefox|Netscape/i)
+            //str = who();
+            //n = str.search(/Chrome|Edge|Firefox|Netscape/i)
+            n = 0;
             if (n == -1) {
                 document.getElementById("log").innerHTML = "Can not play: [" + lnk + "] on " + str;
                 return;
             }
 
-            ytlnk = crtYTEmbed(lnk);
-            if (ytlnk != '') {
-                //play link
-                show("mp4player", false);
-
-                lnk = ytlnk;
-
-                show("frame1", true);
-                document.getElementById("frame1").src = lnk + "?autoplay=1";
-            }
-            else if (lnk.search(/\.mp4$/i) != -1) {
+            if (lnk.search(/\.mp4$/i) != -1) {
                 //play file.mp4
-                show("frame1", false);
+                show("player", false);
                 show("mp4player", true);
-                m_video1.src = lnk;
+                show("mp3player", false);
+                document.getElementById("video1").src = lnk;
+            }
+            else if (lnk.search(/\.mp3$/i) != -1) {
+                //play file.mp3
+                show("player", false);
+                show("mp4player", false);
+                show("mp3player", true);
+                document.getElementById("audio1").src = lnk;
+            }
+            else {
+                ytlnk = crtYTEmbed(lnk);
+                if (ytlnk != '') {
+                    lnk = ytlnk;
+                }
+                show("player", true);
+                show("mp4player", false);
+                show("mp3player", false);
+                resize("frame1", 720);
+                document.getElementById("frame1").src = lnk + "?autoplay=1";
             }
             document.getElementById("log").innerHTML = "playing:" + lnk;
         }
@@ -194,7 +229,8 @@
             }
             M = M[2] ? [M[1], M[2]] : [navigator.appName, navigator.appVersion, '-?'];
             if ((tem = ua.match(/version\/(\d+)/i)) != null) M.splice(1, 1, tem[1]);
-            return M.join(' ');
+            //return M.join(' ');
+            return ua;
         }
 
         function crtYTEmbed(url) {
@@ -204,12 +240,12 @@
             if (match && match[2].length == 11) {
                 return 'https://www.youtube.com/embed/' + match[2];
             } else {
-                return "";
+                return '';
             }
         }
         function toggle(id) {
             var x = document.getElementById(id);
-            if (x.style.display === "none") {
+            if (x.style.display == "none") {
                 x.style.display = "block";
             } else {
                 x.style.display = "none";
@@ -227,25 +263,35 @@
         }
 
         //video1 controls
-        function playPause() {
-            if (m_video1.paused)
-                m_video1.play();
+        function playPause(id) {
+            ctrl = document.getElementById(id);
+            if (ctrl.paused)
+                ctrl.play();
             else
-                m_video1.pause();
+                ctrl.pause();
         }
 
-        function makeBig() {
-            w = Math.min(m_video1.width * 1.1, 1080);
-            m_video1.width = w;
+        function makeBig(id) {
+            ctrl = document.getElementById(id);
+            w = Math.min(ctrl.width * 1.1, 1080);
+            resize(id, w);
         }
 
-        function makeSmall() {
-            w = Math.max(m_video1.width * 0.9, 360);
-            m_video1.width = w;
+        function makeSmall(id) {
+            ctrl = document.getElementById(id);
+            w = Math.max(ctrl.width * 0.9, 360);
+            resize(id, w);
         }
 
-        function makeNormal() {
-            m_video1.width = 720;
+        function makeNormal(id) {
+            resize(id, 480);
+        }
+        function resize(id, w) {
+            ctrl = document.getElementById(id);
+            ctrl.width = w;
+            if (id == "frame1") {
+                ctrl.height = w * m_scale;
+            }
         }
     </script>
 </body>

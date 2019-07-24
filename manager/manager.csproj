@@ -126,6 +126,12 @@
     <Reference Include="Geckofx-Winforms, Version=45.0.34.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86">
       <HintPath>packages\Geckofx45.45.0.34\lib\net45\Geckofx-Winforms.dll</HintPath>
     </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.4.369, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>packages\OpenWebKitSharp.1.0.7\lib\net40\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="JSCore, Version=1.0.1.2, Culture=neutral, PublicKeyToken=d6b823da6d3fa04b, processorArchitecture=x86">
+      <HintPath>packages\OpenWebKitSharp.1.0.7\lib\net40\JSCore.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.AnalysisServices.AppLocal, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.AnalysisServices.AppLocal.Core, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91" />
     <Reference Include="Microsoft.AnalysisServices.AppLocal.Tabular, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91" />
@@ -145,7 +151,19 @@
       <HintPath>packages\Microsoft.ReportViewer.Runtime.WinForms.10.0.30319.1\lib\Microsoft.ReportViewer.WinForms.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="MyDownloader.App, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\OpenWebKitSharp.1.0.7\lib\net40\MyDownloader.App.dll</HintPath>
+    </Reference>
+    <Reference Include="MyDownloader.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\OpenWebKitSharp.1.0.7\lib\net40\MyDownloader.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="MyDownloader.Extension, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\OpenWebKitSharp.1.0.7\lib\net40\MyDownloader.Extension.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed" />
+    <Reference Include="OpenWebKitSharp, Version=3.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <HintPath>packages\OpenWebKitSharp.1.0.7\lib\net40\OpenWebKitSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -172,6 +190,9 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Serialization" />
+    <Reference Include="TabStrip, Version=2.0.2523.29272, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\OpenWebKitSharp.1.0.7\lib\net40\TabStrip.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="accountingDataSet.Designer.cs">
@@ -248,6 +269,7 @@
       <DependentUpon>MngForm.cs</DependentUpon>
     </Compile>
     <Compile Include="main\OrgTab.cs" />
+    <Compile Include="main\PageContent.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="receiptForm.cs">
