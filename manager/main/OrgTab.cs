@@ -1,4 +1,6 @@
 ﻿#define use_json
+#define use_gecko
+//#define use_chromium
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -12,6 +14,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
+#if use_chromium
+using CefSharp;
+using CefSharp.WinForms;
+#endif
 
 namespace test_binding
 {
@@ -22,7 +28,13 @@ namespace test_binding
         protected SplitContainer m_spl;
         protected TreeView m_tree;
         protected ContextMenuStrip m_treeCms;
+#if use_gecko
+        protected Gecko.GeckoWebBrowser m_wb;
+#elif use_chromium
+        protected ChromiumWebBrowser m_wb;
+#else
         protected WebBrowser m_wb;
+#endif
         protected lContentProvider s_contentProvider { get { return MngForm.s_contentProvider; } }
 
         protected enum TreeStyle
@@ -80,8 +92,19 @@ namespace test_binding
             m_treeCms = new ContextMenuStrip();
             var mi = m_treeCms.Items.Add("Refresh");
             mi.Click += TCMS_RefreshClick;
-
+#if use_gecko
+            var wb = new Gecko.GeckoWebBrowser();
+            wb.LoadHtml("<html><body></body></html>","http://blank");
+#elif use_chromium
+            if (!Cef.IsInitialized)
+            {
+                var settings = new CefSettings();
+                CefSharp.Cef.Initialize(settings);
+            }
+            var wb = new ChromiumWebBrowser("");
+#else
             var wb = new WebBrowser();
+#endif
             wb.Dock = DockStyle.Fill;
             spl.Panel2.Controls.Add(wb);
 
@@ -193,6 +216,20 @@ namespace test_binding
 
                 OnSelectedChg();
             }
+        }
+
+        protected void UpdatePage(string htmlTxt)
+        {
+#if use_gecko
+            string filename = string.Format(@"{0}\{1}", Path.GetTempPath(), "page.htm");
+            File.WriteAllText(filename, htmlTxt);
+            m_wb.Navigate(filename);
+#elif use_chromium
+            m_wb.LoadHtml(htmlTxt, "http://test/page");
+#else
+            m_wb.DocumentText = htmlTxt;
+#endif
+            //OpenInBrowser(htmlTxt);
         }
 
         private void UpdateRadBtnState(TreeViewEventArgs e)
@@ -455,7 +492,8 @@ namespace test_binding
                 };
             var jsTxt = Obj2Json(tc, knownTypes);
             var htmlTxt = GenTabHtml(jsTxt);
-            m_wb.DocumentText = htmlTxt;
+
+            UpdatePage(htmlTxt);
         }
 
         private string GenTabHtml(string jsTxt)
@@ -826,6 +864,7 @@ namespace test_binding
                 }
             }
             m_nodeDict = tDict;
+            var curDir = Directory.GetCurrentDirectory();
             return tDict[1];
         }
 
@@ -957,7 +996,8 @@ namespace test_binding
                 };
             var jsTxt = Obj2Json(tc, knownTypes);
             var htmlTxt = GenTabHtml(jsTxt);
-            m_wb.DocumentText = htmlTxt;
+
+            UpdatePage(htmlTxt);
         }
 
         
@@ -1170,9 +1210,17 @@ namespace test_binding
                 };
             var jsTxt = Obj2Json(tc, knownTypes);
             var htmlTxt = GenTabHtml(jsTxt);
-            m_wb.DocumentText = htmlTxt;
+            UpdatePage(htmlTxt);
         }
 
+        private void OpenInBrowser(string htmlTxt)
+        {
+            string filename = string.Format(@"{0}\{1}",
+                    System.IO.Path.GetTempPath(),
+                    "testhtm.htm");
+            File.WriteAllText(filename, htmlTxt);
+            Process.Start(filename);
+        }
 
         private object QryTabContent(List< string> lst)
         {
@@ -1216,7 +1264,11 @@ namespace test_binding
         private string GenTabHtml(string jsTxt)
         {
             string tmpl = "";
+#if !CFG_MNG_ANY
+            tmpl = File.ReadAllText(@"..\..\..\main\LectTmpl.html");
+#else
             tmpl = File.ReadAllText(@"..\..\main\LectTmpl.html");
+#endif
             //jsTxt = '';
             //var jsObj = eval("(" + jsTxt + ")");
             var rpl = tmpl.Replace("//jsTxt = '';", string.Format("jsTxt = '({0})';\njsObj = eval(jsTxt)", jsTxt));

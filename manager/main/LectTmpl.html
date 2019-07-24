@@ -32,10 +32,18 @@
             background-color: blue;
             font-style: normal;
         }
-
-        .col1 {
-            width: *
-        }
+        
+      .txtbtn {
+      color:black;
+      cursor:pointer;
+      text-decoration: underline;
+      }
+      .txtbtn:hover, .txtbtn:visited {
+      cursor:pointer;
+      color:blue;
+      text-decoration: underline;
+      }
+     
     </style>
 </head>
 <body style="background-repeat: no-repeat; background-attachment: scroll; padding: 10px">
@@ -53,7 +61,7 @@
             Your browser does not support HTML5 video.
           </video>
         </div> 
-		<br/>
+        <br/>
         <div id="lectTbl">
             <table>
                 <tr>
@@ -122,35 +130,42 @@
             txt += "<td>" + rec.topic + "</td>";
             txt += "<td>" + rec.crt + "</td>";
             txt += "<td>" + rec.content + "</td>";
-            txt += "<td>" + genRef(rec.link) + "</td>";
+            txt += "<td>" + genRef(i, rec.link) + "</td>";
             txt += "</tr>";
         }
         txt += "</table>";
         document.getElementById("lectTbl").innerHTML = txt;
 
-        function genRef(lnk) {
+        function genRef(i, lnk) {
             var m = lnk.match(/(\.mp4$|\.mp3$|youtube\.com)/i);
             var lbl = "link";
             if (m != null) {
                 lbl = m[0];
             }
-            txt = '<a onclick="jsfunction(' + "'" + lnk + "'" + ')" href="#">' + lbl + '</a>';
+            btnid = "btn" + i;
+            txt = '<span class="txtbtn" onclick="jsfunction(' + "'" + btnid + "," + lnk + "'" + ')"  id="' + btnid + '" >' + lbl + '</span>';
             return txt;
         }
 
-        function jsfunction(lnk) {
+        function jsfunction(arg) {
+            arr = arg.split(",");
+            id = arr[0];
+            lnk = arr[1];
+
+            //check browser
+            str = who();
+            n = str.search(/Chrome|Edge|Firefox|Netscape/i)
+            if (n == -1) {
+                document.getElementById("log").innerHTML = "Can not play: [" + lnk + "] on " + str;
+                return;
+            }
+
             ytlnk = crtYTEmbed(lnk);
             if (ytlnk != '') {
                 //play link
                 show("mp4player", false);
 
                 lnk = ytlnk;
-                str = who();
-                n = str.search(/Chrome|Edge|Firefox/i)
-                if (n == -1) {
-                    document.getElementById("log").innerHTML = "Can not play: [" + lnk + "] on " + str;
-                    return;
-                }
 
                 show("frame1", true);
                 document.getElementById("frame1").src = lnk + "?autoplay=1";
@@ -161,6 +176,7 @@
                 show("mp4player", true);
                 m_video1.src = lnk;
             }
+            document.getElementById("log").innerHTML = "playing:" + lnk;
         }
 
         //get browser info
@@ -188,7 +204,7 @@
             if (match && match[2].length == 11) {
                 return 'https://www.youtube.com/embed/' + match[2];
             } else {
-                return '';
+                return "";
             }
         }
         function toggle(id) {

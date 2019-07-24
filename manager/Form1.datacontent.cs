@@ -1581,7 +1581,11 @@ namespace test_binding
     {
         public lSQLiteDbSchema()
         {
+#if !CFG_MNG_ANY
+            m_cnnStr = @"..\..\..\appData.db";
+#else
             m_cnnStr = @"..\..\appData.db";
+#endif
 #if crt_qry
                 m_crtTableSqls = new List<string> {
                     "CREATE TABLE if not exists  receipts("
@@ -1658,7 +1662,7 @@ namespace test_binding
     }
 #endif //use_sqlite
 
-    [DataContract(Name = "SqlDbSchema")]
+        [DataContract(Name = "SqlDbSchema")]
     public class lSqlDbSchema : lDbSchema
     {
         public lSqlDbSchema()
