@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style type="text/css">
+        .label {
+            padding: 5px;
+            color: blue;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .content {
+            width: 90%;
+            margin-left: 5%;
+            background-color: whitesmoke;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        th {
+            color: white;
+            background-color: blue;
+            font-style: normal;
+        }
+
+        .col1 {
+            width: *
+        }
+        
+        button {
+        	width: 50px
+        }
+                .txtbtn {
+            color: black;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+            .txtbtn:hover, .txtbtn:visited {
+                cursor: pointer;
+                color: blue;
+                text-decoration: underline;
+            }
+    </style>
+</head>
+<body style="background-repeat: no-repeat; background-attachment: scroll; padding: 10px">
+    <div style="background-color: white; width: 600px; position: relative; left: auto;">
+        <span class="label">Tài liệu khác</span>
+        <div id="docTbl">
+            <table>
+                <tr>
+                    <th>Tên</th>
+                    <th>Chủ đề</th>
+                    <th>Link</th>
+                </tr>
+                <tr>
+                    <td>tài liệu 1</td>
+                    <td>chu de 1</td>
+                    <td>link.doc</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+	<div id="log" style="color: gray">log</div>
+    <script>
+        jsObj = {
+            "docCols": ["tên", "chủ đề", "link"],
+            "recs": [{
+                "title": "tai lieu 1",
+                "topic": "chu de 1",
+                "link": "link.doc"
+            }
+            ]
+        };
+        //jsTxt = '';
+        //var jsObj = eval("(" + jsTxt + ")");
+
+        txt = "";
+        txt += '<table style="width: 100%;">';
+        txt += "<tr>";
+        cols = jsObj.docCols;
+        for (i in cols) {
+            txt += '<th class="col1">' + cols[i] + '</th>';
+        }
+        txt += "</tr>";
+        for (i in jsObj.recs) {
+            docRec = jsObj.recs[i];
+            txt += "<tr>";
+            txt += "<td>" + docRec.title + "</td>";
+            txt += "<td>" + docRec.topic + "</td>";
+            txt += "<td>" + genRef(i, docRec.link) + "</td>";
+            txt += "</tr>";
+        }
+        txt += "</table>";
+        document.getElementById("docTbl").innerHTML = txt;
+
+        function genRef(i, lnk) {
+            var m = lnk.match(/(\.mp4$|\.mp3$|\.doc$|youtube\.com)/i);
+            var lbl = "link";
+            if (m != null) {
+                lbl = m[0];
+            }
+            btnid = "btn" + i;
+            txt = '<span class="txtbtn" onclick="jsfunction(' + "'" + btnid + "," + lnk + "'" + ')"  id="' + btnid + '" >' + lbl + '</span>';
+            return txt;
+        }
+
+        function jsfunction(arg) {
+            arr = arg.split(",");
+            id = arr[0];
+            lnk = arr[1];
+
+            n = 0;
+            if (n == -1) {
+                document.getElementById("log").innerHTML = "Can not play: [" + lnk + "] on " + str;
+                return;
+            }
+
+            document.getElementById("log").innerHTML = lnk;
+        }
+    </script>
+</body>
+</html>

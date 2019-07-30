@@ -953,4 +953,51 @@ namespace test_binding
             Process.Start(filename);
         }
     }
+
+
+    class DocumentTab : BaseTab
+    {
+        private DocContent m_pgCnt;
+        public DocumentTab()
+        {
+        }
+        protected override void InitCtrls()
+        {
+            m_pgCnt = new DocContent() { m_cp = s_contentProvider };
+            base.InitCtrls();
+            m_treeStyle = TreeStyle.radio;  //set style before call buildTree()
+            m_pg.Text = "Tài liệu khác";
+        }
+        protected override void AddTreeNode()
+        {
+            //var node = m_tree.Nodes.Add("All", "All");
+            //node.Checked = false;
+            //node.StateImageIndex = 0;
+            var lst = m_pgCnt.QryTopics();
+            var c = m_tree.Nodes;
+            foreach (string rec in lst)
+            {
+                var child = c.Add(rec);
+                child.Tag = rec;
+                //child.Checked = false;
+                child.StateImageIndex = 0;
+            }
+        }
+        public override void OnSelectedChg()
+        {
+            // get task by section lst
+            var col = m_tree.Nodes;
+            List<string> secLst;
+            secLst = new List<string>();
+            foreach (TreeNode tn in col)
+            {
+                if (Check(tn)) { secLst.Add(tn.Tag.ToString()); }
+            }
+            if (secLst.Count > 0)
+            {
+                var htmlTxt = m_pgCnt.GenHtmlContent(secLst);
+                UpdateWB(htmlTxt);
+            }
+        }
+    }
 }

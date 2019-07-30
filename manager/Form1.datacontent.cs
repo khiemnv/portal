@@ -472,6 +472,7 @@ namespace test_binding
         [Description("topic")] Topic,
         [Description("budgrp")] Budgrp,
         [Description("training")] Training,
+        [Description("document")] Document,
 
         Count
     }
@@ -913,6 +914,12 @@ namespace test_binding
     [DataContract(Name = "lTopicTblInfo")]
     public class TopicTblInfo : TableInfo
     {
+        public enum ColIdx
+        {
+            [Field("ID"), Alias("ID")] ID,
+            [Field("name"), Alias("Chủ đề")] topic,
+        }
+
         public TopicTblInfo()
         {
             m_tblName = "topic";
@@ -1007,6 +1014,44 @@ namespace test_binding
             m_cols[(int)ColIdx.star] = new ColInfo(ColIdx.star.ToField(), ColIdx.star.ToAlias(), ColInfo.ColType.map, GetDescLst<Star>());
             m_cols[(int)ColIdx.link] = new ColInfo(ColIdx.link.ToField(), ColIdx.link.ToAlias(), ColInfo.ColType.text);
             m_cols[(int)ColIdx.cmnt] = new ColInfo(ColIdx.cmnt.ToField(), ColIdx.cmnt.ToAlias(), ColInfo.ColType.text);
+        }
+    }
+
+    [DataContract(Name = "DocumentTblInfo")]
+    public class DocumentTblInfo : TableInfo
+    {
+
+        public enum ColIdx
+        {
+            [Field("ID"), Alias("ID")] ID,
+            [Field("document_number"), Alias("Mã TL")] doc,
+            [Field("title"), Alias("Tiêu đề")] title,
+            [Field("topic_number"), Alias("Chủ đề")] topic,
+            [Field("ext"), Alias("Định dạng")] ext,
+            [Field("link"), Alias("Link")] link,
+            [Field("note"), Alias("Ghi chú")] note,
+        }
+        public DocumentTblInfo()
+        {
+            m_tblName = "document";
+            m_tblAlias = "Tài liệu khác";
+
+            m_crtQry = "CREATE TABLE if not exists document("
+                + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "document_number char(31),"
+                + "title char(63),"
+                + "topic_number char(31),"
+                + "ext char(4),"
+                + "link char(255),"
+                + "note text)";
+            m_cols = new ColInfo[GetCount<ColIdx>()];
+            m_cols[(int)ColIdx.ID] = new ColInfo(ColIdx.ID.ToField(), ColIdx.ID.ToAlias(), ColInfo.ColType.num, false);
+            m_cols[(int)ColIdx.doc] = new ColInfo(ColIdx.doc.ToField(), ColIdx.doc.ToAlias(), ColInfo.ColType.uniq);
+            m_cols[(int)ColIdx.title] = new ColInfo(ColIdx.title.ToField(), ColIdx.title.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.topic] = new ColInfo(ColIdx.topic.ToField(), ColIdx.topic.ToAlias(), ColInfo.ColType.text, TableIdx.Topic.ToDesc());
+            m_cols[(int)ColIdx.ext] = new ColInfo(ColIdx.ext.ToField(), ColIdx.ext.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.link] = new ColInfo(ColIdx.link.ToField(), ColIdx.link.ToAlias(), ColInfo.ColType.text);
+            m_cols[(int)ColIdx.note] = new ColInfo(ColIdx.note.ToField(), ColIdx.note.ToAlias(), ColInfo.ColType.text);
         }
     }
 
@@ -1565,6 +1610,7 @@ namespace test_binding
                     new TopicTblInfo(),
                     new BudgrpTblInfo(),
                     new TrainingTblInfo(),
+                    new DocumentTblInfo(),
                 };
             m_views = new List<TableInfo>() {
                     //new lReceiptsViewInfo(),

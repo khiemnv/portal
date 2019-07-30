@@ -154,9 +154,9 @@ namespace test_binding
         public TrainContent()
         {
 #if !CFG_MNG_ANY
-            m_tmpl = @"..\..\..\main\LectTmpl.html";
+            m_tmpl = @"..\..\..\main\TrainTmpl.html";
 #else
-            m_tmpl = @"..\..\main\LectTmpl.html";
+            m_tmpl = @"..\..\main\TrainTmpl.html";
 #endif
         }
 
@@ -270,9 +270,9 @@ namespace test_binding
         public TaskPageContent()
         {
 #if !CFG_MNG_ANY
-            m_tmpl = @"..\..\..\main\LectTmpl.html";
+            m_tmpl = @"..\..\..\main\TaskTmpl.html";
 #else
-            m_tmpl = @"..\..\main\LectTmpl.html";
+            m_tmpl = @"..\..\main\TaskTmpl.html";
 #endif
         }
         public override string GenHtmlContent(List<string> args)
@@ -385,6 +385,89 @@ namespace test_binding
             [DataMember] public List<string> taskCols;
             [DataMember] public List<string> planCols;
             [DataMember] public List<DayTask> recs;
+        }
+    }
+
+    public class DocContent : PageContent
+    {
+        public DocContent()
+        {
+#if !CFG_MNG_ANY
+            m_tmpl = @"..\..\..\main\DocTmpl.html";
+#else
+            m_tmpl = @"..\..\main\DocTmpl.html";
+#endif
+        }
+
+        [DataContract]
+        public class DocRec
+        {
+            [DataMember] public string title;
+            [DataMember] public string topic;
+            [DataMember] public string link;
+            [DataMember] public string note;
+        }
+
+
+        [DataContract]
+        public class TabContent
+        {
+            [DataMember] public List<string> docCols;
+            [DataMember] public List<DocRec> recs;
+        }
+
+        public override string GenHtmlContent(List<string> args)
+        {
+            var topic = args[0];
+            var tc = QryTabContent(topic);
+            var knownTypes = new Type[] {
+                    typeof(TabContent),
+                    typeof(DocRec),
+                };
+            var jsTxt = Obj2Json(tc, knownTypes);
+            var htmlTxt = GenHtml(jsTxt);
+            return htmlTxt;
+        }
+
+        private object QryTabContent(string topic)
+        {
+            var tc = new TabContent();
+
+            var tbl = appConfig.s_config.GetTable(TableIdx.Document);
+            var sb = new SearchBuilder(tbl, m_cp);
+            sb.Clear();
+            sb.Add(DocumentTblInfo.ColIdx.topic.ToField(), topic);
+            sb.Search();
+            tc.docCols = new List<string> {
+                DocumentTblInfo.ColIdx.title.ToAlias(),
+                DocumentTblInfo.ColIdx.topic.ToAlias(),
+                DocumentTblInfo.ColIdx.link.ToAlias(),
+                DocumentTblInfo.ColIdx.note.ToAlias(),
+            };
+            tc.recs = new List<DocRec>();
+            foreach (DataRow row in sb.dc.m_dataTable.Rows)
+            {
+                var rec = new DocRec();
+                rec.title = row[DocumentTblInfo.ColIdx.title.ToField()].ToString();
+                rec.topic = row[DocumentTblInfo.ColIdx.topic.ToField()].ToString();
+                rec.link = row[DocumentTblInfo.ColIdx.link.ToField()].ToString();
+                rec.note = row[DocumentTblInfo.ColIdx.note.ToField()].ToString();
+                tc.recs.Add(rec);
+            }
+            return tc;
+        }
+
+        public List<string> QryTopics()
+        {
+            var dc = m_cp.CreateDataContent(TableIdx.Topic);
+            dc.Search(new List<string>(), new List<SearchParam>());
+            var lst = new List<string>();
+            foreach (DataRow row in dc.m_dataTable.Rows)
+            {
+                var rec = row[TopicTblInfo.ColIdx.topic.ToField()].ToString();
+                lst.Add(rec);
+            }
+            return lst;
         }
     }
 }
