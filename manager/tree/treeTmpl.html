@@ -1,0 +1,184 @@
+<head>
+<style>
+.txtbtn:hover, .txtbtn:visited {
+                cursor: pointer;
+                background-color: yellow;
+            }
+.btn:hover{
+                cursor: pointer;
+                background-color : yellow;
+            }
+.childsDiv{
+  margin-left: 16px;
+}
+img{
+  margin-right: 5px;
+}
+span {
+}
+div {
+  align:center;
+}
+</style>
+</head>
+<body>
+<div id="root_childs">
+  <img id="node1_img" class="btn" src="sts-expanded.png" onclick="onImgClick('node1')"></img>
+  <img id="node1_sts" class="btn" src="sts-uncheck.png" onclick="onStsClick('node1')"></img>
+  <span id="node1_span" class="txtbtn" onclick="onSpanClick('node1')">node1</span>
+  <div id="node1_childs">
+  </div>
+  <img id="node2_img" class="btn" src="sts-expanded.png"></img>
+  <span class="txtbtn">node2</span>
+  <div id="node2_childs">
+    <img id="node2_1_img" src="sts-expanded.png"></img>
+    <span class="txtbtn">node2.1</span>
+    <div id="node2_1_childs">
+  </div>
+</div>
+<script>
+var rootNode = {
+  "id":"root",
+  "name":"root node",
+  "childs":[
+    {
+      "id":"id_1",
+      "name":"name 1",
+      "childs":[
+        {
+          "id":"id_1_1",
+          "name":"name 1.1",
+        },
+        {
+          "id":"id_1_2",
+          "name":"name 1.2",
+        },
+      ]
+    },
+    {
+      "id":"id_2",
+      "name":"name 2",
+    }
+  ]
+};
+var g_nodesDict={};
+var baseUrl = window.location.href.replace("/treeTmpl.html","");
+var imgSrc = {
+  "expand":baseUrl+"/expand_button.png",
+  "colapse":baseUrl+"/collapse_button.png",
+  "noop":baseUrl+"/noop_button.png",
+  "checked":baseUrl+"/sts_checked.png",
+  "uncheck":baseUrl+"/sts_uncheck.png",
+  "gray":baseUrl+"/sts_gray.png",
+};
+
+treeRender(rootNode);
+
+function treeRender(rootNode) {
+  document.getElementById(rootNode.id + "_childs").innerHTML = "";
+  treeAddR(rootNode);
+}
+function treeAddR(parentNode){
+  var i;
+  for (i in parentNode.childs) {
+    var childNode = parentNode.childs[i];
+    treeAdd(parentNode, childNode);
+    g_nodesDict[childNode.id] = childNode;
+    treeAddR(childNode);
+  }
+}
+function treeAdd(parentNode,childNode) {
+  childNode.parent = parentNode;
+  childNode.sts = 0;  //uncheck
+
+  var imgTxt = '<img id="[nodeId]_img" class="btn" src="[imgSrc]" onclick="onImgClick('+"'[nodeId]'"+')"></img>';
+  imgTxt = imgTxt.replace(/\[nodeId\]/g,childNode.id);
+  imgTxt = imgTxt.replace(/\[imgSrc\]/g,imgSrc.colapse);
+  if (childNode.childs == null) {
+    imgTxt = '<img src="' + imgSrc.noop + '" ></img>'
+  }
+  
+  var stsTxt = '<img id="[nodeId]_sts" class="btn" src="[stsSrc]" onclick="onStsClick('+"'[nodeId]'"+')"></img>';
+  stsTxt = stsTxt.replace(/\[nodeId\]/g,childNode.id);
+  stsTxt = stsTxt.replace(/\[stsSrc\]/g,imgSrc.uncheck);
+  
+  var spanTxt = '<span id="[nodeId]_span" class="txtbtn" onclick="onSpanClick('+"'[nodeId]'"+')">[nodeName]</span><br>';
+  spanTxt = spanTxt.replace(/\[nodeId\]/g,childNode.id);
+  spanTxt = spanTxt.replace(/\[nodeName\]/g, childNode.name);
+  
+  var divTxt = '<div id="[nodeId]_childs" class="childsDiv">';
+  divTxt = divTxt.replace(/\[nodeId\]/g,childNode.id);
+  
+  var tDiv = document.getElementById(parentNode.id + "_childs");
+  tDiv.innerHTML += imgTxt  + stsTxt + spanTxt + divTxt;
+}
+function onImgClick(nodeId){
+  var tImg = document.getElementById(nodeId + "_img");
+  var tDiv = document.getElementById(nodeId + "_childs");
+  if(tDiv.hidden == true) {
+    tImg.src = imgSrc.colapse;
+    tDiv.hidden = false;
+  } else {
+    tImg.src = imgSrc.expand;
+    tDiv.hidden = true;
+  }
+}
+function onStsClick(nodeId){
+  var tNode = g_nodesDict[nodeId];
+  if (tNode.sts == 1) {
+    tNode.sts = 0;
+  } else {
+    tNode.sts = 1;
+  }
+  updateStsImg(tNode);
+  updateChildSts(tNode);
+  updateParentSts(tNode);
+}
+function updateChildSts(tNode) {
+  var childs = tNode.childs;
+  var sts = tNode.sts;
+  var i;
+  for (i in childs) {
+    var childNode = childs[i];
+    childNode.sts = sts;
+    updateStsImg(childNode);
+    updateChildSts(childNode);
+  }
+}
+function updateParentSts(tNode){
+  if (tNode.id == "root") return;
+  var parentNode = tNode.parent;
+  var childs = parentNode.childs;
+  var sts = childs[0].sts;
+  var i;
+  for (i = 1;i< childs.length;i++) {
+    var childNode = childs[i];
+    if (childNode.sts != sts) break;
+  }
+  if (i == childs.length) {
+    parentNode.sts = sts;
+  } else {
+    parentNode.sts = 2; //gray
+  }
+  updateStsImg(parentNode);
+  updateParentSts(parentNode);
+}
+function updateStsImg(tNode){
+  var src;
+  switch (tNode.sts) {
+    case 0:
+      src = imgSrc.uncheck;
+      break;
+    case 1:
+      src = imgSrc.checked;
+      break;
+    default:
+      src = imgSrc.gray;
+  }
+  var tImg = document.getElementById(tNode.id + "_sts");
+  tImg.src = src;
+}
+function onSpanClick(nodeId){
+}
+</script>
+</body>
