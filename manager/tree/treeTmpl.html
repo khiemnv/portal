@@ -19,10 +19,21 @@ span {
 div {
   align:center;
 }
+.stsImg {
+  position:relative;
+  top:3px;
+}
+.toggleImg {
+  
+}
+.menuDiv {
+  background-color: #DEE1E6;
+  width: 150px;
+}
 </style>
 </head>
 <body>
-<div id="root_childs">
+<div id="root_childs" class="menuDiv">
   <img id="node1_img" class="btn" src="sts-expanded.png" onclick="onImgClick('node1')"></img>
   <img id="node1_sts" class="btn" src="sts-uncheck.png" onclick="onStsClick('node1')"></img>
   <span id="node1_span" class="txtbtn" onclick="onSpanClick('node1')">node1</span>
@@ -51,7 +62,7 @@ var rootNode = {
         },
         {
           "id":"id_1_2",
-          "name":"name 1.2",
+          "name":"name 1.2", 
         },
       ]
     },
@@ -76,6 +87,7 @@ treeRender(rootNode);
 
 function treeRender(rootNode) {
   document.getElementById(rootNode.id + "_childs").innerHTML = "";
+  rootNode.visible = true;
   treeAddR(rootNode);
 }
 function treeAddR(parentNode){
@@ -88,17 +100,19 @@ function treeAddR(parentNode){
   }
 }
 function treeAdd(parentNode,childNode) {
+  //init node
   childNode.parent = parentNode;
   childNode.sts = 0;  //uncheck
+  childNode.visible = true;
 
-  var imgTxt = '<img id="[nodeId]_img" class="btn" src="[imgSrc]" onclick="onImgClick('+"'[nodeId]'"+')"></img>';
+  var imgTxt = '<img id="[nodeId]_img" class="toggleImg" src="[imgSrc]" onclick="onImgClick('+"'[nodeId]'"+')"></img>';
   imgTxt = imgTxt.replace(/\[nodeId\]/g,childNode.id);
   imgTxt = imgTxt.replace(/\[imgSrc\]/g,imgSrc.colapse);
   if (childNode.childs == null) {
     imgTxt = '<img src="' + imgSrc.noop + '" ></img>'
   }
   
-  var stsTxt = '<img id="[nodeId]_sts" class="btn" src="[stsSrc]" onclick="onStsClick('+"'[nodeId]'"+')"></img>';
+  var stsTxt = '<img id="[nodeId]_sts" class="stsImg" src="[stsSrc]" onclick="onStsClick('+"'[nodeId]'"+')"></img>';
   stsTxt = stsTxt.replace(/\[nodeId\]/g,childNode.id);
   stsTxt = stsTxt.replace(/\[stsSrc\]/g,imgSrc.uncheck);
   
@@ -113,9 +127,11 @@ function treeAdd(parentNode,childNode) {
   tDiv.innerHTML += imgTxt  + stsTxt + spanTxt + divTxt;
 }
 function onImgClick(nodeId){
+  var tNode = g_nodesDict[nodeId];
   var tImg = document.getElementById(nodeId + "_img");
   var tDiv = document.getElementById(nodeId + "_childs");
-  if(tDiv.hidden == true) {
+  tNode.visible = !tNode.visible;
+  if(tNode.visible == true) {
     tImg.src = imgSrc.colapse;
     tDiv.hidden = false;
   } else {
