@@ -1,43 +1,53 @@
+<!DOCTYPE html>
+
 <html>
 <head>
-<meta charset="utf-8" />
-<style>
-.txtbtn {
-  white-space: nowrap;
-}
-.txtbtn:hover, .txtbtn:visited {
+    <meta charset="utf-8" />
+    <style>
+        .txtbtn {
+            white-space: nowrap;
+        }
+
+            .txtbtn:hover, .txtbtn:visited {
                 cursor: pointer;
                 background-color: yellow;
             }
-.btn:hover{
-                cursor: pointer;
-                background-color : yellow;
-            }
-.childsDiv{
-  margin-left: 10px;
-  width: 120px;
-}
-img{
-  margin-right: 5px;
-}
-span {
-}
-div {
-  align:center;
-}
-.stsImg {
-  position:relative;
-  top:3px;
-}
-.toggleImg {
-  
-}
-.menuDiv {
-  background-color: #DEE1E6;
-  width: 160px;
-  overflow: auto;
-}
-</style>
+
+        .btn:hover {
+            cursor: pointer;
+            background-color: yellow;
+        }
+
+        .childsDiv {
+            margin-left: 10px;
+            width: 120px;
+        }
+
+        img {
+            margin-right: 5px;
+        }
+
+        span {
+        }
+
+        div {
+            align: center;
+        }
+
+        .stsImg {
+            position: relative;
+            top: 3px;
+        }
+
+        .toggleImg {
+        }
+
+        .menuDiv {
+            background-color: #DEE1E6;
+            width: 160px;
+            overflow: auto;
+        }
+    </style>
     <style type="text/css">
         .label {
             padding: 5px;
@@ -81,341 +91,324 @@ div {
     </style>
 </head>
 <body>
-<table style="border:none">
-<tr style="border:none">
-<td style="border:none" valign="top">
-<div id="root_childs" class="menuDiv">
-  <img id="node1_img" class="btn" src="sts-expanded.png" onclick="onImgClick('node1')"></img>
-  <img id="node1_sts" class="btn" src="sts-uncheck.png" onclick="onStsClick('node1')"></img>
-  <span id="node1_span" class="txtbtn" onclick="onSpanClick('node1')">node1</span>
-  <div id="node1_childs">
-  </div>
-  <img id="node2_img" class="btn" src="sts-expanded.png"></img>
-  <span class="txtbtn">node2</span>
-  <div id="node2_childs">
-    <img id="node2_1_img" src="sts-expanded.png"></img>
-    <span class="txtbtn">node2.1</span>
-    <div id="node2_1_childs">
-    </div>
-  </div>
-</div>
-</td>
-<td style="border:none" valign="top">
-<div style="background-color: white; width: 600px; position: relative; left: auto;">
-    <span class="label">Bài giảng</span>
-    <div id="player" style="text-align: center">
-        <button onclick="makeBig('frame1')">Big</button>
-        <button onclick="makeSmall('frame1')">Small</button>
-        <button onclick="makeNormal('frame1')">Normal</button>
-        <br>
-        <br />
-        <iframe id="frame1" width="720" height="540" style="border-width: 1px"></iframe>
-    </div>
-    <div id="mp4player" style="text-align: center">
-        <button onclick="playPause('video1')">Play/Pause</button>
-        <button onclick="makeBig('video1')">Big</button>
-        <button onclick="makeSmall('video1')">Small</button>
-        <button onclick="makeNormal('video1')">Normal</button>
-        <br>
-        <br />
-        <video id="video1" width="720" autoplay controls>
-            <source type="video/mp4">
-            Your browser does not support HTML5 video.
-        </video>
-    </div>
-    <div id="mp3player" style="text-align: center">
-        <button onclick="playPause('audio1')">Play/Pause</button>
-        <br>
-        <br />
-        <audio id="audio1" autoplay controls>
-            <source type="audio/mpeg">
-            Your browser does not support HTML5 audio.
-        </audio>
-    </div>
-    <br />
-    <div id="lectTbl">
-        <table>
-            <tr>
-                <th>ngày</th>
-                <th>bài giảng</th>
-                <th>người giảng</th>
-            </tr>
-            <tr>
-                <td>01/01/2019</td>
-                <td>chu de1</td>
-                <td>su ong</td>
-            </tr>
-        </table>
-    </div>
-</div>
-<div id="log" style="color: gray">playing:</div>
-</td>
-</tr>
-</table>
-<script src="js/player.js"></script>
-<script src="js/treeMenu.js"></script>
-<script>
-var nodeLst = {
-  "id":"root",
-  "name":"root node",
-  "childs":[
-    {
-      "id":"id_1",
-      "name":"name 1",
-      "childs":[
-        {
-          "id":"id_1_1",
-          "name":"name 1.1",
+    <table style="border: none">
+        <tr style="border: none">
+            <td style="border: none" valign="top">
+                <div id="root_childs" class="menuDiv">
+                    <img id="node1_img" class="btn" src="sts-expanded.png" onclick="onImgClick('node1')"></img>
+                    <img id="node1_sts" class="btn" src="sts-uncheck.png" onclick="onStsClick('node1')"></img>
+                    <span id="node1_span" class="txtbtn" onclick="onSpanClick('node1')">node1</span>
+                    <div id="node1_childs">
+                    </div>
+                    <img id="node2_img" class="btn" src="sts-expanded.png"></img>
+                    <span class="txtbtn">node2</span>
+                    <div id="node2_childs">
+                        <img id="node2_1_img" src="sts-expanded.png"></img>
+                        <span class="txtbtn">node2.1</span>
+                        <div id="node2_1_childs">
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td style="border: none" valign="top">
+                <div style="background-color: white; width: 600px; position: relative; left: auto;">
+                    <span class="label">Bài giảng</span>
+                    <div id="player" style="text-align: center">
+                        <button onclick="makeBig('frame1')">Big</button>
+                        <button onclick="makeSmall('frame1')">Small</button>
+                        <button onclick="makeNormal('frame1')">Normal</button>
+                        <br>
+                        <br />
+                        <iframe id="frame1" width="720" height="540" style="border-width: 1px"></iframe>
+                    </div>
+                    <div id="mp4player" style="text-align: center">
+                        <button onclick="playPause('video1')">Play/Pause</button>
+                        <button onclick="makeBig('video1')">Big</button>
+                        <button onclick="makeSmall('video1')">Small</button>
+                        <button onclick="makeNormal('video1')">Normal</button>
+                        <br>
+                        <br />
+                        <video id="video1" width="720" autoplay controls>
+                            <source type="video/mp4">
+                            Your browser does not support HTML5 video.
+                        </video>
+                    </div>
+                    <div id="mp3player" style="text-align: center">
+                        <button onclick="playPause('audio1')">Play/Pause</button>
+                        <br>
+                        <br />
+                        <audio id="audio1" autoplay controls>
+                            <source type="audio/mpeg">
+                            Your browser does not support HTML5 audio.
+                        </audio>
+                    </div>
+                    <br />
+                    <div id="lectTbl">
+                        <table>
+                            <tr>
+                                <th>ngày</th>
+                                <th>bài giảng</th>
+                                <th>người giảng</th>
+                            </tr>
+                            <tr>
+                                <td>01/01/2019</td>
+                                <td>chu de1</td>
+                                <td>su ong</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div id="log" style="color: gray">playing:</div>
+            </td>
+        </tr>
+    </table>
+
+    <script src="js/tree.js"></script>
+    <!-- <script src="js/treeMenu.js"></script> -->
+    <script>
+        var nodeLst = {
+            "id": "root",
+            "name": "root node",
+            "childs": [
+                {
+                    "id": "id_1",
+                    "name": "name 1",
+                    "childs": [
+                        {
+                            "id": "id_1_1",
+                            "name": "name 1.1",
+                        },
+                        {
+                            "id": "id_1_2",
+                            "name": "name 1.2",
+                        },
+                    ]
+                },
+                {
+                    "id": "id_2",
+                    "name": "name 2",
+                }
+            ]
+        };
+        var lectLst = [{
+            "author": "author 1",
+            "target": "target 1",
+            "topic": "topic 1",
+            "title": "title 1.1.1.1",
         },
         {
-          "id":"id_1_2",
-          "name":"name 1.2", 
+            "author": "author 1",
+            "target": "target 1",
+            "topic": "topic 1",
+            "title": "title 1.1.1.2",
         },
-      ]
-    },
-    {
-      "id":"id_2",
-      "name":"name 2",
-    }
-  ]
-};
-var lectLst= [
-    {
-      "author":"author 1",
-      "target":"target 1",
-      "topic":"topic 1",
-      "title":"title 1.1.1.1",
-    },
-    {
-      "author":"author 1",
-      "target":"target 1",
-      "topic":"topic 1",
-      "title":"title 1.1.1.2",
-    },
-    {
-      "author":"author 1",
-      "target":"target 1",
-      "topic":"topic 2",
-      "title":"title 1.1.2.3",
-    },
-    {
-      "author":"author 1",
-      "target":"target 1",
-      "topic":"topic 2",
-      "title":"title 1.1.2.4",
-    },
-    {
-      "author":"author 2",
-      "target":"target 1",
-      "topic":"topic 1",
-      "title":"title 2.1.1.5",
-    },
-  ];
-lectLst = [{
-                "created": "01/01/2019",
-                "title": "bai giang 1",
-                "topic": "chu de 2",
-                "target": "doi tuong 1",
-                "author": "su ong",
-                "content": "noi dung",
-                "link": "file:///C:/Users/Khiem/Downloads/movie/Harry.Potter.and.the.Deathly.Hallows.Part.1.2010.mp4"
-            },
-            {
-                "created": "02/01/2019",
-                "title": "bai giang 2",
-                "topic": "chu de 2",
-                "target": "doi tuong 2",
-                "author": "su phu",
-                "content": "noi dung",
-                "link": "https://www.youtube.com/watch?v=HQ1lFe9I0lo"
-            },
-            {
-                "created": "03/01/2019",
-                "title": "bai giang 3",
-                "topic": "chu de 3",
-                "target": "doi tuong 3",
-                "author": "su phu",
-                "content": "noi dung",
-                "link": "file:///D:/music/nhac%20niem%20phat/Nammobotatquantheam.mp3"
+        {
+            "author": "author 1",
+            "target": "target 1",
+            "topic": "topic 2",
+            "title": "title 1.1.2.3",
+        },
+        {
+            "author": "author 1",
+            "target": "target 1",
+            "topic": "topic 2",
+            "title": "title 1.1.2.4",
+        },
+        {
+            "author": "author 2",
+            "target": "target 1",
+            "topic": "topic 1",
+            "title": "title 2.1.1.5",
+        },
+        ];
+        lectLst = [{
+            "created": "01/01/2019",
+            "title": "bai giang 1",
+            "topic": "chu de 2",
+            "target": "doi tuong 1",
+            "author": "su ong",
+            "content": "noi dung",
+            "link": "file:///C:/Users/Khiem/Downloads/movie/Harry.Potter.and.the.Deathly.Hallows.Part.1.2010.mp4"
+        },
+        {
+            "created": "02/01/2019",
+            "title": "bai giang 2",
+            "topic": "chu de 2",
+            "target": "doi tuong 2",
+            "author": "su phu",
+            "content": "noi dung",
+            "link": "https://www.youtube.com/watch?v=HQ1lFe9I0lo"
+        },
+        {
+            "created": "03/01/2019",
+            "title": "bai giang 3",
+            "topic": "chu de 3",
+            "target": "doi tuong 3",
+            "author": "su phu",
+            "content": "noi dung",
+            "link": "file:///D:/music/nhac%20niem%20phat/Nammobotatquantheam.mp3"
+        }
+        ];
+        //var g_nodesDict={};
+        //var baseUrl = window.location.href.replace(/\/[^/]*\.html/,"");
+        //var imgSrc = {
+        //  "expand":baseUrl+"/expand_button.png",
+        //  "colapse":baseUrl+"/collapse_button.png",
+        //  "noop":baseUrl+"/noop_button.png",
+        //  "checked":baseUrl+"/sts_checked.png",
+        //  "uncheck":baseUrl+"/sts_uncheck.png",
+        //  "gray":baseUrl+"/sts_gray.png",  
+        //};
+
+        var rootNode = {
+            "id": "root",
+            "name": "root",
+            "childs": [],
+        };
+
+        var lectItem = {
+            "author": "author 2",
+            "target": "target 1",
+            "topic": "topic 2",
+            "title": "title 2.1.1.6",
+        };
+
+        ////////////////////////////////////////////
+        //render tree
+        var tree = new Tree(rootNode);
+
+        var url = "https://localhost:44336/api/Lectures";
+        //lectLst = getLecturesSync(url);
+        tree.render1(lectLst);
+        //render3(url);
+
+
+        function onImgClick(nodeId) {
+            var tNode = tree.getNode(nodeId);
+            var imgSrc = tree.imgSrc;
+            var tImg = document.getElementById(nodeId + "_img");
+            var tDiv = document.getElementById(nodeId + "_childs");
+            tNode.visible = !tNode.visible;
+            if (tNode.visible == true) {
+                tImg.src = imgSrc.colapse;
+                tDiv.hidden = false;
+            } else {
+                tImg.src = imgSrc.expand;
+                tDiv.hidden = true;
             }
-            ];
-//var g_nodesDict={};
-//var baseUrl = window.location.href.replace(/\/[^/]*\.html/,"");
-//var imgSrc = {
-//  "expand":baseUrl+"/expand_button.png",
-//  "colapse":baseUrl+"/collapse_button.png",
-//  "noop":baseUrl+"/noop_button.png",
-//  "checked":baseUrl+"/sts_checked.png",
-//  "uncheck":baseUrl+"/sts_uncheck.png",
-//  "gray":baseUrl+"/sts_gray.png",  
-//};
-
-var rootNode = {
-  "id":"root",
-  "name":"root",
-  "childs":[],
-};
-
-var lectItem = {
-  "author":"author 2",
-  "target":"target 1",
-  "topic":"topic 2",
-  "title":"title 2.1.1.6",
-};
-
-////////////////////////////////////////////
-//render tree
-
-var url = "https://localhost:44336/api/Lectures";
-lectLst = getLecturesSync(url);
-render1(lectLst);
-//render3(url);
-
-
-function onImgClick(nodeId){
-  var tNode = g_nodesDict[nodeId];
-  var tImg = document.getElementById(nodeId + "_img");
-  var tDiv = document.getElementById(nodeId + "_childs");
-  tNode.visible = !tNode.visible;
-  if(tNode.visible == true) {
-    tImg.src = imgSrc.colapse;
-    tDiv.hidden = false;
-  } else {
-    tImg.src = imgSrc.expand;
-    tDiv.hidden = true;
-  }
-}
-function onStsClick(nodeId){
-  var tNode = g_nodesDict[nodeId];
-  if (tNode.sts == 1) {
-    tNode.sts = 0;
-  } else {
-    tNode.sts = 1;
-  }
-  updateStsImg(tNode);
-  updateChildSts(tNode);
-  updateParentSts(tNode.parent, tNode.sts);
-  
-  //display selected
-  var tLst = getSelected(rootNode);
-  displayLect(tLst);
-}
-
-function getSelected(rootNode) {
-  var queue=[];
-  if (rootNode.sts != 0) queue.push(rootNode);
-  var leafs = [];
-  while (queue.length > 0) {
-    var tNode = queue.shift();
-    if (tNode.childs == null) {
-      leafs.push(tNode.lect);
-    } else {
-      for (var i in tNode.childs) {
-        if (tNode.childs[i].sts != 0) queue.push(tNode.childs[i]);
-      }
-    }
-  }
-  return leafs;
-}
-
-function onSpanClick(nodeId){
-}
-</script>
-
-<script>
-    //hide frame
-    var m_scale = 3 / 4;;
-    show("player", false);
-    show("mp4player", false);
-    show("mp3player", false);
-    document.getElementById("log").innerHTML = "browser: " + who();
-    //lecture
-    
-    displayLect(lectLst);
-    
-    function displayLect(lectLst){
-    var jsObj = {
-      "cols": ["tieu de", "người giảng", "doi tuong", "chu de", "ngày", "noi dung", "link"],
-      "recs": lectLst,
-    };
-
-    var txt = "";
-    txt += '<table style="width: 100%;">';
-    txt += "<tr>";
-    var cols = jsObj.cols;
-    var i;
-    for (i in cols) {
-        txt += '<th class="col1">' + cols[i] + '</th>';
-    }
-    txt += "</tr>";
-    for (i in jsObj.recs) {
-        rec = jsObj.recs[i];
-        txt += "<tr>";
-        txt += "<td>" + rec.title + "</td>";
-        txt += "<td>" + rec.author + "</td>";
-        txt += "<td>" + rec.target + "</td>";
-        txt += "<td>" + rec.topic + "</td>";
-        txt += "<td>" + getDate(rec.created) + "</td>";
-        txt += "<td>" + rec.content + "</td>";
-        txt += "<td>" + genRef(i, rec.link) + "</td>";
-        txt += "</tr>";
-    }
-    txt += "</table>";
-    document.getElementById("lectTbl").innerHTML = txt;
-}
-
-    function genRef(i, lnk) {
-        var m = lnk.match(/(\.mp4$|\.mp3$|youtube\.com)/i);
-        var lbl = "link";
-        if (m != null) {
-            lbl = m[0];
         }
-        btnid = "btn" + i;
-        txt = '<span class="lnkBtn" onclick="jsfunction(' + "'" + btnid + "," + lnk + "'" + ')"  id="' + btnid + '" >' + lbl + '</span>';
-        return txt;
-    }
+        function onStsClick(nodeId) {
+            tree.toggle(nodeId);
+
+            //display selected
+            var tLst = tree.getSelected();
+            displayLect(tLst);
+        }
+
+        function onSpanClick(nodeId) {
+        }
+    </script>
+
+    <script src="js/player.js"></script>
+    <script>
+        //hide frame
+        var m_scale = 3 / 4;;
+        show("player", false);
+        show("mp4player", false);
+        show("mp3player", false);
+        document.getElementById("log").innerHTML = "browser: " + who();
+        //lecture
+
+        displayLect(lectLst);
+
+        function displayLect(lectLst) {
+            var jsObj = {
+                "cols": ["tieu de", "người giảng", "doi tuong", "chu de", "ngày", "noi dung", "link"],
+                "recs": lectLst,
+            };
+
+            var txt = "";
+            txt += '<table style="width: 100%;">';
+            txt += "<tr>";
+            var cols = jsObj.cols;
+            var i;
+            for (i in cols) {
+                txt += '<th class="col1">' + cols[i] + '</th>';
+            }
+            txt += "</tr>";
+            for (i in jsObj.recs) {
+                rec = jsObj.recs[i];
+                txt += "<tr>";
+                txt += "<td>" + rec.title + "</td>";
+                txt += "<td>" + rec.author + "</td>";
+                txt += "<td>" + rec.target + "</td>";
+                txt += "<td>" + rec.topic + "</td>";
+                txt += "<td>" + getDate(rec.created) + "</td>";
+                txt += "<td>" + rec.content + "</td>";
+                txt += "<td>" + genRef(i, rec.link) + "</td>";
+                txt += "</tr>";
+            }
+            txt += "</table>";
+            document.getElementById("lectTbl").innerHTML = txt;
+        }
+
+        function genRef(i, lnk) {
+            var m = lnk.match(/(\.mp4$|\.mp3$|youtube\.com)/i);
+            var lbl = "link";
+            if (m != null) {
+                lbl = m[0];
+            }
+            btnid = "btn" + i;
+            txt = '<span class="lnkBtn" onclick="jsfunction(' + "'" + btnid + "," + lnk + "'" + ')"  id="' + btnid + '" >' + lbl + '</span>';
+            return txt;
+        }
+
+        function jsfunction(arg) {
+            arr = arg.split(",");
+            var id = arr[0];
+            var lnk = arr[1];
+
+            //check browser
+            //str = who();
+            //n = str.search(/Chrome|Edge|Firefox|Netscape/i)
+            var n = 0;
+            if (n == -1) {
+                document.getElementById("log").innerHTML = "Can not play: [" + lnk + "] on " + str;
+                return;
+            }
+
+            var lnkObj = getLnkObj(lnk);
+
+            switch (lnkObj.lnkType) {
+                case "mp4":
+                    //play file.mp4
+                    show("player", false);
+                    show("mp4player", true);
+                    show("mp3player", false);
+                    document.getElementById("video1").src = lnkObj.lnk;
+                    break;
+                case "mp3":
+                    //play file.mp3
+                    show("player", false);
+                    show("mp4player", false);
+                    show("mp3player", true);
+                    document.getElementById("audio1").src = lnkObj.lnk;
+                    break;
+                case "youtube":
+                    show("player", true);
+                    show("mp4player", false);
+                    show("mp3player", false);
+                    resize("frame1", 720);
+                    document.getElementById("frame1").src = lnkObj.lnk + "?autoplay=1";
+                    break;
+            }
+            document.getElementById("log").innerHTML = "playing:" + lnkObj.lnk;
+        }
         
-    function jsfunction(arg) {
-        arr = arg.split(",");
-        var id = arr[0];
-        var lnk = arr[1];
-
-        //check browser
-        //str = who();
-        //n = str.search(/Chrome|Edge|Firefox|Netscape/i)
-        var n = 0;
-        if (n == -1) {
-            document.getElementById("log").innerHTML = "Can not play: [" + lnk + "] on " + str;
-            return;
+        //"2018-04-10T04:00:00.000Z"
+        function getDate(zTxt) {
+          return zTxt.match(/.*(?=T)/);
         }
-
-        var lnkObj = getLnkObj(lnk);
-
-        switch(lnkObj.lnkType) {
-          case "mp4":
-            //play file.mp4
-            show("player", false);
-            show("mp4player", true);
-            show("mp3player", false);
-            document.getElementById("video1").src = lnkObj.lnk;
-            break;
-          case "mp3":
-            //play file.mp3
-            show("player", false);
-            show("mp4player", false);
-            show("mp3player", true);
-            document.getElementById("audio1").src = lnkObj.lnk;
-            break;
-          case "youtube":
-            show("player", true);
-            show("mp4player", false);
-            show("mp3player", false);
-            resize("frame1", 720);
-            document.getElementById("frame1").src = lnkObj.lnk + "?autoplay=1";
-            break;
-        }
-        document.getElementById("log").innerHTML = "playing:" + lnkObj.lnk;
-    }
-</script>
+    </script>
 </body>
 </html>
