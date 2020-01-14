@@ -1,0 +1,227 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style type="text/css">
+        .label {
+            padding: 5px;
+            color: blue;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .content {
+            width: 90%;
+            margin-left: 5%;
+            background-color: whitesmoke;
+        }
+
+        .auto-style1 {
+            width: 87px;
+        }
+
+        .auto-style2 {
+            width: 125px;
+        }
+
+        .auto-style3 {
+            width: 87px;
+            height: 23px;
+        }
+
+        .auto-style4 {
+            width: 125px;
+            height: 23px;
+        }
+
+        .auto-style5 {
+            height: 23px;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        th {
+            color: white;
+            background-color: blue;
+            font-style: normal;
+        }
+
+        .col1 {
+            width: 30%
+        }
+        
+        button {
+        	width: 50px
+        }
+        
+    </style>
+    <style>
+        #map {
+        height: 100%;
+      }
+      #floating-panel {
+        position: absolute;
+        top: 10px;
+        left: 25%;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+      }
+      </style>
+</head>
+<body style="background-repeat: no-repeat; background-attachment: scroll; padding: 10px">
+    <div style="background-color: white; width: 600px; position: relative; left: auto;">
+            <p class="label">Công tác</p>
+
+        Address : <input type="text" id="address" value="Mai Động, Hai Bà Trưng, Hà Nội, Vietnam"><br>
+        Location: <input type="text" id="location" value="20.9941419,105.8663298"><br>
+        
+        <br />
+        <button onclick="find()">Find</button>
+        <br />
+        <br />
+        <span class="label">Danh sách trưởng phó đạo tràng</span>
+        <div id="contacts">
+            <table>
+                <tr>
+                    <th>Họ tên</th>
+                    <th>Đạo tràng</th>
+                    <th>Chức vụ</th>
+                    <th>Địa chỉ</th>
+                    <th>Sdt</th>
+                </tr>
+                <tr>
+                    <td>Nguyen Van A</td>
+                    <td>Minh Long</td>
+                    <td>Trưởng</td>
+                    <td>Gia Lâm, Hà Nội</td>
+                    <td>1234567</td>
+                </tr>
+            </table>
+        </div>
+        
+         <div id="floating-panel">
+    <b>Start: </b>
+    <select id="start">
+      <option value="chicago, il">Chicago</option>
+      <option value="st louis, mo">St Louis</option>
+      <option value="joplin, mo">Joplin, MO</option>
+      <option value="oklahoma city, ok">Oklahoma City</option>
+      <option value="amarillo, tx">Amarillo</option>
+      <option value="gallup, nm">Gallup, NM</option>
+      <option value="flagstaff, az">Flagstaff, AZ</option>
+      <option value="winona, az">Winona</option>
+      <option value="kingman, az">Kingman</option>
+      <option value="barstow, ca">Barstow</option>
+      <option value="san bernardino, ca">San Bernardino</option>
+      <option value="los angeles, ca">Los Angeles</option>
+    </select>
+    <b>End: </b>
+    <select id="end">
+      <option value="chicago, il">Chicago</option>
+      <option value="st louis, mo">St Louis</option>
+      <option value="joplin, mo">Joplin, MO</option>
+      <option value="oklahoma city, ok">Oklahoma City</option>
+      <option value="amarillo, tx">Amarillo</option>
+      <option value="gallup, nm">Gallup, NM</option>
+      <option value="flagstaff, az">Flagstaff, AZ</option>
+      <option value="winona, az">Winona</option>
+      <option value="kingman, az">Kingman</option>
+      <option value="barstow, ca">Barstow</option>
+      <option value="san bernardino, ca">San Bernardino</option>
+      <option value="los angeles, ca">Los Angeles</option>
+    </select>
+    </div>
+    <div id="map"></div>
+    </div>
+
+    <script>
+        jsObj = {
+            "contacts": [
+            {
+                "name": "Nguyen Van A",
+                "dao_trang": "Minh Long",
+                "chuc_vu": "Truong",
+                "address": "Gia Lâm, Hà Nội",
+                "location": "21.0047043,105.9104362",
+                "phone": "1234567"
+            },
+            {
+                "name": "Nguyen Van B",
+                "dao_trang": "Minh Long Tay Tuu",
+                "chuc_vu": "Truong",
+                "address": "Tay Tuu, Hà Nội",
+                "location": "21.0693317,105.7243966",
+                "phone": "2345678"
+            }
+            ]
+        };
+        //jsTxt = '';
+        //var jsObj = eval("(" + jsTxt + ")");
+
+        function find() {
+            var address = document.getElementById("address").value;
+            var location =document.getElementById("location").value;
+            var addrObj = {
+              "address":address,
+              "location":location
+            };
+            var recs = findNearest(jsObj.contacts,addrObj);
+            
+            //contacts
+            txt = "";
+            txt += '<table style="width: 100%;">';
+            //txt += '<tr><th>Tên CV</th><th>Ban</th><th>Tình trạng</th></tr>';
+            txt += "<tr>";
+            txt += '<th class="col1">' + "Họ tên" + '</th>';
+            txt += '<th class="col1">' + "Đạo tràng" + '</th>';
+            txt += '<th class="col1">' + "Chức vụ" + '</th>';
+            txt += '<th class="col1">' + "Địa chỉ" + '</th>';
+            txt += '<th class="col1">' + "Sdt" + '</th>';
+            //for (i in jsObj.taskCols) {
+            //    txt += '<th class="col1">' + jsObj.taskCols[i] + "</th>";
+            //}
+            txt += "</tr>";
+            for (i in recs) {
+                txt += "<tr>";
+                txt += "<td>" + recs[i].name + "</td>";
+                txt += "<td>" + recs[i].dao_trang + "</td>";
+                txt += "<td>" + recs[i].chuc_vu + "</td>";
+                txt += "<td>" + '<a href="'+recs[i].lnk+'">'+recs[i].address+'</a>' + "</td>";
+                txt += "<td>" + recs[i].phone + "</td>";
+                txt += "</tr>";
+            }
+            txt += "</table>";
+            document.getElementById("contacts").innerHTML = txt;
+        }
+        function findNearest(contacts, addrObj) {
+            var arr = addrObj.location.split(",");
+            var x0 = parseFloat(arr[0]);
+            var y0 = parseFloat(arr[1]);
+            for (i in contacts) {
+              var contact = contacts[i];
+              arr = contact.location.split(",");
+              var x1=parseFloat(arr[0]);
+              var y1=parseFloat(arr[1]);
+              contact.d = Math.pow((x1-x0),2)+Math.pow((y1-y0),2)
+              contact.lnk = "https://www.google.com/maps/dir/"+addrObj.location+ "/"+contact.location
+            }
+            return contacts.sort(function(a, b){return a.d - b.d});
+        }
+    </script>
+</body>
+</html>
