@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
+    <title></title>
     <style>
         .txtbtn {
             white-space: nowrap;
@@ -95,8 +96,8 @@
         <tr style="border: none">
             <td style="border: none" valign="top">
                 <div id="root_childs" class="menuDiv">
-                    <img id="node1_img" class="btn" src="sts-expanded.png" onclick="onImgClick('node1')"></img>
-                    <img id="node1_sts" class="btn" src="sts-uncheck.png" onclick="onStsClick('node1')"></img>
+                    <img id="node1_img" class="btn" src="sts_expanded.png" onclick="onImgClick('node1')"></img>
+                    <img id="node1_sts" class="btn" src="sts_uncheck.png" onclick="onStsClick('node1')"></img>
                     <span id="node1_span" class="txtbtn" onclick="onSpanClick('node1')">node1</span>
                     <div id="node1_childs">
                     </div>
@@ -277,11 +278,55 @@
         //render tree
         var tree = new Tree(rootNode);
 
-        var url = "https://localhost:44336/api/Lectures";
-        //lectLst = getLecturesSync(url);
+        var url = "https://localhost:5001/api/Lectures";
+        //var url = "https://localhost:44336/api/Lectures";
+        
+        var jsonTxt = '[{"id":"5d99c1f7b44e9c0db894ec71","title":"bai giang 1","author":"su phu","topic":"kinh mi tien","created":"2019-10-05T15:00:00Z","target":"phat tu","content":"danh sac","link":"file:///C:/Users/Khiem/Downloads/Kinh%20Mi%20Tiên%20Vấn%20Đáp%20-%20Phần%201%20-%20Thầy%20Thích%20Trúc%20Thái%20Minh.mp4"},{"id":"5d99c37db44e9c0db894ec73","title":"bai giang 2","author":"su ong","topic":"kinh nikaya","created":"2019-01-01T00:00:00Z","target":"dao trang","content":"nội dung 2","link":"https://www.youtube.com/watch?v=OVHR2JlV1kI&t=6s"},{"id":"5d99c3f5b44e9c0db894ec74","title":"bai giang 3","author":"su phu","topic":"kinh mi tien","created":"2019-01-01T00:00:00Z","target":"phat tu","content":"noi dung 3","link":"file:///D:/music/nhac%20niem%20phat/Nammobotatquantheam.mp3"}]';
+        lectLst = getLecturesSync(url);
+        if (lectLst.length == 0) {
+          lectLst = eval("(" + jsonTxt + ")");
+        }
         tree.render1(lectLst);
-        //render3(url);
+        //tree.render3(url);
 
+        //get obj from api
+        function createCORSRequest(method, url) {
+            var xhr = new XMLHttpRequest();
+            if ("withCredentials" in xhr) {
+                // Check if the XMLHttpRequest object has a "withCredentials" property.
+                // "withCredentials" only exists on XMLHTTPRequest2 objects.
+                xhr.open(method, url, true);
+            } else if (typeof XDomainRequest != "undefined") {
+                // Otherwise, check if XDomainRequest.
+                // XDomainRequest only exists in IE, and is IE's way of making CORS requests.
+                xhr = new XDomainRequest();
+                xhr.open(method, url);
+
+            } else {
+                // Otherwise, CORS is not supported by the browser.
+                xhr = null;
+            }
+            return xhr;
+        }
+        function getLecturesSync(url) {
+            var xhr = createCORSRequest('GET', url);
+            if (!xhr) {
+                throw new Error('CORS not supported');
+            }
+            xhr.send();
+            if (xhr.status == 200) {
+                return eval("(" + xhr.responseText + ")");
+            }
+            
+            var xhttp = new XMLHttpRequest();
+            xhttp.open('GET', url, true);
+            xhttp.send();
+            if (xhttp.status == 200) {
+                return eval("(" + xhttp.responseText + ")");
+            } else {
+                return [];
+            }
+        }
 
         function onImgClick(nodeId) {
             var tNode = tree.getNode(nodeId);
@@ -312,7 +357,7 @@
     <script src="js/player.js"></script>
     <script>
         //hide frame
-        var m_scale = 3 / 4;;
+        var m_scale = 3 / 4;
         show("player", false);
         show("mp4player", false);
         show("mp3player", false);
@@ -404,10 +449,10 @@
             }
             document.getElementById("log").innerHTML = "playing:" + lnkObj.lnk;
         }
-        
+
         //"2018-04-10T04:00:00.000Z"
         function getDate(zTxt) {
-          return zTxt.match(/.*(?=T)/);
+            return zTxt.match(/.*(?=T)/);
         }
     </script>
 </body>
