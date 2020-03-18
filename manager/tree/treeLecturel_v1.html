@@ -85,15 +85,15 @@ div {
 <tr style="border:none">
 <td style="border:none" valign="top">
 <div id="root_childs" class="menuDiv">
-  <img id="node1_img" class="btn" src="sts-expanded.png" onclick="onImgClick('node1')"></img>
-  <img id="node1_sts" class="btn" src="sts-uncheck.png" onclick="onStsClick('node1')"></img>
+  <img id="node1_img" class="btn" src="sts_expanded.png" onclick="onImgClick('node1')"></img>
+  <img id="node1_sts" class="btn" src="sts_uncheck.png" onclick="onStsClick('node1')"></img>
   <span id="node1_span" class="txtbtn" onclick="onSpanClick('node1')">node1</span>
   <div id="node1_childs">
   </div>
-  <img id="node2_img" class="btn" src="sts-expanded.png"></img>
+  <img id="node2_img" class="btn" src="sts_expanded.png"></img>
   <span class="txtbtn">node2</span>
   <div id="node2_childs">
-    <img id="node2_1_img" src="sts-expanded.png"></img>
+    <img id="node2_1_img" src="sts_expanded.png"></img>
     <span class="txtbtn">node2.1</span>
     <div id="node2_1_childs">
     </div>
@@ -599,7 +599,8 @@ var lectItem = {
 //render tree
 
 var url = "https://localhost:44336/api/Lectures";
-lectLst = getLecturesSync(url);
+url = "https://localhost:5001/api/Lectures";
+lectLst = getLecturesSync(url); //only work on IE 11
 render1(lectLst);
 //render3(url);
 
